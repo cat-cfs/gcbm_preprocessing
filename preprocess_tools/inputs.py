@@ -2,7 +2,7 @@ import arcpy
 import gcbm_aws
 
 class Inventory(object):
-	def __init__(self, inventory_path, layer, age_field, year, fieldNames=None):
+	def __init__(self, inventory_path, layer, age_field, year, classifiers_attr, field_names=None):
 		if inventory_path.split('.')[-1] == "gdb":
 			self.workspace = inventory_path
 			arcpy.env.workspace = self.workspace
@@ -14,13 +14,20 @@ class Inventory(object):
 		self._year = year
 		self._desc = arcpy.Describe(layer)
 		self._bounding_box = self.getBoundingBoxM()
-		self.fieldNames = fieldNames
+		self._field_names = field_names
+		self._classifiers_attr = classifiers_attr
 
 	def getPath(self):
 		return self._inventory_path
 
+	def setPath(self, path):
+		self._inventory_path = path
+
 	def getLayerName(self):
 		return self._layer_name
+
+	def setLayerName(self, layer):
+		self._layer_name = layer
 
 	def getAgeField(self):
 		return self._age_field
@@ -41,8 +48,14 @@ class Inventory(object):
 	def getTopRightCorner(self):
 		return self._bounding_box[2], self._bounding_box[3]
 
+	def getClassifiers(self):
+		return [c for c in self._classifiers_attr]
+
+	def getClassifierAttr(self, classifier):
+		return self._classifers_attr[classifier]
+
 	def getFieldNames(self):
-		fieldNames = {
+		field_names = {
 			"disturbed_inventory": "DisturbedInventory",
 			"disturbed_inventory_layer": "disturbedInventory_layer",
 			"inv_age": "Age2011",
@@ -56,9 +69,9 @@ class Inventory(object):
 			"pre_dist_age": "preDistAge",
 			"rollback_vintage": "Age1990"
 		}
-		if self.fieldNames != None:
-			fieldNames.update(self.fieldNames)
-		return fieldNames
+		if self._field_names != None:
+			field_names.update(self._field_names)
+		return field_names
 
 class TransitionRules(object):
 	def __init__(self, path, classifier_cols, header, cols):
@@ -159,3 +172,32 @@ class AIDB(object):
 
 	def getPath(self):
 		return self._path
+
+class SpatialBoundaries(object):
+	def __init__(self, path, type, attribute, name):
+		self._path = path
+		self._type = type
+		self._attribute = attribute
+		self._name = name
+
+	def getFilePath(self):
+		return self._path
+
+	def getType(self):
+		return self._type
+
+	def getAttributeCol(self):
+		return self._attribute
+
+	def getName(self):
+		return self._name
+
+class ReportingIndicators(object):
+	def __init__(self, indicators):
+		self._indicators = indicators
+
+	def getReportingIndicators(self):
+		pass
+
+	def addReportingIndicator(self, name, path, attribute):
+		pass
