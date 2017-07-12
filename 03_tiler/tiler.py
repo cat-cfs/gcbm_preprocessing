@@ -29,26 +29,27 @@ class Tiler(object):
         self.NAmat = NAmat
         self.reporting_ind = reportingIndicators
         self.rule_manager = TransitionRuleManager(os.path.abspath("{}\\transition_rules.csv".format(self.output_dir)))
+        self.layers = []
+        self.tiler = None
 
     def runTiler(self, resolution, createReportingLayers):
-        pp = self.ProgressPrinter.newProcess("runTiler", 4).start()
+        tasks = [
+            lambda:self.defineBoundingBox(resolution),
+            lambda:self.initializeReportingLayers() if createReportingLayers else None,
+            lambda:self.processHistoricDisturbances(),
+            lambda:self.processRollbackDisturbances(),
+            lambda:self.processProjectedDisturbances(),
+            lambda:self.tiler.tile(layers),
+            lambda:self.rule_manager.write_rules()
+        ]
+        for t in [n for n in tasks if n==None]:
+            t.remove(None)
+        pp = self.ProgressPrinter.newProcess("runTiler", len(tasks)).start()
         k=0
-        pp.updateProgressV(k)
-        self.defineBoundingBox(resolution)
-        pp.updateProgressV(k)
-        layers = []
-        if createReportingLayers:
-            layers = self.initializeReportingLayers(layers)
-        pp.updateProgressV(k)
-        self.processHistoricDisturbances(layers)
-        pp.updateProgressV(k)
-        self.processRollbackDisturbances(layers)
-        pp.updateProgressV(k)
-        self.processProjectedDisturbances(layers)
-        pp.updateProgressV(k)
-        tiler.tile(layers)
-        self.rule_manager.write_rules()
-        pp.updateProgressV(k)
+        for t in tasks:
+            t()
+            k+=1
+            pp.updateProgressV(k)
         pp.finish()
 
     def defineBoundingBox(self, resolution):
@@ -57,24 +58,24 @@ class Tiler(object):
                 Attribute(self.inventory.getAgeField()),raw=True), pixel_size=resolution/100000.0)
             self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
 
-    def processReportingLayers(self, layers):
 
-        layers.append(VectorLayer(self.inventory.getAgeField(), self.inventory.getShpFilePath(),
+    def processReportingLayers(self):
+        self.layers.append(VectorLayer(self.inventory.getAgeField(), self.inventory.getShpFilePath(),
             Attribute(self.inventory.getAgeField()), raw=True, data_type=gdal.GDT_Int32))
 
         for classifier in self.inventory.getClassifiers():
-            layers.append(VectorLayer(classifier, self.inventory.getShpFilePath(), Attribute(self.inventory.getClassifierAttr(classifier))))
+            self.layers.append(VectorLayer(classifier, self.inventory.getShpFilePath(), Attribute(self.inventory.getClassifierAttr(classifier))))
 
         for reporting_indicator in self.reporting_ind.getReportingIndicators():
-            layers.append(VectorLayer(self.reporting_indicator, self.reporting_ind.getShpFilePath(),
+            self.layers.append(VectorLayer(self.reporting_indicator, self.reporting_ind.getShpFilePath(),
                 Attribute(self.reporting_ind.getReportingIndAttr(reporting_indicator))))
 
-        layers.append(RasterLayer(self.NAmat.getFilePath(), nodata_value=1.0e38))
+        self.layers.append(RasterLayer(self.NAmat.getFilePath(), nodata_value=1.0e38))
 
 
-    def processHistoricDisturbances(self, layers):
+    def processHistoricDisturbances(self):
         for dist in self.historic_disturbances.getDisturbances():
-            layers.append(DisturbanceLayer(
+            self.layers.append(DisturbanceLayer(
                 self.rule_manager,
                 VectorLayer(self.historic_disturbances.getYear(dist), self.historic_disturbances.getShpFilePath(dist), Attribute("Shape_Leng")),
                 year=self.historic_disturbances.getYear(dist),
@@ -108,7 +109,7 @@ class Tiler(object):
 #             age_after=-1)))
 
 
-    def processRollbackDisturbances(self, layers):
+    def processRollbackDisturbances(self):
         rollback_dist_lookup = {
             1: "Wild Fires",
             2: "Clearcut harvesting with salvage"
@@ -117,7 +118,7 @@ class Tiler(object):
         rollback_dist_shp = r"C:\Byron\04_100MileHouse\05_working\02_layers\01_external_spatial_data\03_distubances\03_rollbackDisturbances\rollbackDist.shp"
         for year in range(1990, 2015):
             for label, dist_code in (("Wild Fires", 1), ("Clearcut harvesting with salvage", 2)):
-                layers.append(DisturbanceLayer(
+                self.layers.append(DisturbanceLayer(
                     rule_manager,
                     VectorLayer("rollback_{}_{}".format(label, year),
                                 rollback_dist_shp,
@@ -133,7 +134,7 @@ class Tiler(object):
                         age_after=0)))
 
 
-    def processProjectedDisturbances(self, layers):
+    def processProjectedDisturbances(self):
         futureDistTypeLookup = {
             11: "Base CC",
             7: "Wild Fires",
@@ -149,7 +150,7 @@ class Tiler(object):
         for file_name in scan_for_layers(r"{}\03_disturbances\02_future\projDist".format(spatial_data), "*.shp"):
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
             year = future_start_year + int(file_name_no_ext.split("_")[1])
-            layers.append(DisturbanceLayer(
+            self.layers.append(DisturbanceLayer(
                 rule_manager,
                 VectorLayer("Proj{}_{}".format("Disturbance", year), file_name, Attribute("dist_type_", substitutions=futureDistTypeLookup)),
                 year=year,
@@ -157,9 +158,6 @@ class Tiler(object):
                 transition=TransitionRule(
                     regen_delay=0,
                     age_after=0)))
-
-    tiler.tile(layers)
-    rule_manager.write_rules()
 
     def scan_for_layers(self, path, filter):
         return sorted(glob.glob(os.path.join(path, filter)),

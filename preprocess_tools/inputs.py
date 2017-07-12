@@ -2,13 +2,13 @@ import arcpy
 import gcbm_aws
 
 class Inventory(object):
-	def __init__(self, inventory_path, layer, age_field, year, classifiers_attr, field_names=None):
+	def __init__(self, path, layer, age_field, year, classifiers_attr, field_names=None):
 		if inventory_path.split('.')[-1] == "gdb":
 			self.workspace = inventory_path
 			arcpy.env.workspace = self.workspace
 		else:
 			workspace = None
-		self._inventory_path = inventory_path
+		self._inventory_path = path
 		self._layer_name = layer
 		self._age_field = age_field
 		self._year = year
