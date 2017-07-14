@@ -1,27 +1,29 @@
 import arcpy
 import gcbm_aws
+import os
+import fiona
 
 class Inventory(object):
 	def __init__(self, path, layer, age_field, year, classifiers_attr, field_names=None):
-		if inventory_path.split('.')[-1] == "gdb":
-			self.workspace = inventory_path
+		if path.split('.')[-1] == "gdb":
+			self.workspace = path
 			arcpy.env.workspace = self.workspace
 		else:
 			workspace = None
-		self._inventory_path = path
+		self._path = path
 		self._layer_name = layer
 		self._age_field = age_field
 		self._year = year
-		self._desc = arcpy.Describe(layer)
-		self._bounding_box = self.getBoundingBoxM()
+		self._bounding_box = self.getBoundingBox()
 		self._field_names = field_names
 		self._classifiers_attr = classifiers_attr
+		self._rasters = []
 
 	def getPath(self):
-		return self._inventory_path
+		return self._path
 
 	def setPath(self, path):
-		self._inventory_path = path
+		self._path = path
 
 	def getLayerName(self):
 		return self._layer_name
@@ -35,12 +37,32 @@ class Inventory(object):
 	def getYear(self):
 		return self._year
 
-	def getBoundingBoxM(self):
-		e = self._desc.extent
+	def reproject(self, new_name):
+		print "Reprojecting Inventory... ",
+		arcpy.env.overwriteOutput = True
+		#PROJECTIONS
+		#method
+		transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
+		#input
+		input_proj = "PROJCS['PCS_Albers',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',1000000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-126.0],PARAMETER['Standard_Parallel_1',50.0],PARAMETER['Standard_Parallel_2',58.5],PARAMETER['Latitude_Of_Origin',45.0],UNIT['Meter',1.0]]"
+		#output
+		output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
+		# Process: Project
+		new_path = os.path.join(self._path, new_name)
+		arcpy.Project_management(os.path.join(self._path, self._layer_name), new_path, output_proj,
+			transform_method, input_proj, "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
+		self._layer_name = new_name
+		self._bounding_box = self.getBoundingBox()
+		print "Done"
+
+	def getBoundingBox(self):
+		desc = arcpy.Describe(self._layer_name)
+		e = desc.extent
 		return [e.XMin, e.YMin, e.XMax, e.YMax]
 
 	def getBoundingBoxD(self):
-		extent = list(gcbm_aws.util.get_bbox(self._inventory_path, self._layer_name))
+		extent = list(gcbm_aws.util.get_bbox(self._path, self._layer_name))
+		return extent
 
 	def getBottomLeftCorner(self):
 		return self._bounding_box[0], self._bounding_box[1]
@@ -52,13 +74,22 @@ class Inventory(object):
 		return [c for c in self._classifiers_attr]
 
 	def getClassifierAttr(self, classifier):
-		return self._classifers_attr[classifier]
+		try:
+			return self._classifiers_attr[classifier]
+		except:
+			return None
+
+	def getRasters(self):
+		return self._rasters
+
+	def addRaster(self, path, attr, attr_table):
+		self._rasters.append(Raster(path, attr_table))
 
 	def getFieldNames(self):
 		field_names = {
 			"disturbed_inventory": "DisturbedInventory",
 			"disturbed_inventory_layer": "disturbedInventory_layer",
-			"inv_age": "Age2011",
+			"age": "Age2011",
 			"establishment_date": "DE_2011",
 			"disturbance_yr": "DistYEAR",
 			"new_disturbance_yr": "DistYEAR_new",
@@ -67,11 +98,27 @@ class Inventory(object):
 			"harv_yr": "HARV_YR",
 			"regen_delay": "RegenDelay",
 			"pre_dist_age": "preDistAge",
-			"rollback_vintage": "Age1990"
+			"rollback_vintage": "Age1990",
+			"species": "LeadSpp"
 		}
 		if self._field_names != None:
 			field_names.update(self._field_names)
 		return field_names
+
+class Raster(object):
+	def __init__(self, path, attr, attr_table):
+		self._path = path
+		self._attr = attr
+		self._attr_table = attr_table
+
+	def getAttr(self):
+		return self._attr
+
+	def getAttrTable(self):
+		return self._attr_table
+
+	def getPath(self):
+		return self._path
 
 class TransitionRules(object):
 	def __init__(self, path, classifier_cols, header, cols):

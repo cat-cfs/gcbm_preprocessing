@@ -11,20 +11,24 @@ recliner2GCBM = __import__("04_recliner2GCBM")
 
 if __name__=="__main__":
     ### Variables
-    res = 100
+    res = 0.001
     tiles = 16
 
     ## Inventory
     inventory_path = "G:\\Nick\\GCBM\\05_Test_Automation\\05_working\\02_layers\\01_external_spatial_data\\00_Workspace.gdb"
     inventory_layer = "tsaTEST"
     inventory_age_field = "Age2011"
-    inventory_age = 2011
-    # A dictionary with the classifiers as keys and the associated field names as
-    # they appear in the inventory as values.
+    inventory_year = 2011
+    # A dictionary with the classifiers as keys and the associated field names (as
+    # they appear in the inventory) as values.
     inv_classifier_attr = {
         "LdSpp": "LeadSpp",
         "AU": "AU"
     }
+
+    historic_range = [1990,2014]
+    rollback_range = [1990,2010]
+    future_range = [2015,2050]
 
     disturbances = [r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest",  r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles"]
     rollbackInvOut = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\02_inventory"
@@ -32,9 +36,30 @@ if __name__=="__main__":
     recliner2gcbm_config_dir = r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\config"
     recliner2gcbm_output_path = r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\gcbm.db"
 
+    tilerScenarios = ['Base', 'B', 'C']
+    GCBMScenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
+
     ### Initialize inputs
     inventory = preprocess_tools.inputs.Inventory(path=inventory_path, layer=inventory_layer,
-        age_field=inventory_age_field, age=iventory_age, classifiers_attr=inv_classifier_attr)
+        age_field=inventory_age_field, year=inventory_year, classifiers_attr=inv_classifier_attr)
+    inventory.reproject("inv_reprojected")
+
+
+    # harvestDisturbances = preprocess_tools.disturbance_manager.DisturbanceParser(
+    #     path=r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\BC_cutblocks90_15.shp",
+    #     multiple=False,type="shp",year_disp=0,year_attribute="HARV_YR",year_range=historic_range,extract_yr_re=None,
+    #     filter_attribute="tsa_num",filter_code="05",dist_type="Clearcut harvesting with salvage", name="historicharvest", standReplacing=True
+    # )
+    # harvestDisturbances.createDisturbanceCollection(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\05_disturbance_collections\harvest.gdb")
+
+    # fireDisturbances = preprocess_tools.disturbance_manager.DisturbanceParser(
+    #     path=r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles",
+    #     multiple=True,type="shp",year_disp=0,year_range=historic_range,extract_yr_re=r"([0-9]+)\.shp$",
+    #     filter_attribute=None,filter_code=None,dist_type="Wildfires", name="historicfire", standReplacing=True
+    # )
+    # fireDisturbances.createDisturbanceCollection(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\05_disturbance_collections\fire.gdb")
+
+
 
     transitionRules = preprocess_tools.inputs.TransitionRules(path=r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\transition_rules.csv",
         classifier_cols={"AU":None, "LDSPP":None}, header=True, cols={"NameCol":0, "AgeCol":2, "DelayCol":1})
@@ -66,7 +91,7 @@ if __name__=="__main__":
     # -- Grid inventory
     inventoryGridder.gridInventory()
     # -- Start of rollback
-    mergeDist.runMergeDisturbances()
+    # mergeDist.runMergeDisturbances()
     intersect.runIntersectDisturbancesInventory()
     calcDistDEdiff.calculateDistDEdifference()
     calcNewDistYr.calculateNewDistYr()

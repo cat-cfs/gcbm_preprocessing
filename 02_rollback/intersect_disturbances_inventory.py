@@ -23,6 +23,7 @@
 import archook
 archook.get_arcpy()
 import arcpy
+import inspect
 
 class IntersectDisturbancesInventory(object):
     def __init__(self, inventory, ProgressPrinter):
@@ -59,13 +60,18 @@ class IntersectDisturbancesInventory(object):
         self.TSABoundary = r"{}\..\01_spatial_reference\TSA_boundaries_2016.shp".format(self.inv_workspace)
 
     def runIntersectDisturbancesInventory(self):
-        pp = self.ProgressPrinter.newProcess("intersect disturbances and inventory", 6).start()
-        self.addFields()
-        self.selectInventoryRecords()
-        self.clipMergedDisturbances()
-        self.selectDisturbanceRecords()
-        self.intersectLayers()
-        self.removeNonConcurring()
+        tasks = [
+            lambda:self.addFields(),
+            lambda:self.selectInventoryRecords(),
+            lambda:self.clipMergedDisturbances(),
+            lambda:self.selectDisturbanceRecords(),
+            lambda:self.intersectLayers(),
+            lambda:self.removeNonConcurring()
+        ]
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
+        for t in tasks:
+            t()
+            pp.updateProgressV()
         pp.finish()
 
     def addFields(self):

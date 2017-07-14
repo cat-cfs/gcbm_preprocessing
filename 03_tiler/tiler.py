@@ -45,32 +45,42 @@ class Tiler(object):
         for t in [n for n in tasks if n==None]:
             t.remove(None)
         pp = self.ProgressPrinter.newProcess("runTiler", len(tasks)).start()
-        k=0
-        for t in tasks:
-            t()
-            k+=1
-            pp.updateProgressV(k)
+        with cleanup():
+            for t in tasks:
+                t()
+                pp.updateProgressV()
         pp.finish()
 
     def defineBoundingBox(self, resolution):
-        with cleanup():
-            self.bbox = BoundingBox(VectorLayer("bbox", self.inventory.getShpFilePath(),
-                Attribute(self.inventory.getAgeField()),raw=True), pixel_size=resolution/100000.0)
-            self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
+        self.bbox = BoundingBox(VectorLayer("bbox", self.inventory.getRasterPath(),
+            Attribute(self.inventory.getAgeField()),raw=True), pixel_size=resolution)
+        self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
 
 
     def processReportingLayers(self):
-        self.layers.append(VectorLayer(self.inventory.getAgeField(), self.inventory.getShpFilePath(),
-            Attribute(self.inventory.getAgeField()), raw=True, data_type=gdal.GDT_Int32))
 
-        for classifier in self.inventory.getClassifiers():
-            self.layers.append(VectorLayer(classifier, self.inventory.getShpFilePath(), Attribute(self.inventory.getClassifierAttr(classifier))))
+        for raster in self.inventory.getRasters():
+            if raster.getAttrTable() == None:
+                self.layers.append(RasterLayer(raster.getPath()))
+            else:
+                self.layers.append(RasterLayer(raster.getPath(),
+                    nodata_value=255,
+                    attributes = [raster.getAttr()],
+                    attribute_table = raster.getAttrTable()))
 
-        for reporting_indicator in self.reporting_ind.getReportingIndicators():
-            self.layers.append(VectorLayer(self.reporting_indicator, self.reporting_ind.getShpFilePath(),
-                Attribute(self.reporting_ind.getReportingIndAttr(reporting_indicator))))
 
-        self.layers.append(RasterLayer(self.NAmat.getFilePath(), nodata_value=1.0e38))
+        # self.layers.append(VectorLayer(self.inventory.getAgeField(), self.inventory.getShpFilePath(),
+        #     Attribute(self.inventory.getAgeField()), raw=True, data_type=gdal.GDT_Int32))
+        #
+        # for classifier in self.inventory.getClassifiers():
+        #     self.layers.append(VectorLayer(classifier, self.inventory.getShpFilePath(), Attribute(self.inventory.getClassifierAttr(classifier))))
+
+        for attr in self.spatial_boundaries.getAttributes():
+            attr_field = self.spatial_boundaries.getAttrField(attr)
+            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPath(),
+                Attribute(attr_field)))
+
+        self.layers.append(RasterLayer(self.NAmat.getPath(), nodata_value=1.0e38))
 
 
     def processHistoricDisturbances(self):

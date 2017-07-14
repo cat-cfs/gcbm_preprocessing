@@ -38,6 +38,7 @@ class ProgressProcess(object):
 		self.total = total
 		self.level = self.indentLevel(level)
 		self.type = None
+		self.value = 0
 
 	def indentLevel(self, level):
 		l = ""
@@ -50,17 +51,19 @@ class ProgressProcess(object):
 			self.level, self.name))
 		return self
 
-	def updateProgressP(self, progress):
+	def updateProgressP(self):
 		if self.type != "V":
 			self.type = "P"
+			self.value += 1
 			self.pp.printProgressP("[{0}] {1}>>Progress: {2}%".format(time.strftime('%a %H:%M:%S'),
-				self.level, round(progress/float(self.total)*100,0)))
+				self.level, round(self.value/float(self.total)*100,0)))
 
-	def updateProgressV(self, progress):
+	def updateProgressV(self):
 		if self.type != "P":
 			self.type = "V"
+			self.value += 1
 			self.pp.printProgressV("[{0}] {1}>>Progress: ({2}/{3})".format(time.strftime('%a %H:%M:%S'),
-				self.level, progress, self.total))
+				self.level, self.value, self.total))
 
 	def finish(self):
 		sys.stdout.write("{0}[{1}] {2}Finished Process: {3}\n".format("\n" if self.type=="P" else "",

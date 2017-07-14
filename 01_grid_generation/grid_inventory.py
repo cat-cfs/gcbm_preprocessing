@@ -24,6 +24,7 @@ import archook
 archook.get_arcpy()
 import arcpy
 import os
+import inspect
 
 class GridInventory(object):
     def __init__(self, inventory, ProgressPrinter):
@@ -41,19 +42,20 @@ class GridInventory(object):
         self.invAge_fieldName = inventory.getAgeField()
 
     def gridInventory(self):
-        pp = self.ProgressPrinter.newProcess("grid inventory", 4).start()
-        pp.updateProgressV(0)
-        self.spatialJoin()
-        pp.updateProgressV(1)
-        self.makeFeatureLayer()
-        pp.updateProgressV(2)
-        self.selectGreaterThanZeroAgeStands()
-        pp.updateProgressV(3)
-        self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap")
-        pp.updateProgressV(4)
+        tasks = [
+            lambda:self.spatialJoin(),
+            lambda:self.makeFeatureLayer(),
+            lambda:self.selectGreaterThanZeroAgeStands(),
+            lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap")
+        ]
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
+        for t in tasks:
+            t()
+            pp.updateProgressV()
         pp.finish()
 
     def spatialJoin(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         target_features = arcpy.GetParameterAsText(0)
         join_features = arcpy.GetParameterAsText(1)
         out_fc = arcpy.GetParameterAsText(2)
@@ -61,17 +63,23 @@ class GridInventory(object):
         spatial_rel = arcpy.GetParameterAsText(4).lower()
 
         self.SpatialJoinLargestOverlap(target_features, join_features, out_fc, keep_all, spatial_rel)
+        pp.finish()
 
     def makeFeatureLayer(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.MakeFeatureLayer_management(self.inventory_path, self.inventory_layer)
+        pp.finish()
 
     def selectGreaterThanZeroAgeStands(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         invAge_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.inventory_path, self.invAge_fieldName), 0)
         arcpy.Select_analysis(self.inventory_layer, self.inventory_layer2, invAge_whereClause)
+        pp.finish()
 
-# Spatial Join tool--------------------------------------------------------------------
-# Main function, all functions run in SpatialJoinOverlapsCrossings
+    # Spatial Join tool--------------------------------------------------------------------
+    # Main function, all functions run in SpatialJoinOverlapsCrossings
     def SpatialJoinLargestOverlap(self, target_features, join_features, out_fc, keep_all, spatial_rel):
+        pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         if spatial_rel == "largest_overlap":
             # Calculate intersection between Target Feature and Join Features
             intersect = arcpy.analysis.Intersect([target_features, join_features], "in_memory/intersect", "ONLY_FID")
@@ -83,12 +91,14 @@ class GridInventory(object):
                       "SHAPE@{0}".format(geom)]
             overlap_dict = {}
             with arcpy.da.SearchCursor(intersect, fields) as scur:
+                pp2 = self.ProgressPrinter.newProcess("search for overlap", 1, 2).start()
                 for row in scur:
                     try:
                         if row[2] > overlap_dict[row[0]][1]:
                             overlap_dict[row[0]] = [row[1], row[2]]
                     except:
                         overlap_dict[row[0]] = [row[1], row[2]]
+                pp2.finish()
 
             # Copy the target features and write the largest overlap join feature ID to each record
             # Set up all fields from the target features + ORIG_FID
@@ -106,6 +116,7 @@ class GridInventory(object):
             arcpy.management.AddField(out_fc, "JOIN_FID", "LONG")
             # Calculate the JOIN_FID field
             with arcpy.da.UpdateCursor(out_fc, ["ORIG_FID", "JOIN_FID"]) as ucur:
+                pp2 = self.ProgressPrinter.newProcess("update rows", 1, 2).start()
                 for row in ucur:
                     try:
                         row[1] = overlap_dict[row[0]][0]
@@ -113,10 +124,13 @@ class GridInventory(object):
                     except:
                         if not keep_all:
                             ucur.deleteRow()
+                pp2.finish()
             # Join all attributes from the join features to the output
+            pp2 = self.ProgressPrinter.newProcess("join fields", 1, 2).start()
             joinfields = [x.name for x in arcpy.ListFields(join_features) if not x.required]
             arcpy.management.JoinField(out_fc, "JOIN_FID", join_features, arcpy.Describe(join_features).OIDFieldName, joinfields)
-
+            pp2.finish()
+            pp1.finish()
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script
 '''

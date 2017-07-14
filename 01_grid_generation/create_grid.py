@@ -24,49 +24,50 @@ from tileID import TileID
 ## New
 
 class Fishnet(object):
-	def __init__(self, inventory, resolution_meters, ProgressPrinter):
+	def __init__(self, inventory, resolution_degrees, ProgressPrinter):
 		arcpy.env.workspace = inventory.workspace
 		arcpy.env.overwriteOutput=True
 		self.workspace = inventory.workspace
 		self.ProgressPrinter = ProgressPrinter
 		oCorner = inventory.getBottomLeftCorner()
 		tCorner = inventory.getTopRightCorner()
-		self.blc_x, self.blc_y = self.roundCorner(oCorner[0], oCorner[1], -1, resolution_meters)
-		self.trc_x, self.trc_y = self.roundCorner(tCorner[0], tCorner[1], 1, resolution_meters)
+		self.blc_x, self.blc_y = self.roundCorner(oCorner[0], oCorner[1], -1, resolution_degrees)
+		self.trc_x, self.trc_y = self.roundCorner(tCorner[0], tCorner[1], 1, resolution_degrees)
 
 		self.XYgrid = "XYgrid"
 		self.XYgrid_temp = "XYgrid_temp"
 
 		self.inventory_template = inventory.getLayerName()
 
-		self.resolution_meters = resolution_meters
+		self.resolution_degrees = resolution_degrees
 
 	def roundCorner(self, x, y, ud, res):
 		if ud==1:
-			rx = int(math.ceil(float(x)/res)*res)
-			ry = int(math.ceil(float(y)/res)*res)
+			rx = math.ceil(float(x)/res)*res
+			ry = math.ceil(float(y)/res)*res
 		elif ud==-1:
-			rx = int(math.floor(float(x)/res)*res)
-			ry = int(math.floor(float(y)/res)*res)
+			rx = math.floor(float(x)/res)*res
+			ry = math.floor(float(y)/res)*res
 		else:
 			raise Exception("Invalid value for 'ud'. Provide 1 (Round up) or -1 (Round down).")
 		return rx, ry
 
 	def createFishnet(self):
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 3, 0).start()
 
 		self.origin_coord = "{} {}".format(self.blc_x, self.blc_y)
-		self.y_axis_coord = "{} {}".format(self.blc_x, self.blc_y+10)
+		self.y_axis_coord = "{} {}".format(self.blc_x, self.blc_y+1)
 		self.corner_coord = "{} {}".format(self.trc_x, self.trc_y)
 
-		pp.updateProgressV(0)
-		arcpy.CreateFishnet_management(self.XYgrid, self.origin_coord, self.y_axis_coord, self.resolution_meters, self.resolution_meters,
-			"", "", self.corner_coord, "NO_LABELS", self.inventory_template, "POLYGON")
-		pp.updateProgressV(1)
-		self._createFields()
-		pp.updateProgressV(2)
-		self._calculateFields()
-		pp.updateProgressV(3)
+		tasks = [
+			lambda:arcpy.CreateFishnet_management(self.XYgrid, self.origin_coord, self.y_axis_coord, self.resolution_degrees, self.resolution_degrees,
+				"", "", self.corner_coord, "NO_LABELS", self.inventory_template, "POLYGON"),
+			lambda:self._createFields(),
+			lambda:self._calculateFields()
+		]
+		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
+		for t in tasks:
+			t()
+			pp.updateProgressV()
 		pp.finish()
 
 	def test_multiprocessing(self, args, workspace):
@@ -91,15 +92,12 @@ class Fishnet(object):
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)
 		pp.start()
 
-		jobs = []
-		multiprocessing.set_executable(r"C:\Python27\ArcGIS10.4\python.exe")
-		k = 0
+		# jobs = []
 		for field_name in field_name_types:
 			field_type = field_name_types[field_name]
 			field_length = "25" if field_type.upper()=="TEXT" else ""
 			arcpy.AddField_management(self.XYgrid, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", "")
-			k+=1
-			pp.updateProgressP(k)
+			pp.updateProgressP()
 		# 	process = multiprocessing.Process(target=self.test_multiprocessing,args=((self.XYgrid, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", ""),self.workspace))
 		# 	jobs.append(process)
 		# 	process.start()
@@ -111,34 +109,32 @@ class Fishnet(object):
 
 	def _calculateFields(self):
 
-		x_middle_coord = self.blc_x + (self.resolution_meters/2) -1 #Center of bottom left tile x coordinate - 1
-		y_middle_coord = self.blc_y + (self.resolution_meters/2) -1 #Center of bottom left tile y coordinate - 1
+		x_middle_coord = self.blc_x + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile x coordinate - 1
+		y_middle_coord = self.blc_y + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile y coordinate - 1
 
 		functions = [
 			lambda:arcpy.CalculateField_management(self.XYgrid, "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
 			lambda:arcpy.CalculateField_management(self.XYgrid, "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "TEST_E", "!X! - ({})".format(x_middle_coord), "PYTHON_9.3", ""),
+			lambda:arcpy.CalculateField_management(self.XYgrid, "TEST_E", "(!X! - {})*1000".format(x_middle_coord), "PYTHON_9.3", ""),
 			lambda:arcpy.MakeFeatureLayer_management(self.XYgrid, self.XYgrid_temp),
 			lambda:arcpy.SelectLayerByAttribute_management(self.XYgrid_temp, "NEW_SELECTION", "TEST_E > 1"),
-			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_E2", "round(!TEST_E! /100,0)", "PYTHON_9.3", ""),
+			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_E2", "round(!TEST_E! ,0)", "PYTHON_9.3", ""),
 			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_E", "!TEST_E2! + 1", "PYTHON_9.3", ""),
 			lambda:arcpy.SelectLayerByAttribute_management(self.XYgrid_temp, "CLEAR_SELECTION", ""),
 			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "X_ID", "!TEST_E!", "PYTHON_9.3", ""),
-			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_N", "!Y! -{}".format(y_middle_coord), "PYTHON_9.3", ""),
+			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_N", "(!Y! -{})*1000".format(y_middle_coord), "PYTHON_9.3", ""),
 			lambda:arcpy.SelectLayerByAttribute_management(self.XYgrid_temp, "NEW_SELECTION", "TEST_N > 1"),
-			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_N2", "round(!TEST_N!/100,0)", "PYTHON_9.3", ""),
+			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_N2", "round(!TEST_N!,0)", "PYTHON_9.3", ""),
 			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "TEST_N", "!TEST_N2! + 1", "PYTHON_9.3", ""),
 			lambda:arcpy.SelectLayerByAttribute_management(self.XYgrid_temp, "CLEAR_SELECTION", ""),
 			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "Y_ID", "!TEST_N!", "PYTHON_9.3", ""),
 			lambda:arcpy.CalculateField_management(self.XYgrid_temp, "CELL_ID", "'{}_{}'.format(!X_ID!,!Y_ID!)", "PYTHON_9.3", "")
 		]
 
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(functions), 1)
-		k = 0
+		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(functions), 1).start()
 		for f in functions:
 			f()
-			k+=1
-			pp.updateProgressP(k)
+			pp.updateProgressP()
 
 		pp.finish()
 
@@ -156,21 +152,26 @@ class TileID(object):
 		self.XYgrid_temp = "XYgrid_temp"
 
 	def runTileID(self):
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 3).start()
-		pp.updateProgressV(0)
-		self._addField()
-		pp.updateProgressV(1)
-		self._makeFeatureLayer()
-		pp.updateProgressV(2)
-		self._tileIDs()
-		pp.updateProgressV(3)
+		tasks = [
+			lambda:self._addField(),
+			lambda:self._makeFeatureLayer(),
+			lambda:self._tileIDs()
+		]
+		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
+		for t in tasks:
+			t()
+			pp.updateProgressV()
 		pp.finish()
 
 	def _addField(self):
+		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
 		arcpy.AddField_management(self.XYgrid, "TileID", "LONG", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+		pp.finish()
 
 	def _makeFeatureLayer(self):
+		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
 		arcpy.MakeFeatureLayer_management(self.XYgrid, self.XYgrid_temp)
+		pp.finish()
 
 	def _tileIDs(self):
 		cur = arcpy.UpdateCursor(self.XYgrid_temp, sort_fields = "Y_ID D")
@@ -178,12 +179,11 @@ class TileID(object):
 		all_rows = arcpy.GetCount_management(self.XYgrid_temp)
 		nrows = int(all_rows.getOutput(0))
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], nrows, 1).start()
-		k=0
 
 		max = cur.next().getValue("Y_ID")
-		print "Max value for gridding is:", max
+		print "\tMax value for gridding is:", max
 		division = round(max / self.numberofTiles,0) +1
-		print "Tiles will be split every", division, "records."
+		print "\tTiles will be split every", division, "records."
 		for row in cur:
 		    # The variable 'age' will get the value from the column
 		    yValue = row.getValue("Y_ID")
@@ -193,8 +193,7 @@ class TileID(object):
 		    else:
 		        row.setValue("TileID", value)
 		    cur.updateRow(row)
-		    k+=1
-		    pp.updateProgressP(k)
+		    pp.updateProgressP()
 
 		pp.finish()
 

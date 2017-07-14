@@ -27,7 +27,7 @@ class BoundingBox(object):
                 self._info["cornerCoordinates"]["lowerRight"][1],
                 self._info["cornerCoordinates"]["lowerRight"][0],
                 self._info["cornerCoordinates"]["upperLeft"][1])
-                                    
+
         layer = layer.as_raster_layer(self._srs,
                                       self._pixel_size,
                                       block_extent,
