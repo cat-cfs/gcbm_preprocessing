@@ -1,7 +1,6 @@
 import arcpy
 import gcbm_aws
 import os
-import fiona
 
 class Inventory(object):
 	def __init__(self, path, layer, age_field, year, classifiers_attr, field_names=None):
@@ -83,7 +82,7 @@ class Inventory(object):
 		return self._rasters
 
 	def addRaster(self, path, attr, attr_table):
-		self._rasters.append(Raster(path, attr_table))
+		self._rasters.append(Raster(path, attr, attr_table))
 
 	def getFieldNames(self):
 		field_names = {
@@ -210,8 +209,14 @@ class ProjectedDisturbances(object):
         pass
 
 class NAmericaMAT(object):
-    def __init__(self):
-        pass
+    def __init__(self, path):
+        self._path = path
+
+    def getPath(self):
+    	return self._path
+
+    def setPath(self, path):
+    	self._path = path
 
 class AIDB(object):
 	def __init__(self, path):
@@ -220,24 +225,44 @@ class AIDB(object):
 	def getPath(self):
 		return self._path
 
-class SpatialBoundaries(object):
-	def __init__(self, path, type, attribute, name):
+	def setPath(self):
 		self._path = path
-		self._type = type
-		self._attribute = attribute
-		self._name = name
 
-	def getFilePath(self):
-		return self._path
+class SpatialBoundaries(object):
+	def __init__(self, path_tsa, path_pspu, type, filter, attributes):
+		self._path_tsa = path_tsa
+		self._path_pspu = path_pspu
+		self._type = type
+		self._attributes = attributes
+		if "field" and "code" in filter:
+			self._filter = filter
+			if "operator" not in filter:
+				self._filter.update({"operator": "="})
+
+	def getPathTSA(self):
+		return self._path_tsa
+
+	def getPathPSPU(self):
+		return self._path_pspu
+
+	def setPathTSA(self, path):
+		self._path_tsa = path
+
+	def setPathPSPU(self, path):
+		self._path_pspu = path
 
 	def getType(self):
 		return self._type
 
-	def getAttributeCol(self):
-		return self._attribute
+	def getFilter(self):
+		return self._filter
 
-	def getName(self):
-		return self._name
+	def getAttributes(self):
+		return [a for a in self._attributes]
+
+	def getAttrField(self, attr):
+		return self._attributes[attr]
+
 
 class ReportingIndicators(object):
 	def __init__(self, indicators):
@@ -248,3 +273,44 @@ class ReportingIndicators(object):
 
 	def addReportingIndicator(self, name, path, attribute):
 		pass
+
+class RollbackDisturbances(object):
+	def __init__(self, path):
+		self._path = path
+
+	def getPath(self):
+		return self._path
+
+class HistoricDisturbance(object):
+	def __init__(self, workspace, filter, year_field):
+		self._workspace = workspace
+		self._filter = filter
+		self._year_field = year_field
+
+	def getWorkspace(self):
+		return self._workspace
+
+	def getFilter(self):
+		return self._filter
+
+	def getYearField(self):
+		return self._year_field
+
+class ProjectedDisturbance(object):
+	def __init__(self, workspace, filter, scenario, lookup_table):
+		self._workspace = workspace
+		self._filter = filter
+		self._scenario = scenario
+		self._lookup_table = lookup_table
+
+	def getWorkspace(self):
+		return self._workspace
+
+	def getFilter(self):
+		return self._filter
+
+	def getScenario(self):
+		return self._scenario
+
+	def getLookupTable(self):
+		return self._lookup_table

@@ -20,9 +20,10 @@ import archook
 archook.get_arcpy()
 import arcpy
 import inspect
+import glob
 
 
-class MergeDisturbances (object):
+class MergeDisturbances(object):
     def __init__(self, workspace, disturbances, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
         arcpy.env.overwriteOutput = True
@@ -31,9 +32,14 @@ class MergeDisturbances (object):
         self.output = r"{}\MergedDisturbances_polys".format(workspace)
         self.gridded_output = r"{}\MergedDisturbances".format(workspace)
 
-        self.distWS = disturbances
+        self.disturbances = disturbances
+
         # for disturbance in disturbances if disturbance.standReplacing==1:
         #     self.distWS.append(disturbance)
+
+    def scan_for_layers(self, path, filter):
+        return sorted(glob.glob(os.path.join(path, filter)),
+                      key=os.path.basename)
 
     def runMergeDisturbances(self):
         tasks = [
@@ -48,6 +54,7 @@ class MergeDisturbances (object):
         pp.finish()
 
     def spatialJoin(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         target_features = arcpy.GetParameterAsText(0)
         join_features = arcpy.GetParameterAsText(1)
         out_fc = arcpy.GetParameterAsText(2)
@@ -55,46 +62,48 @@ class MergeDisturbances (object):
         spatial_rel = arcpy.GetParameterAsText(4).lower()
 
         self.SpatialJoinLargestOverlap(target_features, join_features, out_fc, keep_all, spatial_rel)
+        pp.finish()
 
     def prepFieldMap(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         fm_year = arcpy.FieldMap()
         self.fms = arcpy.FieldMappings()
 
         # Get the field names for all original files
-        NBAC_yr = "EDATE"
-        NFDB_yr = "YEAR_"
-        CC_YR = "HARV_YR"
+        # NBAC_yr = "EDATE"
+        # NFDB_yr = "YEAR_"
+        # CC_YR = "HARV_YR"
 
         self.vTab = arcpy.ValueTable()
-        for ws in self.distWS:
+        for dist in self.disturbances:
+            ws = dist.getWorkspace()
             arcpy.env.workspace = ws
-            fcs1 = arcpy.ListFeatureClasses("NFDB*", "Polygon")
-            print "Old fire list is: "
-            print fcs1
-            for fc in fcs1:
-                if fc!=[]:
-                    fc = os.path.join(ws, fc)
+            fcs1 = self.scan_for_layers(ws, dist.getFilter())
+            if fcs1:
+                # print "Old fire list is: ", fcs1
+                for fc in fcs1:
+                    # fc = os.path.join(ws, fc)
                     self.fms.addTable(fc)
-                    fm_year.addInputField(fc, NFDB_yr)
+                    if "NBAC" in fc:
+                        fm_year.addInputField(fc, dist.getYearField(), 0, 3)
+                    else:
+                        fm_year.addInputField(fc, dist.getYearField())
                     self.vTab.addRow(fc)
-            fcs2 = arcpy.ListFeatureClasses("NBAC*", "Polygon")
-            print "New fire list is: "
-            print fcs2
-            for fc in fcs2:
-                if fc!=[]:
-                    fc = os.path.join(ws, fc)
-                    self.fms.addTable(fc)
-                    fm_year.addInputField(fc, NBAC_yr, 0,3)
-                    self.vTab.addRow(fc)
-            harvest = arcpy.ListFeatureClasses("BC_cutblocks90_15*", "Polygon")
-            print "Cutblocks list is: "
-            print harvest
-            for fc in harvest:
-                if fc!=[]:
-                    fc = os.path.join(ws, fc)
-                    self.fms.addTable(fc)
-                    fm_year.addInputField(fc, CC_YR)
-                    self.vTab.addRow(fc)
+            # fcs2 = arcpy.ListFeatureClasses(dist.getFilter(), "Polygon")
+            #     # print "New fire list is: ", fcs2
+            #     for fc in fcs2:
+            #         fc = os.path.join(ws, fc)
+            #         self.fms.addTable(fc)
+            #         fm_year.addInputField(fc, self.NBAC_yr, 0,3)
+            #         self.vTab.addRow(fc)
+            # harvest = arcpy.ListFeatureClasses(dist.getFilter(), "Polygon")
+            # if harvest:
+            #     # print "Cutblocks list is: ", harvest
+            #     for fc in harvest:
+            #         fc = os.path.join(ws, fc)
+            #         self.fms.addTable(fc)
+            #         fm_year.addInputField(fc, self.CC_yr)
+            #         self.vTab.addRow(fc)
 
         # Set the merge rule to find the First value of all fields in the
         # FieldMap object
@@ -109,16 +118,19 @@ class MergeDisturbances (object):
 
         # Add the FieldMap objects to the FieldMappings object
         self.fms.addFieldMap(fm_year)
+        pp.finish()
 
     def mergeLayers(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.env.workspace = self.workspace
         arcpy.Merge_management(self.vTab, self.output, self.fms)
         self.SpatialJoinLargestOverlap(self.grid, self.output, self.gridded_output, False, "largest_overlap")
+        pp.finish()
 
     # Spatial Join tool--------------------------------------------------------------------
     # Main function, all functions run in SpatialJoinOverlapsCrossings
     def SpatialJoinLargestOverlap(self, target_features, join_features, out_fc, keep_all, spatial_rel):
-        pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 2).start()
         if spatial_rel == "largest_overlap":
             # Calculate intersection between Target Feature and Join Features
             intersect = arcpy.analysis.Intersect([target_features, join_features], "in_memory/intersect", "ONLY_FID")
@@ -130,7 +142,7 @@ class MergeDisturbances (object):
                       "SHAPE@{0}".format(geom)]
             overlap_dict = {}
             with arcpy.da.SearchCursor(intersect, fields) as scur:
-                pp2 = self.ProgressPrinter.newProcess("search for overlap", 1, 2).start()
+                pp2 = self.ProgressPrinter.newProcess("search for overlap", 1, 3).start()
                 for row in scur:
                     try:
                         if row[2] > overlap_dict[row[0]][1]:
@@ -155,7 +167,7 @@ class MergeDisturbances (object):
             arcpy.management.AddField(out_fc, "JOIN_FID", "LONG")
             # Calculate the JOIN_FID field
             with arcpy.da.UpdateCursor(out_fc, ["ORIG_FID", "JOIN_FID"]) as ucur:
-                pp2 = self.ProgressPrinter.newProcess("update rows", 1, 2).start()
+                pp2 = self.ProgressPrinter.newProcess("update rows", 1, 3).start()
                 for row in ucur:
                     try:
                         row[1] = overlap_dict[row[0]][0]
@@ -165,7 +177,7 @@ class MergeDisturbances (object):
                             ucur.deleteRow()
                 pp2.finish()
             # Join all attributes from the join features to the output
-            pp2 = self.ProgressPrinter.newProcess("join fields", 1, 2).start()
+            pp2 = self.ProgressPrinter.newProcess("join fields", 1, 3).start()
             joinfields = [x.name for x in arcpy.ListFields(join_features) if not x.required]
             arcpy.management.JoinField(out_fc, "JOIN_FID", join_features, arcpy.Describe(join_features).OIDFieldName, joinfields)
             pp2.finish()

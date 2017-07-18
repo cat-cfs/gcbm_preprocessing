@@ -47,10 +47,11 @@ class DisturbanceParser(object):
         elif self.type=="shp":
             return os.listdir(self.path)
 
-    def createDisturbanceCollection(self, gdb_path):
+    def createDisturbanceCollection(self, gdb_path, lookup_attr=None, lookup=None):
         print "Creating disturbance collection"
-        distColl = DisturbanceCollection(gdb_path, [], self.dist_type, self.standReplacing)
+        distColl = DisturbanceCollection(gdb_path, [], self.dist_type, self.standReplacing, lookup_attr, lookup)
         selectLayer = SelectLayer(self.path, gdb_path, self.filter_attribute, self.filter_code)
+        arcpy.env.overwriteOutput = True
 
         if self.type=="gdb":
             if self.multiple==True:
@@ -88,7 +89,6 @@ class DisturbanceParser(object):
         elif self.type=="shp":
             if self.multiple==True:
                 for layer in self.listAll():
-                    print self.extract_yr_re, layer
                     m = re.search(self.extract_yr_re, layer)
                     if m!=None:
                         try:
@@ -133,6 +133,8 @@ class SelectLayer(object):
         arcpy.env.overwriteOutput = True
         arcpy.MakeFeatureLayer_management(os.path.join(self.path, layer), name)
         arcpy.SelectLayerByAttribute_management(name, "NEW_Selection",self.filter_string)
+        if arcpy.Exists(os.path.join(self.gdb_path, name)):
+            arcpy.Delete_management(os.path.join(self.gdb_path, name))
         arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
     def singleShp(self, name, year_attr, year_code):
@@ -143,6 +145,8 @@ class SelectLayer(object):
         filter_string_yr = " AND ".join([self.filter_string,filter_year])
         arcpy.MakeFeatureLayer_management(self.path, name)
         arcpy.SelectLayerByAttribute_management(name, "NEW_Selection", filter_string_yr)
+        if arcpy.Exists(os.path.join(self.gdb_path, name)):
+            arcpy.Delete_management(os.path.join(self.gdb_path, name))
         arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
     def multipleGdb(self, name):
@@ -150,6 +154,8 @@ class SelectLayer(object):
         arcpy.env.overwriteOutput = True
         arcpy.MakeFeatureLayer_management(os.path.join(self.path, layer), name)
         arcpy.SelectLayerByAttribute_management(name, "NEW_Selection",self.filter_string)
+        if arcpy.Exists(os.path.join(self.gdb_path, name)):
+            arcpy.Delete_management(os.path.join(self.gdb_path, name))
         arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
     def singleGdb(self, name, year_attr, year_code):
@@ -160,15 +166,19 @@ class SelectLayer(object):
         filter_string_yr = " AND ".join([self.filter_string,filter_year])
         arcpy.MakeFeatureLayer_management(self.path, name)
         arcpy.SelectLayerByAttribute_management(name, "NEW_Selection",filter_string_yr)
+        if arcpy.Exists(os.path.join(self.gdb_path, name)):
+            arcpy.Delete_management(os.path.join(self.gdb_path, name))
         arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
 
 class DisturbanceCollection(object):
-    def __init__(self, path, disturbances, type, standReplacing):
+    def __init__(self, path, disturbances, type, standReplacing, lookup_attr=None, lookup=None):
         self.path = path
         self.disturbances = disturbances
         self.type = type
         self.standReplacing = standReplacing
+        self.lookup_attr = lookup_attr
+        self.lookup = lookup
         dir, name = os.path.split(path)
         if os.path.exists(dir):
             if not os.path.exists(path):
@@ -185,6 +195,15 @@ class DisturbanceCollection(object):
         else:
             print "Disturbance Not Found"
 
+    def getDisturbances(self):
+        return self.disturbances
+
+    def getLookupAttr(self):
+        return self.lookup_attr
+
+    def getLookup(self):
+        return self.lookup
+
 
 class DisturbanceLayer(object):
     def __init__(self, year, aidb_dist, name, coll):
@@ -196,3 +215,12 @@ class DisturbanceLayer(object):
 
     def __str__(self):
         print self.name
+
+    def getYear(self):
+        return self.year
+
+    def getType(self):
+        return self.aidb_dist
+
+    def getPath(self):
+        return self.path

@@ -130,7 +130,7 @@ class GridInventory(object):
             joinfields = [x.name for x in arcpy.ListFields(join_features) if not x.required]
             arcpy.management.JoinField(out_fc, "JOIN_FID", join_features, arcpy.Describe(join_features).OIDFieldName, joinfields)
             pp2.finish()
-            pp1.finish()
+        pp1.finish()
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script
 '''

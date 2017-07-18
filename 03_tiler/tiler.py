@@ -6,6 +6,7 @@ import glob
 import os
 import gdal
 import time
+import inspect
 
 from mojadata.boundingbox import BoundingBox
 from mojadata.tiler2d import Tiler2D
@@ -18,47 +19,41 @@ from mojadata.layer.gcbm.transitionrule import TransitionRule
 from mojadata.layer.gcbm.transitionrulemanager import TransitionRuleManager
 
 class Tiler(object):
-    def __init__(self, outputDir, spatialBoundaries, inventory, historicDisturbances, rollbackDisturbances,
-                    projectedDisturbances, NAmat, reportingIndicators, ProgressPrinter):
+    def __init__(self, spatialBoundaries, inventory, historicFire, historicHarvest, rollbackDisturbances,
+                    projectedDisturbances, NAmat, rollback_range, historic_range, future_range, resolution, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        self.output_dir = outputDir
         self.spatial_boundaries = spatialBoundaries
         self.inventory = inventory
-        self.historic_disturbances = historicDisturbances
+        self.historic_fire = historicFire
+        self.historic_harvest = historicHarvest
         self.projected_disturbances = projectedDisturbances
+        self.rollback_disturbances = rollbackDisturbances
         self.NAmat = NAmat
-        self.reporting_ind = reportingIndicators
-        self.rule_manager = TransitionRuleManager(os.path.abspath("{}\\transition_rules.csv".format(self.output_dir)))
+        self.rollback_range = rollback_range
+        self.historic_range = historic_range
+        self.future_range = future_range
+        self.resolution = resolution
+        self.rule_manager = TransitionRuleManager("transition_rules.csv")
         self.layers = []
         self.tiler = None
 
-    def runTiler(self, resolution, createReportingLayers):
-        tasks = [
-            lambda:self.defineBoundingBox(resolution),
-            lambda:self.initializeReportingLayers() if createReportingLayers else None,
-            lambda:self.processHistoricDisturbances(),
-            lambda:self.processRollbackDisturbances(),
-            lambda:self.processProjectedDisturbances(),
-            lambda:self.tiler.tile(layers),
-            lambda:self.rule_manager.write_rules()
-        ]
-        for t in [n for n in tasks if n==None]:
-            t.remove(None)
-        pp = self.ProgressPrinter.newProcess("runTiler", len(tasks)).start()
-        with cleanup():
-            for t in tasks:
-                t()
-                pp.updateProgressV()
+    def scan_for_layers(self, path, filter):
+        return sorted(glob.glob(os.path.join(path, filter)),
+                      key=os.path.basename)
+
+    def defineBoundingBox(self, output_dir):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        cwd = os.getcwd()
+        os.chdir(output_dir)
+        self.bbox = BoundingBox(RasterLayer(self.inventory.getRasters()[0].getPath()), pixel_size=self.resolution)
+        self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
+        os.chdir(cwd)
         pp.finish()
 
-    def defineBoundingBox(self, resolution):
-        self.bbox = BoundingBox(VectorLayer("bbox", self.inventory.getRasterPath(),
-            Attribute(self.inventory.getAgeField()),raw=True), pixel_size=resolution)
-        self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
 
-
-    def processReportingLayers(self):
-
+    def processGeneralLayers(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3],
+            len(self.inventory.getRasters())+len(self.spatial_boundaries.getAttributes())).start()
         for raster in self.inventory.getRasters():
             if raster.getAttrTable() == None:
                 self.layers.append(RasterLayer(raster.getPath()))
@@ -67,56 +62,17 @@ class Tiler(object):
                     nodata_value=255,
                     attributes = [raster.getAttr()],
                     attribute_table = raster.getAttrTable()))
-
-
-        # self.layers.append(VectorLayer(self.inventory.getAgeField(), self.inventory.getShpFilePath(),
-        #     Attribute(self.inventory.getAgeField()), raw=True, data_type=gdal.GDT_Int32))
-        #
-        # for classifier in self.inventory.getClassifiers():
-        #     self.layers.append(VectorLayer(classifier, self.inventory.getShpFilePath(), Attribute(self.inventory.getClassifierAttr(classifier))))
+            pp.updateProgressP()
 
         for attr in self.spatial_boundaries.getAttributes():
             attr_field = self.spatial_boundaries.getAttrField(attr)
-            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPath(),
+            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathPSPU(),
                 Attribute(attr_field)))
+            pp.updateProgressP()
 
         self.layers.append(RasterLayer(self.NAmat.getPath(), nodata_value=1.0e38))
 
-
-    def processHistoricDisturbances(self):
-        for dist in self.historic_disturbances.getDisturbances():
-            self.layers.append(DisturbanceLayer(
-                self.rule_manager,
-                VectorLayer(self.historic_disturbances.getYear(dist), self.historic_disturbances.getShpFilePath(dist), Attribute("Shape_Leng")),
-                year=self.historic_disturbances.getYear(dist),
-                disturbance_type=self.historic_disturbances.getDistType(dist),
-                transition=TransitionRule(
-                    regen_delay=0,
-                    age_after=0)))
-
-# mpb_shp_severity_to_dist_type_lookup = {
-#     "V": "Mountain Pine Beetle – Very Severe Impact",
-#     "S": "Mountain Pine Beetle - Severe Impact",
-#     "M": "Mountain Pine Beetle - Moderate Impact",
-#     "L": "Mountain Pine Beetle - Low Impact",
-#     "4": "Mountain Pine Beetle – Very Severe Impact",
-#     "3": "Mountain Pine Beetle - Severe Impact",
-#     "2": "Mountain Pine Beetle - Moderate Impact",
-#     "1": "Mountain Pine Beetle - Low Impact"
-# }
-#
-# print "Processing Historic MPB Disturbances..."
-# for file_name in scan_for_layers(r"{}\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles".format(spatial_data), "*.shp"):
-#     file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-#     year = int(file_name_no_ext[-4:])
-#     layers.append(DisturbanceLayer(
-#         rule_manager,
-#         VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
-#         year=year,
-#         disturbance_type=Attribute("Severity"),
-#         transition=TransitionRule(
-#             regen_delay=0,
-#             age_after=-1)))
+        pp.finish()
 
 
     def processRollbackDisturbances(self):
@@ -124,14 +80,14 @@ class Tiler(object):
             1: "Wild Fires",
             2: "Clearcut harvesting with salvage"
         }
-
-        rollback_dist_shp = r"C:\Byron\04_100MileHouse\05_working\02_layers\01_external_spatial_data\03_distubances\03_rollbackDisturbances\rollbackDist.shp"
-        for year in range(1990, 2015):
-            for label, dist_code in (("Wild Fires", 1), ("Clearcut harvesting with salvage", 2)):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        for year in range(self.rollback_range[0], self.rollback_range[1]+1):
+            for dist_code in rollback_dist_lookup:
+                label = rollback_dist_lookup[dist_code]
                 self.layers.append(DisturbanceLayer(
-                    rule_manager,
+                    self.rule_manager,
                     VectorLayer("rollback_{}_{}".format(label, year),
-                                rollback_dist_shp,
+                                self.rollback_disturbances.getPath(),
                                 [
                                     Attribute("DistYEAR_n", filter=lambda v, yr=year: v == yr),
                                     Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=rollback_dist_lookup),
@@ -142,44 +98,155 @@ class Tiler(object):
                     transition=TransitionRule(
                         regen_delay=Attribute("RegenDelay"),
                         age_after=0)))
+        pp.finish()
 
+    # def processHistoricDisturbances(self):
+    #     for dist in self.historic_fire.getDisturbances():
+    #         self.layers.append(DisturbanceLayer(
+    #             self.rule_manager,
+    #             VectorLayer(dist.getYear(), dist.getFilePath(), Attribute("Shape_Leng")),
+    #             year=dist.getYear(),
+    #             disturbance_type=dist.getType(),
+    #             transition=TransitionRule(
+    #                 regen_delay=0,
+    #                 age_after=0)))
+    #
+    #     for dist in self.historic_harvest.getDisturbances():
+    #         self.layers.append(DisturbanceLayer(
+    #             self.rule_manager,
+    #             VectorLayer(dist.getYear(), dist.getFilePath(), Attribute("Shape_Leng")),
+    #             year=dist.getYear(),
+    #             disturbance_type=dist.getType(),
+    #             transition=TransitionRule(
+    #                 regen_delay=0,
+    #                 age_after=0)))
 
-    def processProjectedDisturbances(self):
-        futureDistTypeLookup = {
-            11: "Base CC",
-            7: "Wild Fires",
-            13: "SlashBurning",
-            10: "Partial Cut",
-            6: "Base Salvage",
-            2: "Wild Fire",
-            1: "Clearcut harvesting with salvage"
-        }
-        future_start_year = 2010
-
-        print "Processing Future Disturbances..."
-        for file_name in scan_for_layers(r"{}\03_disturbances\02_future\projDist".format(spatial_data), "*.shp"):
+    def processHistoricFireDisturbances(self, dist):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
+            # Assume filenames are like "Wildfire_1990.shp", "Wildfire_NBAC_1991.shp"
+            # i.e. the last 4 characters before the extension are the year.
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-            year = future_start_year + int(file_name_no_ext.split("_")[1])
+            year = file_name_no_ext[-4:]
+            if year in range(self.rollback_range[1], self.historic_range[1]+1):
+                self.layers.append(DisturbanceLayer(
+                    self.rule_manager,
+                    VectorLayer("fire_{}".format(year), file_name, Attribute("Shape_Leng")),
+                    year=year,
+                        disturbance_type="Wild Fires",
+                        transition=TransitionRule(
+                            regen_delay=0,
+                            age_after=0)))
+        pp.finish()
+
+    def processHistoricHarvestDisturbances(self, dist):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
+        for year in range(self.rollback_range[1], self.historic_range[1]+1):
             self.layers.append(DisturbanceLayer(
-                rule_manager,
+                self.rule_manager,
+                VectorLayer("harvest_{}".format(year), cutblock_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
+                year=year,
+                disturbance_type="Clearcut harvesting with salvage",
+                transition=TransitionRule(
+                    regen_delay=0,
+                    age_after=0)))
+        pp.finish()
+
+    def processHistoricMPBDisturbances(self, dist):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        mpb_shp_severity_to_dist_type_lookup = {
+            "V": "Mountain Pine Beetle - Very Severe Impact",
+            "S": "Mountain Pine Beetle - Severe Impact",
+            "M": "Mountain Pine Beetle - Moderate Impact",
+            "L": "Mountain Pine Beetle - Low Impact",
+            "4": "Mountain Pine Beetle - Very Severe Impact",
+            "3": "Mountain Pine Beetle - Severe Impact",
+            "2": "Mountain Pine Beetle - Moderate Impact",
+            "1": "Mountain Pine Beetle - Low Impact"
+        }
+
+        for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
+            file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
+            year = int(file_name_no_ext[-4:])
+            self.layers.append(DisturbanceLayer(
+                self.rule_manager,
+                VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
+                year=year,
+                disturbance_type=Attribute("Severity"),
+                transition=TransitionRule(
+                    regen_delay=0,
+                    age_after=-1)))
+        pp.finish()
+
+    # def processHistoricMPBDisturbances(self, dist):
+    #     # pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+    #     os.chdir(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\02_GCBM_tiled_input\SCEN_TEST4")
+    #     with cleanup():
+    #         mpb_shp_severity_to_dist_type_lookup = {
+    #             "V": "Mountain Pine Beetle - Very Severe Impact",
+    #             "S": "Mountain Pine Beetle - Severe Impact",
+    #             "M": "Mountain Pine Beetle - Moderate Impact",
+    #             "L": "Mountain Pine Beetle - Low Impact",
+    #             "4": "Mountain Pine Beetle - Very Severe Impact",
+    #             "3": "Mountain Pine Beetle - Severe Impact",
+    #             "2": "Mountain Pine Beetle - Moderate Impact",
+    #             "1": "Mountain Pine Beetle - Low Impact"
+    #         }
+    #         layers = []
+    #         bbox = BoundingBox(RasterLayer(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\02_inventory\inv_gridded_1990.shp"), pixel_size=0.001)
+    #         tiler = Tiler2D(bbox, use_bounding_box_resolution=True)
+    #         rule_manager = TransitionRuleManager("transition.csv")
+    #         print "Processing Historic MPB Disturbances..."
+    #         for file_name in self.scan_for_layers(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles", "*.shp"):
+    #             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
+    #             year = int(file_name_no_ext[-4:])
+    #             layers.append(DisturbanceLayer(
+    #                 rule_manager,
+    #                 VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
+    #                 year=year,
+    #                 disturbance_type=Attribute("Severity"),
+    #                 transition=TransitionRule(
+    #                     regen_delay=0,
+    #                     age_after=-1)))
+    #         tiler.tile(layers)
+    #     # pp.finish()
+
+
+    def processProjectedDisturbances(self, dist):
+        pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3],dist.getScenario()), 1).start()
+        futureDistTypeLookup = dist.getLookupTable()
+        future_start_year = self.future_range[0]
+
+        for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
+            file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
+            year = future_start_year + int(file_name_no_ext.split("_")[-1])
+            self.layers.append(DisturbanceLayer(
+                self.rule_manager,
                 VectorLayer("Proj{}_{}".format("Disturbance", year), file_name, Attribute("dist_type_", substitutions=futureDistTypeLookup)),
                 year=year,
                 disturbance_type=Attribute("dist_type_"),
                 transition=TransitionRule(
                     regen_delay=0,
                     age_after=0)))
+        pp.finish()
 
-    def scan_for_layers(self, path, filter):
-        return sorted(glob.glob(os.path.join(path, filter)),
-                      key=os.path.basename)
-
-
+    def runTiler(self, output_dir):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        cwd = os.getcwd()
+        os.chdir(output_dir)
+        with cleanup():
+            self.tiler.tile(self.layers)
+            self.rule_manager.write_rules()
+        os.chdir(cwd)
+        self.layers = []
+        pp.finish()
 
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script
 
-
+'''
 from mojadata.boundingbox import BoundingBox
 from mojadata.tiler2d import Tiler2D
 from mojadata.layer.vectorlayer import VectorLayer
@@ -294,3 +361,4 @@ if __name__ == "__main__":
 
         tiler.tile(layers)
         rule_manager.write_rules()
+'''

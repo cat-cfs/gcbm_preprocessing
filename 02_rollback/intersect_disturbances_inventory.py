@@ -26,9 +26,10 @@ import arcpy
 import inspect
 
 class IntersectDisturbancesInventory(object):
-    def __init__(self, inventory, ProgressPrinter):
+    def __init__(self, inventory, spatialBoundaries, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        self.StudyArea = "'Cranbrook TSA'"
+        self.StudyArea = spatialBoundaries.getFilter()["code"]
+        self.studyAreaOperator = spatialBoundaries.getFilter()["operator"]
         self.invVintage = inventory.getYear()
         rollback_start = 1990
         self.rolledback_years = self.invVintage - rollback_start
@@ -37,7 +38,7 @@ class IntersectDisturbancesInventory(object):
 
         # Field Names
         self.disturbance_fieldName = "DistYEAR"
-        self.studyArea_fieldName = "TSA_NUMBER"
+        self.studyArea_fieldName = spatialBoundaries.getFilter()["field"]
         self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
         self.inv_dist_dateDiff = "Dist_DE_DIFF"
         self.preDistAge = "preDistAge"
@@ -57,7 +58,7 @@ class IntersectDisturbancesInventory(object):
         self.disturbances = r"{}\MergedDisturbances".format(self.inv_workspace)
         self.temp_overlay = r"{}\temp_DisturbedInventory".format(self.inv_workspace)
         self.output = r"{}\DisturbedInventory".format(self.inv_workspace)
-        self.TSABoundary = r"{}\..\01_spatial_reference\TSA_boundaries_2016.shp".format(self.inv_workspace)
+        self.spatial_boundaries = spatialBoundaries.getPathTSA()
 
     def runIntersectDisturbancesInventory(self):
         tasks = [
@@ -84,37 +85,51 @@ class IntersectDisturbancesInventory(object):
             self.rollback_vintage_field,
             self.new_disturbance_field
         ]
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_names), 1).start()
         for field_name in field_names:
             arcpy.AddField_management(self.gridded_inventory, field_name, "LONG", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+            pp.updateProgressP()
+        pp.finish()
 
     def selectInventoryRecords(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         inv_whereClause = '{} < {}'.format(arcpy.AddFieldDelimiters(self.inv_workspace, self.invAge_fieldName), self.rolledback_years)
         arcpy.Select_analysis(self.gridded_inventory, self.inventory_layer3, inv_whereClause)
+        pp.finish()
 
     def clipMergedDisturbances(self):
-        StudyArea_whereClause = '{} = {}'.format(arcpy.AddFieldDelimiters(self.TSABoundary, self.studyArea_fieldName), self.StudyArea)
-        print "Selecting Study area..."
-        arcpy.Select_analysis(self.TSABoundary, self.TSABoundary_layer, StudyArea_whereClause)
-        print "Clipping merged disturbance to study area..."
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        StudyArea_whereClause = '{} {} {}'.format(arcpy.AddFieldDelimiters(self.spatial_boundaries, self.studyArea_fieldName),
+            self.studyAreaOperator, self.StudyArea)
+        # Selecting Study area..."
+        arcpy.Select_analysis(self.spatial_boundaries, self.TSABoundary_layer, StudyArea_whereClause)
+        # Clipping merged disturbance to study area...
         arcpy.MakeFeatureLayer_management(self.disturbances, self.disturbances_layer)
+        pp.finish()
 
     def selectDisturbanceRecords(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         #Select disturbance records that occur before inventory vintage
         dist_whereClause = '{} < {}'.format(arcpy.AddFieldDelimiters(self.disturbances, self.disturbance_fieldName), self.invVintage)
         arcpy.Select_analysis(self.disturbances_layer, self.disturbances_layer2, dist_whereClause)
+        pp.finish()
 
     def intersectLayers(self):
-        print "Intersecting disturbance and Inventory layers..."
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        # Intersecting disturbance and Inventory layers...
         arcpy.Union_analysis([self.inventory_layer3,self.disturbances_layer2], self.temp_overlay, "ALL")
+        pp.finish()
 
     def removeNonConcurring(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         nonConcurrence_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.output, self.nullID_field), 0)
-        print "Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place..."
+        # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
         print nonConcurrence_whereClause
         arcpy.Select_analysis(self.temp_overlay, self.output, nonConcurrence_whereClause)
-        print "Reparing Geometry..."
+        # Repairing Geometry...
         arcpy.RepairGeometry_management(self.output, "DELETE_NULL")
-        print(arcpy.GetMessages())
+        # print(arcpy.GetMessages())
+        pp.finish()
 
 
 
