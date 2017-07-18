@@ -52,23 +52,21 @@ class Tiler(object):
 
 
     def processGeneralLayers(self):
-        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3],
-            len(self.inventory.getRasters())+len(self.spatial_boundaries.getAttributes())).start()
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3],1).start()
         for raster in self.inventory.getRasters():
             if raster.getAttrTable() == None:
                 self.layers.append(RasterLayer(raster.getPath()))
             else:
+                print raster.getAttrTable()
                 self.layers.append(RasterLayer(raster.getPath(),
                     nodata_value=255,
                     attributes = [raster.getAttr()],
                     attribute_table = raster.getAttrTable()))
-            pp.updateProgressP()
 
         for attr in self.spatial_boundaries.getAttributes():
             attr_field = self.spatial_boundaries.getAttrField(attr)
             self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathPSPU(),
                 Attribute(attr_field)))
-            pp.updateProgressP()
 
         self.layers.append(RasterLayer(self.NAmat.getPath(), nodata_value=1.0e38))
 
@@ -128,7 +126,7 @@ class Tiler(object):
             # i.e. the last 4 characters before the extension are the year.
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
             year = file_name_no_ext[-4:]
-            if year in range(self.rollback_range[1], self.historic_range[1]+1):
+            if year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
                     VectorLayer("fire_{}".format(year), file_name, Attribute("Shape_Leng")),
@@ -142,7 +140,8 @@ class Tiler(object):
     def processHistoricHarvestDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
-        for year in range(self.rollback_range[1], self.historic_range[1]+1):
+        print cutblock_shp
+        for year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
                 VectorLayer("harvest_{}".format(year), cutblock_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
@@ -221,14 +220,15 @@ class Tiler(object):
         for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
             year = future_start_year + int(file_name_no_ext.split("_")[-1])
-            self.layers.append(DisturbanceLayer(
-                self.rule_manager,
-                VectorLayer("Proj{}_{}".format("Disturbance", year), file_name, Attribute("dist_type_", substitutions=futureDistTypeLookup)),
-                year=year,
-                disturbance_type=Attribute("dist_type_"),
-                transition=TransitionRule(
-                    regen_delay=0,
-                    age_after=0)))
+            if year in range(self.historic_range[1]+1, self.future_range[1]+1):
+                self.layers.append(DisturbanceLayer(
+                    self.rule_manager,
+                    VectorLayer("Proj{}_{}".format("Disturbance", year), file_name, Attribute("dist_type_", substitutions=futureDistTypeLookup)),
+                    year=year,
+                    disturbance_type=Attribute("dist_type_"),
+                    transition=TransitionRule(
+                        regen_delay=0,
+                        age_after=0)))
         pp.finish()
 
     def runTiler(self, output_dir):

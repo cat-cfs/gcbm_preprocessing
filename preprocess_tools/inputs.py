@@ -98,7 +98,10 @@ class Inventory(object):
 			"regen_delay": "RegenDelay",
 			"pre_dist_age": "preDistAge",
 			"rollback_vintage": "Age1990",
-			"species": "LeadSpp"
+			"species": "LeadSpp",
+			"ownership": "Own",
+			"FMLB": "FMLB",
+			"THLB": "THLB"
 		}
 		if self._field_names != None:
 			field_names.update(self._field_names)

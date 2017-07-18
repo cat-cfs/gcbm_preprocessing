@@ -3,6 +3,7 @@
 ## Imports
 import archook
 archook.get_arcpy()
+import arcpy
 import os
 import preprocess_tools
 import cPickle
@@ -12,6 +13,18 @@ tiler = __import__("03_tiler")
 recliner2GCBM = __import__("04_recliner2GCBM")
 
 if __name__=="__main__":
+
+    ### Data Prep
+    # inpout = [
+    #     ()
+    # ]
+    # for input, output in [()
+    # print "Clipping...",
+    # arcpy.Clip_analysis(r'G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\BC_cutblocks90_15.shp',
+    #     r'G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\00_Workspace.gdb\inventory_gridded',
+    #     r'G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\clipped\harvest_clipped.shp', "")
+    # print "Done"
+
     ### Variables
     # Tile resolution in degrees
     resolution = 0.001
@@ -45,8 +58,8 @@ if __name__=="__main__":
     NBAC_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles"
     NBAC_filter = "NBAC*.shp"
     NBAC_year_field = "EDATE"
-    harvest_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest"
-    harvest_filter = "BC_cutblocks90_15.shp"
+    harvest_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\clipped"
+    harvest_filter = "harvest_clipped.shp"
     harvest_year_field = "HARV_YR"
     MPB_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles"
     MPB_filter = "mpb*.shp"
@@ -65,7 +78,8 @@ if __name__=="__main__":
 
     historic_range = [1990,2014]
     rollback_range = [1990,2010]
-    future_range = [2015,2050]
+    future_range = [2010,2050]
+    activity_start_year = 2018
 
     rollbackInvOut = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\02_inventory"
     rollbackDistOut = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\03_rollbackDisturbances\rollbackDist.shp"
@@ -101,8 +115,8 @@ if __name__=="__main__":
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
     historicMPB = preprocess_tools.inputs.HistoricDisturbance(MPB_workspace, MPB_filter, None)
-    historicDisturbances = [historicFire1, historicFire2, historicHarvest, historicMPB]
-    standReplHistoricDisturbances = [historicFire1, historicFire2, historicHarvest]
+    # historicDisturbances = [historicFire1, historicFire2, historicHarvest, historicMPB]
+    # standReplHistoricDisturbances = [historicFire1, historicFire2, historicHarvest]
 
     projectedDistBase = preprocess_tools.inputs.ProjectedDisturbance(projScenBase_workspace, projScenBase_filter, "Base", projScenBase_lookuptable)
     projectedDisturbances = []
@@ -154,14 +168,14 @@ if __name__=="__main__":
     #     inp = os.path.basename(file).split(".")[0]
     #     if inp in inputs:
     #         with open(os.path.join("objects", file)) as obj:
-    #         inputs[inp] = cPickle.load(obj)
+    #           inputs[inp] = cPickle.load(obj)
 
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
     fish1ha = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
     tileId = gridGeneration.create_grid.TileID(inventory.workspace, tiles, PP)
     inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, PP)
-    mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory.workspace, standReplHistoricDisturbances, PP)
+    mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory.workspace, [historicFire1, historicFire2, historicHarvest], PP)
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
     calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, PP)
@@ -205,12 +219,12 @@ if __name__=="__main__":
         # -- Run Tiler
         tiler.defineBoundingBox(tiler_output_dir)
         tiler.processGeneralLayers()
-        tiler.processRollbackDisturbances()
-        tiler.processHistoricFireDisturbances(historicFire1)
-        tiler.processHistoricFireDisturbances(historicFire2)
-        # tiler.processHistoricHarvestDisturbances(historicHarvest)
-        tiler.processHistoricMPBDisturbances(historicMPB)
-        tiler.processProjectedDisturbances(projectedDistBase)
+        # tiler.processRollbackDisturbances()
+        # tiler.processHistoricFireDisturbances(historicFire1)
+        # tiler.processHistoricFireDisturbances(historicFire2)
+        tiler.processHistoricHarvestDisturbances(historicHarvest)
+        # tiler.processHistoricMPBDisturbances(historicMPB)
+        # tiler.processProjectedDisturbances(projectedDistBase)
         tiler.runTiler(tiler_output_dir)
         # -- Prep and run recliner2GCBM
         # transitionRules = r2GCBM.prepTransitionRules(transitionRules)
@@ -231,5 +245,33 @@ if __name__=="__main__":
             os.mkdir('objects')
         for inp in inputs:
             with open(r'objects\{}.pkl'.format(inp), 'wb') as out:
-            cPickle.dump(inp, out)
+                cPickle.dump(inp, out)
+        raise
+
+def save_objects():
+    try:
+        if not os.path.exists('objects'):
+            os.mkdir('objects')
+        cPickle.dump(inventory, open(r'objects\inventory.pkl'))
+        cPickle.dump(rollbackDisturbances, open(r'objects\rollbackDisturbances.pkl'))
+        cPickle.dump(historicFire1, open(r'objects\historicFire1.pkl'))
+        cPickle.dump(historicFire2, open(r'objects\historicFire2.pkl'))
+        cPickle.dump(historicHarvest, open(r'objects\historicHarvest.pkl'))
+        cPickle.dump(historicMPB, open(r'objects\historicMPB.pkl'))
+        cPickle.dump(projectedDistBase, open(r'objects\projectedDistBase.pkl'))
+    except:
+        print "Failed to save objects."
+        raise
+
+def load_objects():
+    try:
+        inventory = cPickle.load(open(r'objects\inventory.pkl'))
+        rollbackDisturbances = cPickle.load(open(r'objects\rollbackDisturbances.pkl'))
+        historicFire1 = cPickle.load(open(r'objects\historicFire1.pkl'))
+        historicFire2 = cPickle.load(open(r'objects\historicFire2.pkl'))
+        historicHarvest = cPickle.load(open(r'objects\historicHarvest.pkl'))
+        historicMPB = cPickle.load(open(r'objects\historicMPB.pkl'))
+        projectedDistBase = cPickle.load(open(r'objects\projectedDistBase.pkl'))
+    except:
+        print "Failed to load objects."
         raise

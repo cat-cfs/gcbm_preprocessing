@@ -310,8 +310,11 @@ class updateInvRollback(object):
         print "\tExporting rolledback inventory to raster..."
         classifier_names = self.inventory.getClassifiers()
         fields = {
-            "age": self.inventory.getFieldNames()["age"],
-            "species": self.inventory.getFieldNames()["species"]
+            "age": "Age1990",
+            "species": self.inventory.getFieldNames()["species"],
+            "ownership": self.inventory.getFieldNames()["ownership"],
+            "FMLB": self.inventory.getFieldNames()["FMLB"],
+            "THLB": self.inventory.getFieldNames()["THLB"]
         }
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)
@@ -319,12 +322,14 @@ class updateInvRollback(object):
             arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path)
             self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
+            arcpy.DeleteField_management(file_path, field_name)
         for attr in fields:
             field_name = fields[attr]
             file_path = os.path.join(self.rasterOutput,"{}.tif".format(attr))
             arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path)
             self.inventory.addRaster(file_path, attr, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
+            arcpy.DeleteField_management(file_path, field_name)
 
 
         #Export rollback disturbances
@@ -338,9 +343,9 @@ class updateInvRollback(object):
     def createAttributeTable(self, dbf_path, field_name):
         attr_table = {}
         for row in DBF(dbf_path):
-            if len(row)<4:
+            if len(row)<3:
                 return None
-            attr_table.update({row["Value"]: row[field_name]})
+            attr_table.update({row.items()[0][1]: [row.items()[-1][1]]})
         return attr_table
 
 
