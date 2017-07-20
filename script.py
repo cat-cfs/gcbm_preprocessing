@@ -35,9 +35,9 @@ if __name__=="__main__":
 
     ## Inventory
     # Path the the inventory gdb workspace
-    inventory_path = "G:\\Nick\\GCBM\\05_Test_Automation\\05_working\\02_layers\\01_external_spatial_data\\00_Workspace.gdb"
+    inventory_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\00_Workspace.gdb"
     # Layer name of the inventory in the gdb
-    inventory_layer = "tsaTEST"
+    inventory_layer = "inv_reprojected"
     # The age field name in the inventory layer
     inventory_age_field = "Age2011"
     # The starting year of the inventory
@@ -49,7 +49,7 @@ if __name__=="__main__":
         "AU": "AU"
     }
     # Reproject the inventory into WGS 1984
-    reproject_inventory = True
+    reproject_inventory = False
 
     ## Disturbances
     NFDB_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles"
@@ -87,8 +87,8 @@ if __name__=="__main__":
     recliner2gcbm_output_path = r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\gcbm.db"
 
     spatial_reference = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\01_spatial_reference"
-    spatial_boundaries_tsa = os.path.join(spatial_reference, "TSA_boundaries_2016.shp")
-    spatial_boundaries_pspu = os.path.join(spatial_reference, "PSPUS_2016.shp")
+    spatial_boundaries_tsa = "TSA_boundaries_2016.shp"
+    spatial_boundaries_pspu = "PSPUS_2016.shp"
     study_area_filter = {
         "field": "TSA_NUMBER",
         "code": "'Cranbrook TSA'"
@@ -106,8 +106,8 @@ if __name__=="__main__":
     GCBMScenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
 
     ### Initialize inputs
-    inventory = preprocess_tools.inputs.Inventory(path=inventory_path, layer=inventory_layer,
-        age_field=inventory_age_field, year=inventory_year, classifiers_attr=inv_classifier_attr)
+    inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
+        year=inventory_year, classifiers_attr=inv_classifier_attr)
     if reproject_inventory == True:
         inventory.reproject("inv_reprojected")
 
@@ -137,10 +137,10 @@ if __name__=="__main__":
     # histFireColl = historicFire.createDisturbanceCollection(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\05_disturbance_collections\fire.gdb")
 
 
-    spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_boundaries_tsa, spatial_boundaries_pspu,
+    spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
 
-    NAmat = preprocess_tools.inputs.NAmericaMAT(NAmat_path)
+    NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
 
     rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollbackDistOut)
 
@@ -163,19 +163,13 @@ if __name__=="__main__":
         "yieldTable":yieldTable,
         "AIDB":AIDB
     }
-    ### Load previous configuration
-    # for file in os.listdir("objects"):
-    #     inp = os.path.basename(file).split(".")[0]
-    #     if inp in inputs:
-    #         with open(os.path.join("objects", file)) as obj:
-    #           inputs[inp] = cPickle.load(obj)
 
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
     fish1ha = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
-    tileId = gridGeneration.create_grid.TileID(inventory.workspace, tiles, PP)
+    tileId = gridGeneration.create_grid.TileID(inventory.getWorkspace(), tiles, PP)
     inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, PP)
-    mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory.workspace, [historicFire1, historicFire2, historicHarvest], PP)
+    mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory.getWorkspace(), [historicFire1, historicFire2, historicHarvest], PP)
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
     calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, PP)
@@ -198,17 +192,17 @@ if __name__=="__main__":
     ### Execute Functions
     try:
         # -- Grid generation
-        # fish1ha.createFishnet()
-        # tileId.runTileID()
+        fish1ha.createFishnet()
+        tileId.runTileID()
         # -- Grid inventory
-        # inventoryGridder.gridInventory()
+        inventoryGridder.gridInventory()
         # -- Clip all inputs to inventory bbox
         # clipper.Clip(spatial_inputs)
         # -- Start of rollback
         # mergeDist.runMergeDisturbances()
-        # intersect.runIntersectDisturbancesInventory()
-        # calcDistDEdiff.calculateDistDEdifference()
-        # calcNewDistYr.calculateNewDistYr()
+        intersect.runIntersectDisturbancesInventory()
+        calcDistDEdiff.calculateDistDEdifference()
+        calcNewDistYr.calculateNewDistYr()
         updateInv.updateInvRollback()
         # -- End of rollback
         # -- Prep Tiler

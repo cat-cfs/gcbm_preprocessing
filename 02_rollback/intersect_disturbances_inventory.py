@@ -28,17 +28,17 @@ import inspect
 class IntersectDisturbancesInventory(object):
     def __init__(self, inventory, spatialBoundaries, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        self.StudyArea = spatialBoundaries.getFilter()["code"]
-        self.studyAreaOperator = spatialBoundaries.getFilter()["operator"]
+        self.StudyArea = spatialBoundaries.getAreaFilter()["code"]
+        self.studyAreaOperator = spatialBoundaries.getAreaFilter()["operator"]
         self.invVintage = inventory.getYear()
         rollback_start = 1990
         self.rolledback_years = self.invVintage - rollback_start
-        self.inv_workspace = inventory.workspace
-        self.invAge_fieldName = inventory.getAgeField()
+        self.inv_workspace = inventory.getWorkspace()
+        self.invAge_fieldName = inventory.getFieldNames()['age']
 
         # Field Names
         self.disturbance_fieldName = "DistYEAR"
-        self.studyArea_fieldName = spatialBoundaries.getFilter()["field"]
+        self.studyArea_fieldName = spatialBoundaries.getAreaFilter()["field"]
         self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
         self.inv_dist_dateDiff = "Dist_DE_DIFF"
         self.preDistAge = "preDistAge"
@@ -124,7 +124,7 @@ class IntersectDisturbancesInventory(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         nonConcurrence_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.output, self.nullID_field), 0)
         # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
-        print nonConcurrence_whereClause
+        # print nonConcurrence_whereClause
         arcpy.Select_analysis(self.temp_overlay, self.output, nonConcurrence_whereClause)
         # Repairing Geometry...
         arcpy.RepairGeometry_management(self.output, "DELETE_NULL")

@@ -1,66 +1,129 @@
 import arcpy
 import gcbm_aws
 import os
+import glob
 
-class Inventory(object):
-	def __init__(self, path, layer, age_field, year, classifiers_attr, field_names=None):
-		if path.split('.')[-1] == "gdb":
-			self.workspace = path
-			arcpy.env.workspace = self.workspace
-		else:
-			workspace = None
-		self._path = path
-		self._layer_name = layer
-		self._age_field = age_field
+class SpatialInputs(object):
+	def __init__(self, workspace, filter):
+		self._workspace = workspace
+		self._filter = filter
+
+	def getWorkspace(self):
+		return self._workspace
+
+	def getFilter(self):
+		return self._filter
+
+	def reproject(self, new_workspace, name=None):
+		# Project the layer from NAD 1983 to WGS 1984
+		if not os.path.exists(new_workspace):
+			if '.gdb' in os.path.basename(new_workspace):
+				if os.path.exists(os.path.dirname(new_workspace)):
+					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
+				else:
+					os.makedirs(os.path.dirname(new_workspace))
+					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
+			else:
+				os.makedirs(new_workspace)
+		arcpy.env.overwriteOutput = True
+		transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
+		output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
+		print "Reprojecting {}... ".format(self.getFilter()),
+		for layer in self.scan_for_layers():
+			if name==None:
+				arcpy.Project_management(layer, os.path.join(new_workspace, os.path.basename(layer)), output_proj, transform_method, "", "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
+			else:
+				arcpy.Project_management(layer, os.path.join(new_workspace, name), output_proj, transform_method, "", "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
+				self._filter = name
+				break
+		self._workspace = new_workspace
+		print "Done"
+
+	def clip(self, clip_feature, new_workspace, name=None):
+		if not os.path.exists(new_workspace):
+			if '.gdb' in os.path.basename(new_workspace):
+				if os.path.exists(os.path.dirname(new_workspace)):
+					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
+				else:
+					os.makedirs(os.path.dirname(new_workspace))
+					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
+			else:
+				os.makedirs(new_workspace)
+		print "Clipping {}... ".format(self.getFilter()),
+		for layer in self.scan_for_layers():
+			if name==None:
+				# new_layer = os.path.join(new_workspace, os.path.basename(layer))
+				# arcpy.FeatureClassToGeodatabase_conversion(layer, "in_memory/intersect")
+				# arcpy.SelectLayerByLocation_management("in_memory/intersect", "INTERSECT", clip_feature, "", "NEW_SELECTION", "NOT_INVERT")
+				# arcpy.FeatureClassToFeatureClass_conversion("in_memory/intersect", new_workspace)
+				arcpy.Clip_analysis(layer, clip_feature, os.path.join(new_workspace, os.path.basename(layer)), "")
+			else:
+				# new_layer = os.path.join(new_workspace, os.path.basename(layer))
+				# arcpy.MakeFeatureLayer_management(layer, new_layer)
+				# arcpy.SelectLayerByLocation_management(new_layer, 'intersect', clip_feature)
+				arcpy.Clip_analysis(layer, clip_feature, os.path.join(new_workspace, name), "")
+				self._filter = name
+				break
+		self._workspace = new_workspace
+		print "Done"
+
+	def scan_for_layers(self):
+		return sorted(glob.glob(os.path.join(self.getWorkspace(), self.getFilter())), key=os.path.basename)
+
+class Inventory(SpatialInputs):
+	def __init__(self, workspace, filter, year, classifiers_attr, field_names=None):
+		self._workspace = workspace
+		self._filter = filter
 		self._year = year
 		self._bounding_box = self.getBoundingBox()
 		self._field_names = field_names
 		self._classifiers_attr = classifiers_attr
 		self._rasters = []
 
-	def getPath(self):
-		return self._path
+	def getWorkspace(self):
+		return self._workspace
 
-	def setPath(self, path):
-		self._path = path
+	def setWorkspace(self, path):
+		self._workspace = path
 
 	def getLayerName(self):
-		return self._layer_name
+		return self._filter
 
 	def setLayerName(self, layer):
-		self._layer_name = layer
+		self._filter = layer
 
-	def getAgeField(self):
-		return self._age_field
+	def getFilter(self):
+		return self._filter
 
 	def getYear(self):
 		return self._year
 
-	def reproject(self, new_name):
-		print "Reprojecting Inventory... ",
-		arcpy.env.overwriteOutput = True
-		#PROJECTIONS
-		#method
-		transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
-		#input
-		input_proj = "PROJCS['PCS_Albers',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',1000000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-126.0],PARAMETER['Standard_Parallel_1',50.0],PARAMETER['Standard_Parallel_2',58.5],PARAMETER['Latitude_Of_Origin',45.0],UNIT['Meter',1.0]]"
-		#output
-		output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
-		# Process: Project
-		new_path = os.path.join(self._path, new_name)
-		arcpy.Project_management(os.path.join(self._path, self._layer_name), new_path, output_proj,
-			transform_method, input_proj, "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
-		self._layer_name = new_name
-		self._bounding_box = self.getBoundingBox()
-		print "Done"
+	# def reproject(self, new_layer):
+	# 	print "Reprojecting Inventory... ",
+	# 	arcpy.env.overwriteOutput = True
+	# 	#PROJECTIONS
+	# 	#method
+	# 	transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
+	# 	#input
+	# 	input_proj = "PROJCS['PCS_Albers',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',1000000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-126.0],PARAMETER['Standard_Parallel_1',50.0],PARAMETER['Standard_Parallel_2',58.5],PARAMETER['Latitude_Of_Origin',45.0],UNIT['Meter',1.0]]"
+	# 	#output
+	# 	output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
+	# 	# Process: Project
+	# 	new_path = os.path.join(self._workspace, new_layer)
+	# 	arcpy.Project_management(os.path.join(self._workspace, self._filter), new_path, output_proj,
+	# 		transform_method, input_proj, "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
+	# 	self._filter = new_layer
+	# 	self._bounding_box = self.getBoundingBox()
+	# 	print "Done"
 
 	def getBoundingBox(self):
-		desc = arcpy.Describe(self._layer_name)
+		arcpy.env.workspace = self._workspace
+		desc = arcpy.Describe(self._filter)
 		e = desc.extent
 		return [e.XMin, e.YMin, e.XMax, e.YMax]
 
 	def getBoundingBoxD(self):
-		extent = list(gcbm_aws.util.get_bbox(self._path, self._layer_name))
+		extent = list(gcbm_aws.util.get_bbox(self._workspace, self._layer_name))
 		return extent
 
 	def getBottomLeftCorner(self):
@@ -203,23 +266,15 @@ class YieldTable(object):
 #     def getName(self):
 #         return self._name
 
-class HistoricDisturbances(object):
-    def __init__(self):
-        pass
 
-class ProjectedDisturbances(object):
-    def __init__(self):
-        pass
+class NAmericaMAT(SpatialInputs):
+	def __init__(self, workspace, filter):
+		self._workspace = workspace
+		self._filter = filter
 
-class NAmericaMAT(object):
-    def __init__(self, path):
-        self._path = path
+	def getPath(self):
+		return os.path.join(self._workspace, self._filter)
 
-    def getPath(self):
-    	return self._path
-
-    def setPath(self, path):
-    	self._path = path
 
 class AIDB(object):
 	def __init__(self, path):
@@ -231,16 +286,25 @@ class AIDB(object):
 	def setPath(self):
 		self._path = path
 
-class SpatialBoundaries(object):
-	def __init__(self, path_tsa, path_pspu, type, filter, attributes):
-		self._path_tsa = path_tsa
-		self._path_pspu = path_pspu
+class SpatialBoundaries(SpatialInputs):
+	def __init__(self, workspace, filter_tsa, filter_pspu, type, area_filter, attributes):
+		self._workspace = workspace
+		self._path_tsa = os.path.join(workspace, filter_tsa)
+		self._path_pspu = os.path.join(workspace, filter_pspu)
 		self._type = type
 		self._attributes = attributes
-		if "field" and "code" in filter:
-			self._filter = filter
-			if "operator" not in filter:
-				self._filter.update({"operator": "="})
+		if "field" and "code" in area_filter:
+			self._area_filter = area_filter
+			if "operator" not in area_filter:
+				self._area_filter.update({"operator": "="})
+		else:
+			print "Warning: invalid area filter object"
+
+	def getWorkspace(self):
+		return self._workspace
+
+	def getFilter(self):
+		return "*.shp"
 
 	def getPathTSA(self):
 		return self._path_tsa
@@ -249,16 +313,18 @@ class SpatialBoundaries(object):
 		return self._path_pspu
 
 	def setPathTSA(self, path):
+		self._workspace = os.path.dirname(path)
 		self._path_tsa = path
 
 	def setPathPSPU(self, path):
+		self._workspace = os.path.dirname(path)
 		self._path_pspu = path
 
 	def getType(self):
 		return self._type
 
-	def getFilter(self):
-		return self._filter
+	def getAreaFilter(self):
+		return self._area_filter
 
 	def getAttributes(self):
 		return [a for a in self._attributes]
@@ -284,7 +350,7 @@ class RollbackDisturbances(object):
 	def getPath(self):
 		return self._path
 
-class HistoricDisturbance(object):
+class HistoricDisturbance(SpatialInputs):
 	def __init__(self, workspace, filter, year_field):
 		self._workspace = workspace
 		self._filter = filter
@@ -299,7 +365,7 @@ class HistoricDisturbance(object):
 	def getYearField(self):
 		return self._year_field
 
-class ProjectedDisturbance(object):
+class ProjectedDisturbance(SpatialInputs):
 	def __init__(self, workspace, filter, scenario, lookup_table):
 		self._workspace = workspace
 		self._filter = filter

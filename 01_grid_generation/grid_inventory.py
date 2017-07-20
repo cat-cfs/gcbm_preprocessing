@@ -29,17 +29,18 @@ import inspect
 class GridInventory(object):
     def __init__(self, inventory, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.workspace = inventory.workspace
+        arcpy.env.workspace = inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
+        arcpy.Delete_management("in_memory")
 
-        self.inventory_path = r"{}\{}".format(inventory.workspace, inventory.getLayerName())
-        self.grid = r"{}\XYgrid".format(inventory.workspace)
-        self.gridded_inventory = r"{}\inventory_gridded".format(inventory.workspace)
+        self.inventory_path = r"{}\{}".format(inventory.getWorkspace(), inventory.getLayerName())
+        self.grid = r"{}\XYgrid".format(inventory.getWorkspace())
+        self.gridded_inventory = r"{}\inventory_gridded".format(inventory.getWorkspace())
 
         self.inventory_layer = r"in_memory\inventory_layer"
         self.inventory_layer2 = r"in_memory\inventory_layer2"
 
-        self.invAge_fieldName = inventory.getAgeField()
+        self.invAge_fieldName = inventory.getFieldNames()['age']
 
     def gridInventory(self):
         tasks = [

@@ -11,7 +11,7 @@ from dbfread import DBF
 class CalculateDistDEdifference(object):
     def __init__(self, inventory, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.workspace = inventory.workspace
+        arcpy.env.workspace = inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
 
         # VARIABLES:
@@ -19,7 +19,7 @@ class CalculateDistDEdifference(object):
         self.disturbedInventory_layer = "disturbedInventory_layer"
 
         #local variables
-        self.invAge_fieldName = inventory.getAgeField()
+        self.invAge_fieldName = inventory.getFieldNames()['age']
         self.invVintage = inventory.getYear()
         self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
         self.disturbance_fieldName = "DistYEAR"
@@ -64,7 +64,7 @@ class CalculateDistDEdifference(object):
 class CalculateNewDistYr(object):
     def __init__(self, inventory, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.workspace = inventory.workspace
+        arcpy.env.workspace = inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
 
         #local variables
@@ -207,7 +207,7 @@ class RollbackDistributor(object):
 class updateInvRollback(object):
     def __init__(self, inventory, rollbackInvOut, rollbackDistOut, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        workspace = inventory.workspace
+        workspace = inventory.getWorkspace()
         arcpy.env.workspace = workspace
         arcpy.env.overwriteOutput = True
         self.inventory = inventory

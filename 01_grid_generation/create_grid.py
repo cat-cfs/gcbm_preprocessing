@@ -25,9 +25,8 @@ from tileID import TileID
 
 class Fishnet(object):
 	def __init__(self, inventory, resolution_degrees, ProgressPrinter):
-		arcpy.env.workspace = inventory.workspace
+		arcpy.env.workspace = inventory.getWorkspace()
 		arcpy.env.overwriteOutput=True
-		self.workspace = inventory.workspace
 		self.ProgressPrinter = ProgressPrinter
 		oCorner = inventory.getBottomLeftCorner()
 		tCorner = inventory.getTopRightCorner()
@@ -182,7 +181,7 @@ class TileID(object):
 
 		max = cur.next().getValue("Y_ID")
 		print "\tMax value for gridding is:", max
-		division = round(max / self.numberofTiles,0) +1
+		division = int(max / self.numberofTiles) +1
 		print "\tTiles will be split every", division, "records."
 		for row in cur:
 		    # The variable 'age' will get the value from the column

@@ -57,7 +57,6 @@ class Tiler(object):
             if raster.getAttrTable() == None:
                 self.layers.append(RasterLayer(raster.getPath()))
             else:
-                print raster.getAttrTable()
                 self.layers.append(RasterLayer(raster.getPath(),
                     nodata_value=255,
                     attributes = [raster.getAttr()],
@@ -140,7 +139,6 @@ class Tiler(object):
     def processHistoricHarvestDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
-        print cutblock_shp
         for year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
