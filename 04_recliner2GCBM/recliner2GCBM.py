@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import subprocess
+import inspect
 
 class Recliner2GCBM(object):
     def __init__(self, config_dir, output_path, transitionRules, yieldTable, aidb, ProgressPrinter, exe_path=None):
@@ -17,6 +18,7 @@ class Recliner2GCBM(object):
         self.aidb = aidb
 
     def runRecliner2GCBM(self, custom_settings=None):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         default_config = {
             "Project":{
                 "Mode":0,
@@ -41,7 +43,7 @@ class Recliner2GCBM(object):
                 # }
             ],
             "GrowthCurves":{
-                "Path":self.yield_table.getFilePath(),
+                "Path":self.yield_table.getPath(),
                 "Page":0,
                 "Header":self.yield_table.isHeader(),
                 "SpeciesCol":self.yield_table.getSpeciesCol(),
@@ -60,7 +62,7 @@ class Recliner2GCBM(object):
                 ]
             },
             "TransitionRules":{
-                "Path":self.transition_rules.getFilePath(),
+                "Path":self.transition_rules.getPath(),
                 "Page":0,
                 "Header":self.transition_rules.isHeader(),
                 "NameCol":self.transition_rules.getNameCol(),
@@ -83,7 +85,7 @@ class Recliner2GCBM(object):
             default_config["ClassifierSet"].append(
                 {
                     "Name": classifier,
-                    "Path": self.yield_table.getFilePath(),
+                    "Path": self.yield_table.getPath(),
                     "Page": 0,
                     "Column": self.yield_table.getClassifierCol(classifier),
                     "Header": self.yield_table.isHeader()
@@ -108,10 +110,12 @@ class Recliner2GCBM(object):
             json.dump(default_config, config)
         run = subprocess.Popen([self.exe_path, "-c", config_path])
         run.communicate()
+        pp.finish()
 
     def prepTransitionRules(self, transitionRules):
-        out = os.path.join(self.config_dir, os.path.basename(transitionRules.getFilePath()))
-        with open(transitionRules.getFilePath(), "r") as transitionRules_in, open(out, "w") as transitionRules_out:
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        out = os.path.join(self.config_dir, os.path.basename(transitionRules.getPath()))
+        with open(transitionRules.getPath(), "r") as transitionRules_in, open(out, "w") as transitionRules_out:
             reader = csv.reader(transitionRules_in)
             writer = csv.writer(transitionRules_out, lineterminator="\n")
             all_rows = []
@@ -129,8 +133,10 @@ class Recliner2GCBM(object):
                     row.append("?")
                 all_rows.append(row)
             writer.writerows(all_rows)
-        transitionRules.setFilePath(out)
+        transitionRules.setPath(out)
+        self.transition_rules = transitionRules
+        pp.finish()
         return transitionRules
 
     def prepYieldTable(self, yieldTable):
-        pass
+        return yieldTable

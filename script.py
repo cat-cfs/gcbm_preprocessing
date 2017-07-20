@@ -12,30 +12,63 @@ rollback = __import__("02_rollback")
 tiler = __import__("03_tiler")
 recliner2GCBM = __import__("04_recliner2GCBM")
 
+def save_objects():
+    try:
+        if not os.path.exists('objects'):
+            os.mkdir('objects')
+        cPickle.dump(inventory, open(r'objects\inventory.pkl', 'wb'))
+        cPickle.dump(rollbackDisturbances, open(r'objects\rollbackDisturbances.pkl', 'wb'))
+        cPickle.dump(historicFire1, open(r'objects\historicFire1.pkl', 'wb'))
+        cPickle.dump(historicFire2, open(r'objects\historicFire2.pkl', 'wb'))
+        cPickle.dump(historicHarvest, open(r'objects\historicHarvest.pkl', 'wb'))
+        cPickle.dump(historicMPB, open(r'objects\historicMPB.pkl', 'wb'))
+        cPickle.dump(projectedDistBase, open(r'objects\projectedDistBase.pkl', 'wb'))
+    except:
+        print "Failed to save objects."
+        raise
+
+def load_objects():
+    try:
+        inventory = cPickle.load(open(r'objects\inventory.pkl'))
+        rollbackDisturbances = cPickle.load(open(r'objects\rollbackDisturbances.pkl'))
+        historicFire1 = cPickle.load(open(r'objects\historicFire1.pkl'))
+        historicFire2 = cPickle.load(open(r'objects\historicFire2.pkl'))
+        historicHarvest = cPickle.load(open(r'objects\historicHarvest.pkl'))
+        historicMPB = cPickle.load(open(r'objects\historicMPB.pkl'))
+        projectedDistBase = cPickle.load(open(r'objects\projectedDistBase.pkl'))
+    except:
+        print "Failed to load objects."
+        raise
+
+
+###############################################################################
+#                            Required Inputs (BC)
+# Inventory
+# Historic Fire Disturbances (NFDB, NBAC)
+# Historic Harvest Disturbances (BC Cutblocks)
+# Historic MPB Disturbances
+# Projected Disturbances
+# Spatial Boundaries (TSA and PSPU)
+# NAmerica MAT (Mean Annual Temperature) tiff
+# Yield Table (Growth Curves) with AIDB species matching column
+# AIDB (pre-setup with disturbance matrix values etc.)
+###############################################################################
+
 if __name__=="__main__":
-
-    ### Data Prep
-    # inpout = [
-    #     ()
-    # ]
-    # for input, output in [()
-    # print "Clipping...",
-    # arcpy.Clip_analysis(r'G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\BC_cutblocks90_15.shp',
-    #     r'G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\00_Workspace.gdb\inventory_gridded',
-    #     r'G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\clipped\harvest_clipped.shp', "")
-    # print "Done"
-
     ### Variables
+    # directory path to the working directory for relative paths
+    working_directory = r'G:\Nick\GCBM\05_Test_Automation\05_working'
     # Tile resolution in degrees
     resolution = 0.001
     # Deprecated ?
     tiles = 1
 
+    # Set true to enable rollback
     rollback_enabled = True
 
     ## Inventory
     # Path the the inventory gdb workspace
-    inventory_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\00_Workspace.gdb"
+    inventory_workspace = r"{}\02_layers\01_external_spatial_data\00_Workspace.gdb".format(working_directory)
     # Layer name of the inventory in the gdb
     inventory_layer = "inv_reprojected"
     # The age field name in the inventory layer
@@ -52,19 +85,22 @@ if __name__=="__main__":
     reproject_inventory = False
 
     ## Disturbances
-    NFDB_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles"
+    # directory or geodatabase
+    NFDB_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles".format(working_directory)
+    # filter to get all layers within the directory/geodatabase following glob syntax
     NFDB_filter = "NFDB*.shp"
+    # the field from which the year can be extracted
     NFDB_year_field = "YEAR_"
-    NBAC_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles"
+    NBAC_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles".format(working_directory)
     NBAC_filter = "NBAC*.shp"
     NBAC_year_field = "EDATE"
-    harvest_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\clipped"
+    harvest_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest\clipped".format(working_directory)
     harvest_filter = "harvest_clipped.shp"
     harvest_year_field = "HARV_YR"
-    MPB_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles"
+    MPB_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles".format(working_directory)
     MPB_filter = "mpb*.shp"
 
-    projScenBase_workspace = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\02_future\projDist_BASE"
+    projScenBase_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\02_future\projDist_BASE".format(working_directory)
     projScenBase_filter = "TS_*.shp"
     projScenBase_lookuptable = {
         11: "Base CC",
@@ -76,34 +112,65 @@ if __name__=="__main__":
         1: "Clearcut harvesting with salvage"
     }
 
+    ## Year ranges
     historic_range = [1990,2014]
     rollback_range = [1990,2010]
     future_range = [2010,2050]
     activity_start_year = 2018
 
-    rollbackInvOut = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\02_inventory"
-    rollbackDistOut = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\03_rollbackDisturbances\rollbackDist.shp"
-    recliner2gcbm_config_dir = r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\config"
-    recliner2gcbm_output_path = r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\gcbm.db"
-
-    spatial_reference = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\01_spatial_reference"
+    # directory path to the spatial reference directory containing the TSA and PSPU boundaries
+    spatial_reference = r"{}\02_layers\01_external_spatial_data\01_spatial_reference".format(working_directory)
+    # file name or filter to find the TSA boundaries in the spatial reference directory
     spatial_boundaries_tsa = "TSA_boundaries_2016.shp"
+    # file name or filter to find the PSPU boundaries in the spatial reference directory
     spatial_boundaries_pspu = "PSPUS_2016.shp"
+    # filter used to get the desired study area. change only the values for "field" and "code"
     study_area_filter = {
         "field": "TSA_NUMBER",
         "code": "'Cranbrook TSA'"
     }
+    # field names for the Admin and Eco attributes in the PSPU boundaries file
     spatial_boundaries_attr = {
         "Admin": "AdminBou_1",
         "Eco": "EcoBound_1"
     }
 
-    NAmat_path = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\04_environment\NAmerica_MAT_1971_2000.tif"
+    # path to NAmerica MAT (Mean Annual Temperature)
+    NAmat_path = r"{}\02_layers\01_external_spatial_data\04_environment\NAmerica_MAT_1971_2000.tif".format(working_directory)
 
-    tiler_output_dir = r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\02_GCBM_tiled_input\SCEN_TEST"
+    # Different scenarios to be ran by the tiler (before Disturbance Matrix distinctions)
+    tilerScenarios = ['Base']
+    # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
+    GCBMScenarios = {'Base':'Base'}
 
-    tilerScenarios = ['Base', 'B', 'C']
-    GCBMScenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
+    ## Rollback disturbances
+    rollbackInvOut = r"{}\02_layers\01_external_spatial_data\02_inventory".format(working_directory)
+    rollbackDistOut = r"{}\02_layers\01_external_spatial_data\03_disturbances\03_rollbackDisturbances\rollbackDist.shp".format(working_directory)
+    recliner2gcbm_config_dir = r"G:\Nick\GCBM\05_Test_Automation\05_working\01_configs\Recliner2GCBM"
+    recliner2gcbm_output_path = r"G:\Nick\GCBM\05_Test_Automation\05_working\01_configs\GCBMinput.db"
+
+    # directory where the tiler will output to
+    tiler_output_dir = r"{}\02_layers\02_GCBM_tiled_input\SCEN_TEST".format(working_directory)
+
+    ## Yield table
+    # path to the yield table (recommened to be in the recliner2gcbm config directory)
+    yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
+    # The classifiers as keys and the column as value
+    yieldTable_classifier_cols = {"AU":0, "LDSPP":1}
+    # True if the first row of the yield table is a header
+    yieldTable_header = True
+    # year interval between age increments
+    yieldTable_interval = 10
+    # species column and increment range
+    yieldTable_cols = {"SpeciesCol":2,"IncrementRange":[3,38]}
+
+
+
+
+
+
+
+# ----------------------------------------------------------------------------------------------------
 
     ### Initialize inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
@@ -115,8 +182,6 @@ if __name__=="__main__":
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
     historicMPB = preprocess_tools.inputs.HistoricDisturbance(MPB_workspace, MPB_filter, None)
-    # historicDisturbances = [historicFire1, historicFire2, historicHarvest, historicMPB]
-    # standReplHistoricDisturbances = [historicFire1, historicFire2, historicHarvest]
 
     projectedDistBase = preprocess_tools.inputs.ProjectedDisturbance(projScenBase_workspace, projScenBase_filter, "Base", projScenBase_lookuptable)
     projectedDisturbances = []
@@ -127,7 +192,6 @@ if __name__=="__main__":
     #     filter_attribute="tsa_num",filter_code="05",dist_type="Clearcut harvesting with salvage", name="historicharvest", standReplacing=True
     # )
     # histHarvColl = historicHarvest.createDisturbanceCollection(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\05_disturbance_collections\harvest.gdb")
-    #
     #
     # historicFire = preprocess_tools.disturbance_manager.DisturbanceParser(
     #     path=r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles",
@@ -144,25 +208,14 @@ if __name__=="__main__":
 
     rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollbackDistOut)
 
-    transitionRules = preprocess_tools.inputs.TransitionRules(path=r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\transition_rules.csv",
-        classifier_cols={"AU":None, "LDSPP":None}, header=True, cols={"NameCol":0, "AgeCol":2, "DelayCol":1})
+    # transitionRules = preprocess_tools.inputs.TransitionRules(path=r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\transition_rules.csv",
+    #     classifier_cols={"AU":None, "LDSPP":None}, header=True, cols={"NameCol":0, "AgeCol":2, "DelayCol":1})
+    transitionRules = None
 
-    yieldTable = preprocess_tools.inputs.YieldTable(path=r"G:\Nick\GCBM\05_Test_Automation\03_tools\00_PreprocessingScript\yield.csv",
-        classifier_cols={"AU":0, "LDSPP":1}, header=True, interval=10, cols={"SpeciesCol":2,"IncrementRange":[3,38]})
+    yieldTable = preprocess_tools.inputs.YieldTable(path=yieldTable_path, classifier_cols=yieldTable_classifier_cols,
+        header=yieldTable_header, interval=yieldTable_interval, cols=yieldTable_cols)
 
-    AIDB = preprocess_tools.inputs.AIDB(path=r"G:\Nick\GCBM\05_Test_Automation\05_working\00_AIDB\ArchiveIndex_Beta_Install_BASE.mdb")
-
-    inputs = {
-        "inventory":inventory,
-        # "histHarvColl":histHarvColl,
-        # "histFireColl":histFireColl,
-        "rollbackDisturbances":rollbackDisturbances,
-        "spatialBoundaries":spatialBoundaries,
-        "NAmat":NAmat,
-        "transitionRules":transitionRules,
-        "yieldTable":yieldTable,
-        "AIDB":AIDB
-    }
+    AIDB = preprocess_tools.inputs.AIDB(path=r"{}\00_AIDB\ArchiveIndex_Beta_Install_BASE.mdb".format(working_directory))
 
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
@@ -190,82 +243,43 @@ if __name__=="__main__":
 
 
     ### Execute Functions
-    try:
-        # -- Grid generation
-        fish1ha.createFishnet()
-        tileId.runTileID()
-        # -- Grid inventory
-        inventoryGridder.gridInventory()
-        # -- Clip all inputs to inventory bbox
-        # clipper.Clip(spatial_inputs)
-        # -- Start of rollback
-        # mergeDist.runMergeDisturbances()
-        intersect.runIntersectDisturbancesInventory()
-        calcDistDEdiff.calculateDistDEdifference()
-        calcNewDistYr.calculateNewDistYr()
-        updateInv.updateInvRollback()
-        # -- End of rollback
-        # -- Prep Tiler
-        # tiler.prepTiler()
-        # -- Upload to S3
-        # s3.upload()
-    # ------------------------------------------------------------------------------
-        # -- Run Tiler
-        tiler.defineBoundingBox(tiler_output_dir)
-        tiler.processGeneralLayers()
-        # tiler.processRollbackDisturbances()
-        # tiler.processHistoricFireDisturbances(historicFire1)
-        # tiler.processHistoricFireDisturbances(historicFire2)
-        tiler.processHistoricHarvestDisturbances(historicHarvest)
-        # tiler.processHistoricMPBDisturbances(historicMPB)
-        # tiler.processProjectedDisturbances(projectedDistBase)
-        tiler.runTiler(tiler_output_dir)
-        # -- Prep and run recliner2GCBM
-        # transitionRules = r2GCBM.prepTransitionRules(transitionRules)
-        # r2GCBM.prepYieldTable(yieldTable)
-        # r2GCBM.runRecliner2GCBM()
-        # -- Configure GCBM
-        # gcbmConfigurer.configureGCBM()
-        # -- Run GCBM
-        # gcbm.runGCBM()
-        # -- Run CompileGCBM
-        # GCBMcompiler.compileGCBM()
-        # -- Run CBM Rollup
-        # CBMRollup.runCBMRollup()
-        # -- Download from S3
-    except:
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
-        if not os.path.exists('objects'):
-            os.mkdir('objects')
-        for inp in inputs:
-            with open(r'objects\{}.pkl'.format(inp), 'wb') as out:
-                cPickle.dump(inp, out)
-        raise
-
-def save_objects():
-    try:
-        if not os.path.exists('objects'):
-            os.mkdir('objects')
-        cPickle.dump(inventory, open(r'objects\inventory.pkl'))
-        cPickle.dump(rollbackDisturbances, open(r'objects\rollbackDisturbances.pkl'))
-        cPickle.dump(historicFire1, open(r'objects\historicFire1.pkl'))
-        cPickle.dump(historicFire2, open(r'objects\historicFire2.pkl'))
-        cPickle.dump(historicHarvest, open(r'objects\historicHarvest.pkl'))
-        cPickle.dump(historicMPB, open(r'objects\historicMPB.pkl'))
-        cPickle.dump(projectedDistBase, open(r'objects\projectedDistBase.pkl'))
-    except:
-        print "Failed to save objects."
-        raise
-
-def load_objects():
-    try:
-        inventory = cPickle.load(open(r'objects\inventory.pkl'))
-        rollbackDisturbances = cPickle.load(open(r'objects\rollbackDisturbances.pkl'))
-        historicFire1 = cPickle.load(open(r'objects\historicFire1.pkl'))
-        historicFire2 = cPickle.load(open(r'objects\historicFire2.pkl'))
-        historicHarvest = cPickle.load(open(r'objects\historicHarvest.pkl'))
-        historicMPB = cPickle.load(open(r'objects\historicMPB.pkl'))
-        projectedDistBase = cPickle.load(open(r'objects\projectedDistBase.pkl'))
-    except:
-        print "Failed to load objects."
-        raise
+    # -- Grid generation
+    # fish1ha.createFishnet()
+    # tileId.runTileID()
+    # -- Grid inventory
+    # inventoryGridder.gridInventory()
+    # -- Start of rollback
+    # mergeDist.runMergeDisturbances()
+    # intersect.runIntersectDisturbancesInventory()
+    # calcDistDEdiff.calculateDistDEdifference()
+    # calcNewDistYr.calculateNewDistYr()
+    updateInv.updateInvRollback()
+    # -- End of rollback
+    # -- Prep Tiler
+    # tiler.prepTiler()
+    # -- Upload to S3
+    # s3.upload()
+# ------------------------------------------------------------------------------
+    # -- Run Tiler
+    tiler.defineBoundingBox(tiler_output_dir)
+    tiler.processGeneralLayers()
+    tiler.processRollbackDisturbances()
+    tiler.processHistoricFireDisturbances(historicFire1)
+    tiler.processHistoricFireDisturbances(historicFire2)
+    tiler.processHistoricHarvestDisturbances(historicHarvest)
+    # tiler.processHistoricMPBDisturbances(historicMPB)
+    tiler.processProjectedDisturbances(projectedDistBase)
+    transitionRules = tiler.runTiler(tiler_output_dir)
+    # -- Prep and run recliner2GCBM
+    r2GCBM.prepTransitionRules(transitionRules)
+    r2GCBM.prepYieldTable(yieldTable)
+    r2GCBM.runRecliner2GCBM()
+    # -- Configure GCBM
+    # gcbmConfigurer.configureGCBM()
+    # -- Run GCBM
+    # gcbm.runGCBM()
+    # -- Run CompileGCBM
+    # GCBMcompiler.compileGCBM()
+    # -- Run CBM Rollup
+    # CBMRollup.runCBMRollup()
+    # -- Download from S3

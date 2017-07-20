@@ -17,6 +17,7 @@ from mojadata.cleanup import cleanup
 from mojadata.layer.attribute import Attribute
 from mojadata.layer.gcbm.transitionrule import TransitionRule
 from mojadata.layer.gcbm.transitionrulemanager import TransitionRuleManager
+from preprocess_tools.inputs import TransitionRules
 
 class Tiler(object):
     def __init__(self, spatialBoundaries, inventory, historicFire, historicHarvest, rollbackDisturbances,
@@ -166,49 +167,16 @@ class Tiler(object):
         for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
             year = int(file_name_no_ext[-4:])
-            self.layers.append(DisturbanceLayer(
-                self.rule_manager,
-                VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
-                year=year,
-                disturbance_type=Attribute("Severity"),
-                transition=TransitionRule(
-                    regen_delay=0,
-                    age_after=-1)))
+            if year in range(self.historic_range[0], self.historic_range[1]+1):
+                self.layers.append(DisturbanceLayer(
+                    self.rule_manager,
+                    VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
+                    year=year,
+                    disturbance_type=Attribute("Severity"),
+                    transition=TransitionRule(
+                        regen_delay=0,
+                        age_after=-1)))
         pp.finish()
-
-    # def processHistoricMPBDisturbances(self, dist):
-    #     # pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-    #     os.chdir(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\02_GCBM_tiled_input\SCEN_TEST4")
-    #     with cleanup():
-    #         mpb_shp_severity_to_dist_type_lookup = {
-    #             "V": "Mountain Pine Beetle - Very Severe Impact",
-    #             "S": "Mountain Pine Beetle - Severe Impact",
-    #             "M": "Mountain Pine Beetle - Moderate Impact",
-    #             "L": "Mountain Pine Beetle - Low Impact",
-    #             "4": "Mountain Pine Beetle - Very Severe Impact",
-    #             "3": "Mountain Pine Beetle - Severe Impact",
-    #             "2": "Mountain Pine Beetle - Moderate Impact",
-    #             "1": "Mountain Pine Beetle - Low Impact"
-    #         }
-    #         layers = []
-    #         bbox = BoundingBox(RasterLayer(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\02_inventory\inv_gridded_1990.shp"), pixel_size=0.001)
-    #         tiler = Tiler2D(bbox, use_bounding_box_resolution=True)
-    #         rule_manager = TransitionRuleManager("transition.csv")
-    #         print "Processing Historic MPB Disturbances..."
-    #         for file_name in self.scan_for_layers(r"G:\Nick\GCBM\05_Test_Automation\05_working\02_layers\01_external_spatial_data\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles", "*.shp"):
-    #             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-    #             year = int(file_name_no_ext[-4:])
-    #             layers.append(DisturbanceLayer(
-    #                 rule_manager,
-    #                 VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
-    #                 year=year,
-    #                 disturbance_type=Attribute("Severity"),
-    #                 transition=TransitionRule(
-    #                     regen_delay=0,
-    #                     age_after=-1)))
-    #         tiler.tile(layers)
-    #     # pp.finish()
-
 
     def processProjectedDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3],dist.getScenario()), 1).start()
@@ -236,9 +204,12 @@ class Tiler(object):
         with cleanup():
             self.tiler.tile(self.layers)
             self.rule_manager.write_rules()
+            transitionRules = TransitionRules(path=r"{}\transition_rules.csv".format(output_dir),
+                classifier_cols={"AU":None, "LDSPP":None}, header=True, cols={"NameCol":0, "AgeCol":2, "DelayCol":1})
         os.chdir(cwd)
         self.layers = []
         pp.finish()
+        return transitionRules
 
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------

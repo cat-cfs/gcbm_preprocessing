@@ -16,6 +16,7 @@ class SpatialInputs(object):
 
 	def reproject(self, new_workspace, name=None):
 		# Project the layer from NAD 1983 to WGS 1984
+		# Project in place (use in_memory then overwrite)
 		if not os.path.exists(new_workspace):
 			if '.gdb' in os.path.basename(new_workspace):
 				if os.path.exists(os.path.dirname(new_workspace)):
@@ -206,10 +207,10 @@ class TransitionRules(object):
 	def isHeader(self):
 		return self._header
 
-	def getFilePath(self):
+	def getPath(self):
 		return self._path
 
-	def setFilePath(self, path):
+	def setPath(self, path):
 		self._path = path
 
 	def getNameCol(self):
@@ -243,10 +244,10 @@ class YieldTable(object):
 	def isHeader(self):
 		return self._header
 
-	def getFilePath(self):
+	def getPath(self):
 		return self._path
 
-	def setFilePath(self, path):
+	def setPath(self, path):
 		self._path = path
 
 	def getSpeciesCol(self):
