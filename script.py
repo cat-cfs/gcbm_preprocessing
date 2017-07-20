@@ -43,15 +43,18 @@ def load_objects():
 
 ###############################################################################
 #                            Required Inputs (BC)
-# Inventory
-# Historic Fire Disturbances (NFDB, NBAC)
-# Historic Harvest Disturbances (BC Cutblocks)
-# Historic MPB Disturbances
-# Projected Disturbances
-# Spatial Boundaries (TSA and PSPU)
-# NAmerica MAT (Mean Annual Temperature) tiff
-# Yield Table (Growth Curves) with AIDB species matching column
-# AIDB (pre-setup with disturbance matrix values etc.)
+#                                                     []: Restricting qualities
+# Inventory [layer in a geodatabase]
+# Historic Fire Disturbances (NFDB, NBAC) [shapefiles where year is the last 4
+#    characters before file extention]
+# Historic Harvest Disturbances (BC Cutblocks) [shapefile]
+# Historic MPB Disturbances [shapefiles where year is the last 4 characters
+#    before file extention]
+# Projected Disturbances [shapefiles]
+# Spatial Boundaries (TSA and PSPU) [shapefiles]
+# NAmerica MAT (Mean Annual Temperature) [tiff]
+# Yield Table (Growth Curves) [AIDB species matching column, classifier columns]
+# AIDB [pre-setup with disturbance matrix values etc.]
 ###############################################################################
 
 if __name__=="__main__":
@@ -244,15 +247,15 @@ if __name__=="__main__":
 
     ### Execute Functions
     # -- Grid generation
-    # fish1ha.createFishnet()
-    # tileId.runTileID()
+    fish1ha.createFishnet()
+    tileId.runTileID()
     # -- Grid inventory
-    # inventoryGridder.gridInventory()
+    inventoryGridder.gridInventory()
     # -- Start of rollback
-    # mergeDist.runMergeDisturbances()
-    # intersect.runIntersectDisturbancesInventory()
-    # calcDistDEdiff.calculateDistDEdifference()
-    # calcNewDistYr.calculateNewDistYr()
+    mergeDist.runMergeDisturbances()
+    intersect.runIntersectDisturbancesInventory()
+    calcDistDEdiff.calculateDistDEdifference()
+    calcNewDistYr.calculateNewDistYr()
     updateInv.updateInvRollback()
     # -- End of rollback
     # -- Prep Tiler
