@@ -31,7 +31,6 @@ class GridInventory(object):
         self.ProgressPrinter = ProgressPrinter
         arcpy.env.workspace = inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
-        arcpy.Delete_management("in_memory")
 
         self.inventory_path = r"{}\{}".format(inventory.getWorkspace(), inventory.getLayerName())
         self.grid = r"{}\XYgrid".format(inventory.getWorkspace())
@@ -43,6 +42,7 @@ class GridInventory(object):
         self.invAge_fieldName = inventory.getFieldNames()['age']
 
     def gridInventory(self):
+        arcpy.Delete_management("in_memory")
         tasks = [
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),

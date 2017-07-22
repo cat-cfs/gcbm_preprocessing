@@ -108,8 +108,8 @@ class MergeDisturbances(object):
         # Set the merge rule to find the First value of all fields in the
         # FieldMap object
         fm_year.mergeRule = 'First'
-        print "vTab equals: "
-        print self.vTab
+        # print "vTab equals: "
+        # print self.vTab
         # Set the output field properties for FieldMap objects
         field_name = fm_year.outputField
         field_name.name = 'DistYEAR'

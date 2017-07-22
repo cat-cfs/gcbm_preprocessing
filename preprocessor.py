@@ -23,11 +23,23 @@ def save_objects():
         cPickle.dump(historicHarvest, open(r'objects\historicHarvest.pkl', 'wb'))
         cPickle.dump(historicMPB, open(r'objects\historicMPB.pkl', 'wb'))
         cPickle.dump(projectedDistBase, open(r'objects\projectedDistBase.pkl', 'wb'))
+        cPickle.dump(NAmat, open(r'objects\NAmat.pkl', 'wb'))
+        cPickle.dump(spatialBoundaries, open(r'objects\spatialBoundaries.pkl', 'wb'))
+        cPickle.dump(transitionRules, open(r'objects\transitionRules.pkl', 'wb'))
+        cPickle.dump(yieldTable, open(r'objects\yieldTable.pkl', 'wb'))
+        cPickle.dump(AIDB, open(r'objects\AIDB.pkl', 'wb'))
     except:
         print "Failed to save objects."
         raise
 
 def load_objects():
+    global inventory
+    global rollbackDisturbances
+    global historicFire1
+    global historicFire2
+    global historicHarvest
+    global historicMPB
+    global projectedDistBase
     try:
         inventory = cPickle.load(open(r'objects\inventory.pkl'))
         rollbackDisturbances = cPickle.load(open(r'objects\rollbackDisturbances.pkl'))
@@ -36,6 +48,11 @@ def load_objects():
         historicHarvest = cPickle.load(open(r'objects\historicHarvest.pkl'))
         historicMPB = cPickle.load(open(r'objects\historicMPB.pkl'))
         projectedDistBase = cPickle.load(open(r'objects\projectedDistBase.pkl'))
+        NAmat = cPickle.load(open(r'objects\NAmat.pkl'))
+        spatialBoundaries = cPickle.load(open(r'objects\spatialBoundaries.pkl'))
+        transitionRules = cPickle.load(open(r'objects\transitionRules.pkl'))
+        yieldTable = cPickle.load(open(r'objects\yieldTable.pkl'))
+        AIDB = cPickle.load(open(r'objects\AIDB.pkl'))
     except:
         print "Failed to load objects."
         raise
@@ -44,7 +61,7 @@ def load_objects():
 ###############################################################################
 #                            Required Inputs (BC)
 #                                                     []: Restricting qualities
-# Inventory [layer in a geodatabase]
+# Inventory [feature layer in geodatabase]
 # Historic Fire Disturbances (NFDB, NBAC) [shapefiles where year is the last 4
 #    characters before file extention]
 # Historic Harvest Disturbances (BC Cutblocks) [shapefile]
@@ -53,7 +70,8 @@ def load_objects():
 # Projected Disturbances [shapefiles]
 # Spatial Boundaries (TSA and PSPU) [shapefiles]
 # NAmerica MAT (Mean Annual Temperature) [tiff]
-# Yield Table (Growth Curves) [AIDB species matching column, classifier columns]
+# Yield Table (Growth Curves) [AIDB species matching column, classifier columns,
+#    csv format]
 # AIDB [pre-setup with disturbance matrix values etc.]
 ###############################################################################
 
@@ -73,7 +91,7 @@ if __name__=="__main__":
     # Path the the inventory gdb workspace
     inventory_workspace = r"{}\02_layers\01_external_spatial_data\00_Workspace.gdb".format(working_directory)
     # Layer name of the inventory in the gdb
-    inventory_layer = "inv_reprojected"
+    inventory_layer = "tsaTEST"
     # The age field name in the inventory layer
     inventory_age_field = "Age2011"
     # The starting year of the inventory
@@ -85,7 +103,7 @@ if __name__=="__main__":
         "AU": "AU"
     }
     # Reproject the inventory into WGS 1984
-    reproject_inventory = False
+    reproject_inventory = True
 
     ## Disturbances
     # directory or geodatabase
@@ -146,9 +164,13 @@ if __name__=="__main__":
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
     GCBMScenarios = {'Base':'Base'}
 
-    ## Rollback disturbances
+    ## Rollback Output
+    # rolled back inventory output directory
     rollbackInvOut = r"{}\02_layers\01_external_spatial_data\02_inventory".format(working_directory)
+    ## rollback disturbances output file
     rollbackDistOut = r"{}\02_layers\01_external_spatial_data\03_disturbances\03_rollbackDisturbances\rollbackDist.shp".format(working_directory)
+
+    ## Recliner2GCBM
     recliner2gcbm_config_dir = r"G:\Nick\GCBM\05_Test_Automation\05_working\01_configs\Recliner2GCBM"
     recliner2gcbm_output_path = r"G:\Nick\GCBM\05_Test_Automation\05_working\01_configs\GCBMinput.db"
 
@@ -220,6 +242,9 @@ if __name__=="__main__":
 
     AIDB = preprocess_tools.inputs.AIDB(path=r"{}\00_AIDB\ArchiveIndex_Beta_Install_BASE.mdb".format(working_directory))
 
+    if load_saved_objects==True:
+        load_objects()
+
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
     fish1ha = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
@@ -252,14 +277,12 @@ if __name__=="__main__":
     # -- Grid inventory
     inventoryGridder.gridInventory()
     # -- Start of rollback
-    mergeDist.runMergeDisturbances()
+    # mergeDist.runMergeDisturbances()
     intersect.runIntersectDisturbancesInventory()
     calcDistDEdiff.calculateDistDEdifference()
     calcNewDistYr.calculateNewDistYr()
     updateInv.updateInvRollback()
     # -- End of rollback
-    # -- Prep Tiler
-    # tiler.prepTiler()
     # -- Upload to S3
     # s3.upload()
 # ------------------------------------------------------------------------------

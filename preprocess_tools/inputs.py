@@ -32,9 +32,15 @@ class SpatialInputs(object):
 		print "Reprojecting {}... ".format(self.getFilter()),
 		for layer in self.scan_for_layers():
 			if name==None:
-				arcpy.Project_management(layer, os.path.join(new_workspace, os.path.basename(layer)), output_proj, transform_method, "", "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
+				if '.tif' in os.path.basename(layer):
+					arcpy.ProjectRaster_management(layer, os.path.join(new_workspace, os.path.basename(layer)), output_proj, "", "", transform_method, "", "")
+				else:
+					arcpy.Project_management(layer, os.path.join(new_workspace, os.path.basename(layer)), output_proj, transform_method, "", "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
 			else:
-				arcpy.Project_management(layer, os.path.join(new_workspace, name), output_proj, transform_method, "", "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
+				if '.tif' in os.path.basename(layer):
+					arcpy.ProjectRaster_management(layer, os.path.join(new_workspace, os.path.basename(layer)), output_proj, "", "", transform_method, "", "")
+				else:
+					arcpy.Project_management(layer, os.path.join(new_workspace, name), output_proj, transform_method, "", "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
 				self._filter = name
 				break
 		self._workspace = new_workspace
@@ -53,11 +59,10 @@ class SpatialInputs(object):
 		print "Clipping {}... ".format(self.getFilter()),
 		for layer in self.scan_for_layers():
 			if name==None:
-				# new_layer = os.path.join(new_workspace, os.path.basename(layer))
-				# arcpy.FeatureClassToGeodatabase_conversion(layer, "in_memory/intersect")
-				# arcpy.SelectLayerByLocation_management("in_memory/intersect", "INTERSECT", clip_feature, "", "NEW_SELECTION", "NOT_INVERT")
-				# arcpy.FeatureClassToFeatureClass_conversion("in_memory/intersect", new_workspace)
-				arcpy.Clip_analysis(layer, clip_feature, os.path.join(new_workspace, os.path.basename(layer)), "")
+				new_layer = os.path.join(new_workspace, os.path.basename(layer))
+				arcpy.MakeFeatureLayer_management(layer, new_layer)
+				arcpy.SelectLayerByLocation_management(new_layer, "INTERSECT", clip_feature, "", "NEW_SELECTION", "NOT_INVERT")
+				# arcpy.Clip_analysis(layer, clip_feature, os.path.join(new_workspace, os.path.basename(layer)), "")
 			else:
 				# new_layer = os.path.join(new_workspace, os.path.basename(layer))
 				# arcpy.MakeFeatureLayer_management(layer, new_layer)
@@ -69,10 +74,15 @@ class SpatialInputs(object):
 		print "Done"
 
 	def scan_for_layers(self):
+		if '.gdb' in self.getWorkspace():
+			arcpy.env.workspace = self.getWorkspace()
+			all = arcpy.ListFeatureClasses()
+			return [os.path.join(self.getWorkspace(), layer) for layer in all if layer==self.getFilter()]
 		return sorted(glob.glob(os.path.join(self.getWorkspace(), self.getFilter())), key=os.path.basename)
 
 class Inventory(SpatialInputs):
 	def __init__(self, workspace, filter, year, classifiers_attr, field_names=None):
+		arcpy.env.workspace = workspace
 		self._workspace = workspace
 		self._filter = filter
 		self._year = year
@@ -99,23 +109,9 @@ class Inventory(SpatialInputs):
 	def getYear(self):
 		return self._year
 
-	# def reproject(self, new_layer):
-	# 	print "Reprojecting Inventory... ",
-	# 	arcpy.env.overwriteOutput = True
-	# 	#PROJECTIONS
-	# 	#method
-	# 	transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
-	# 	#input
-	# 	input_proj = "PROJCS['PCS_Albers',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['False_Easting',1000000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-126.0],PARAMETER['Standard_Parallel_1',50.0],PARAMETER['Standard_Parallel_2',58.5],PARAMETER['Latitude_Of_Origin',45.0],UNIT['Meter',1.0]]"
-	# 	#output
-	# 	output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
-	# 	# Process: Project
-	# 	new_path = os.path.join(self._workspace, new_layer)
-	# 	arcpy.Project_management(os.path.join(self._workspace, self._filter), new_path, output_proj,
-	# 		transform_method, input_proj, "NO_PRESERVE_SHAPE", "","NO_VERTICAL")
-	# 	self._filter = new_layer
-	# 	self._bounding_box = self.getBoundingBox()
-	# 	print "Done"
+	def reproject(self, new_workspace, name=None):
+		super(Inventory, self).reproject(new_workspace, name=name)
+		self._bounding_box = self.getBoundingBox()
 
 	def getBoundingBox(self):
 		arcpy.env.workspace = self._workspace

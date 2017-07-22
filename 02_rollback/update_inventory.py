@@ -205,14 +205,12 @@ class RollbackDistributor(object):
 
 
 class updateInvRollback(object):
-    def __init__(self, inventory, rollbackInvOut, rollbackDistOut, ProgressPrinter):
+    def __init__(self, inventory, rollbackInvOut, rollbackDistOut, resolution, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        workspace = inventory.getWorkspace()
-        arcpy.env.workspace = workspace
-        arcpy.env.overwriteOutput = True
         self.inventory = inventory
         self.rollbackDisturbanceOutput = rollbackDistOut
         self.rasterOutput = rollbackInvOut
+        self.resolution = resolution
 
         #local variables
         #data
@@ -241,13 +239,16 @@ class updateInvRollback(object):
         self.CELL_ID = "CELL_ID"
 
     def updateInvRollback(self):
+        arcpy.env.workspace = self.inventory.getWorkspace()
+        arcpy.env.overwriteOutput = True
         tasks = [
             lambda:self.makeLayers1(),
             lambda:self.remergeDistPolyInv(),
             lambda:self.addFieldMaps(),
             lambda:self.makeLayers2(),
             lambda:self.rollbackAgeNonDistStands(),
-            lambda:self.export()
+            lambda:self.exportRollbackDisturbances(),
+            lambda:self.exportRollbackInventory()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
         for t in tasks:
@@ -302,12 +303,24 @@ class updateInvRollback(object):
             cur.updateRow(row)
         pp.finish()
 
-    def export(self):
+    def exportRollbackDisturbances(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+
+        #Export rollback disturbances
+        print "\tExporting Rollback Disturbances..."
         dissolveFields = [self.dist_type_field, self.new_disturbance_field,self.regen_delay_field, self.CELL_ID]
         selectClause =  "{} IS NOT NULL".format(self.new_disturbance_field)
 
+        arcpy.SelectLayerByAttribute_management(self.RolledBackInventory_layer, "NEW_SELECTION", selectClause)
+        arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput,dissolveFields,
+            "","SINGLE_PART","DISSOLVE_LINES")
+
+        pp.finish()
+
+    def exportRollbackInventory(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         print "\tExporting rolledback inventory to raster..."
+        arcpy.env.overwriteOutput = True
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": "Age1990",
@@ -319,25 +332,17 @@ class updateInvRollback(object):
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)
             file_path = os.path.join(self.rasterOutput, "{}.tif".format(classifier_name))
-            arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path)
+            arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path, self.resolution)
             self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
-            arcpy.DeleteField_management(file_path, field_name)
+            # arcpy.DeleteField_management(file_path, field_name)
         for attr in fields:
             field_name = fields[attr]
             file_path = os.path.join(self.rasterOutput,"{}.tif".format(attr))
-            arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path)
+            arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path, self.resolution)
             self.inventory.addRaster(file_path, attr, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
-            arcpy.DeleteField_management(file_path, field_name)
-
-
-        #Export rollback disturbances
-        arcpy.SelectLayerByAttribute_management(self.RolledBackInventory_layer, "NEW_SELECTION", selectClause)
-        print "\tExporting Rollback Disturbances..."
-        arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput,dissolveFields,
-            "","SINGLE_PART","DISSOLVE_LINES")
-
+            # arcpy.DeleteField_management(file_path, field_name)
         pp.finish()
 
     def createAttributeTable(self, dbf_path, field_name):

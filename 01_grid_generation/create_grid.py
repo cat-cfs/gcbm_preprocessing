@@ -12,13 +12,9 @@
 import arcpy
 import inspect
 import math
-import multiprocessing
-import threading
 import time
-import workerpool
 
 import preprocess_tools
-from tileID import TileID
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## New
