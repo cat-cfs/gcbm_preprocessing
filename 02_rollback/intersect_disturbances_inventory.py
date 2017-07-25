@@ -28,17 +28,27 @@ import inspect
 class IntersectDisturbancesInventory(object):
     def __init__(self, inventory, spatialBoundaries, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        self.StudyArea = spatialBoundaries.getAreaFilter()["code"]
-        self.studyAreaOperator = spatialBoundaries.getAreaFilter()["operator"]
-        self.invVintage = inventory.getYear()
+        self.inventory = inventory
+        self.spatialBoundaries = spatialBoundaries
+
+        # Temp Layers
+        self.disturbances_layer = r"in_memory\disturbances_layer"
+        self.disturbances_layer2 = r"in_memory\disturbances_layer2"
+        self.inventory_layer3 = r"in_memory\inventory_layer3"
+        self.TSABoundary_layer = r"in_memory\TSABoundary_layer"
+
+    def runIntersectDisturbancesInventory(self):
+        self.StudyArea = self.spatialBoundaries.getAreaFilter()["code"]
+        self.studyAreaOperator = self.spatialBoundaries.getAreaFilter()["operator"]
+        self.invVintage = self.inventory.getYear()
         rollback_start = 1990
         self.rolledback_years = self.invVintage - rollback_start
-        self.inv_workspace = inventory.getWorkspace()
-        self.invAge_fieldName = inventory.getFieldNames()['age']
+        self.inv_workspace = self.inventory.getWorkspace()
+        self.invAge_fieldName = self.inventory.getFieldNames()['age']
 
         # Field Names
         self.disturbance_fieldName = "DistYEAR"
-        self.studyArea_fieldName = spatialBoundaries.getAreaFilter()["field"]
+        self.studyArea_fieldName = self.spatialBoundaries.getAreaFilter()["field"]
         self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
         self.inv_dist_dateDiff = "Dist_DE_DIFF"
         self.preDistAge = "preDistAge"
@@ -48,19 +58,12 @@ class IntersectDisturbancesInventory(object):
         self.new_disturbance_field = "DistYEAR_new"
         self.nullID_field = "TileID"
 
-        # Temp Layers
-        self.disturbances_layer = r"in_memory\disturbances_layer"
-        self.disturbances_layer2 = r"in_memory\disturbances_layer2"
-        self.inventory_layer3 = r"in_memory\inventory_layer3"
-        self.TSABoundary_layer = r"in_memory\TSABoundary_layer"
-
         self.gridded_inventory = r"{}\inventory_gridded".format(self.inv_workspace)
         self.disturbances = r"{}\MergedDisturbances".format(self.inv_workspace)
         self.temp_overlay = r"{}\temp_DisturbedInventory".format(self.inv_workspace)
         self.output = r"{}\DisturbedInventory".format(self.inv_workspace)
-        self.spatial_boundaries = spatialBoundaries.getPathTSA()
+        self.spatial_boundaries = self.spatialBoundaries.getPathTSA()
 
-    def runIntersectDisturbancesInventory(self):
         tasks = [
             lambda:self.addFields(),
             lambda:self.selectInventoryRecords(),

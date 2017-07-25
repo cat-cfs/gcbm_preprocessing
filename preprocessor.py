@@ -41,6 +41,7 @@ def save_inputs():
         cPickle.dump(tiler_output_dir, open(r'inputs\tiler_output_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_config_dir, open(r'inputs\recliner2gcbm_config_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_output_path, open(r'inputs\recliner2gcbm_output_path.pkl', 'wb'))
+        cPickle.dump(future_dist_input_dir, open(r'inputs\future_dist_input_dir.pkl', 'wb'))
         print "Done\n---------------------"
     except:
         print "Failed to save inputs."
@@ -72,6 +73,7 @@ def load_inputs():
     global recliner2gcbm_config_dir
     global recliner2gcbm_output_path
     global tiler_output_dir
+    global future_dist_input_dir
     try:
         print "----------------------\nLoading inputs...",
         inventory = cPickle.load(open(r'inputs\inventory.pkl'))
@@ -98,6 +100,7 @@ def load_inputs():
         tiler_output_dir = cPickle.load(open(r'inputs\tiler_output_dir.pkl'))
         recliner2gcbm_config_dir = cPickle.load(open(r'inputs\recliner2gcbm_config_dir.pkl'))
         recliner2gcbm_output_path = cPickle.load(open(r'inputs\recliner2gcbm_output_path.pkl'))
+        future_dist_input_dir = cPickle.load(open(r'inputs\future_dist_input_dir.pkl'))
         print "Done\n----------------------"
     except:
         print "Failed to load inputs."
@@ -157,8 +160,8 @@ if __name__=="__main__":
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
     fishnet = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
-    inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, PP)
-    mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory.getWorkspace(), [historicFire1, historicFire2, historicHarvest], PP)
+    inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, future_dist_input_dir, PP)
+    mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory, [historicFire1, historicFire2, historicHarvest], PP)
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
     calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, PP)

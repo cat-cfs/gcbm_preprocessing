@@ -24,14 +24,9 @@ import glob
 
 
 class MergeDisturbances(object):
-    def __init__(self, workspace, disturbances, ProgressPrinter):
+    def __init__(self, inventory, disturbances, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.overwriteOutput = True
-        self.workspace = workspace
-        self.grid = r"{}\XYgrid".format(workspace)
-        self.output = r"{}\MergedDisturbances_polys".format(workspace)
-        self.gridded_output = r"{}\MergedDisturbances".format(workspace)
-
+        self.inventory = inventory
         self.disturbances = disturbances
 
         # for disturbance in disturbances if disturbance.standReplacing==1:
@@ -42,6 +37,11 @@ class MergeDisturbances(object):
                       key=os.path.basename)
 
     def runMergeDisturbances(self):
+        self.workspace = self.inventory.getWorkspace()
+        self.grid = r"{}\XYgrid".format(self.workspace)
+        self.output = r"{}\MergedDisturbances_polys".format(self.workspace)
+        self.gridded_output = r"{}\MergedDisturbances".format(self.workspace)
+
         tasks = [
             lambda:self.spatialJoin(),
             lambda:self.prepFieldMap(),
@@ -78,6 +78,7 @@ class MergeDisturbances(object):
         for dist in self.disturbances:
             ws = dist.getWorkspace()
             arcpy.env.workspace = ws
+            arcpy.env.overwriteOutput = True
             fcs1 = self.scan_for_layers(ws, dist.getFilter())
             if fcs1:
                 # print "Old fire list is: ", fcs1

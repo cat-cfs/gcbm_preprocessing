@@ -21,33 +21,23 @@ import preprocess_tools
 
 class Fishnet(object):
 	def __init__(self, inventory, resolution_degrees, ProgressPrinter):
-		arcpy.env.workspace = inventory.getWorkspace()
-		arcpy.env.overwriteOutput=True
 		self.ProgressPrinter = ProgressPrinter
-		oCorner = inventory.getBottomLeftCorner()
-		tCorner = inventory.getTopRightCorner()
-		self.blc_x, self.blc_y = self.roundCorner(oCorner[0], oCorner[1], -1, resolution_degrees)
-		self.trc_x, self.trc_y = self.roundCorner(tCorner[0], tCorner[1], 1, resolution_degrees)
+		self.inventory = inventory
+		self.resolution_degrees = resolution_degrees
 
 		self.XYgrid = "XYgrid"
 		self.XYgrid_temp = "XYgrid_temp"
 
-		self.inventory_template = inventory.getLayerName()
-
-		self.resolution_degrees = resolution_degrees
-
-	def roundCorner(self, x, y, ud, res):
-		if ud==1:
-			rx = math.ceil(float(x)/res)*res
-			ry = math.ceil(float(y)/res)*res
-		elif ud==-1:
-			rx = math.floor(float(x)/res)*res
-			ry = math.floor(float(y)/res)*res
-		else:
-			raise Exception("Invalid value for 'ud'. Provide 1 (Round up) or -1 (Round down).")
-		return rx, ry
-
 	def createFishnet(self):
+		arcpy.env.workspace = self.inventory.getWorkspace()
+		arcpy.env.overwriteOutput=True
+
+		oCorner = self.inventory.getBottomLeftCorner()
+		tCorner = self.inventory.getTopRightCorner()
+		self.blc_x, self.blc_y = self.roundCorner(oCorner[0], oCorner[1], -1, self.resolution_degrees)
+		self.trc_x, self.trc_y = self.roundCorner(tCorner[0], tCorner[1], 1, self.resolution_degrees)
+
+		self.inventory_template = self.inventory.getLayerName()
 
 		self.origin_coord = "{} {}".format(self.blc_x, self.blc_y)
 		self.y_axis_coord = "{} {}".format(self.blc_x, self.blc_y+1)
@@ -64,6 +54,17 @@ class Fishnet(object):
 			t()
 			pp.updateProgressV()
 		pp.finish()
+
+	def roundCorner(self, x, y, ud, res):
+		if ud==1:
+			rx = math.ceil(float(x)/res)*res
+			ry = math.ceil(float(y)/res)*res
+		elif ud==-1:
+			rx = math.floor(float(x)/res)*res
+			ry = math.floor(float(y)/res)*res
+		else:
+			raise Exception("Invalid value for 'ud'. Provide 1 (Round up) or -1 (Round down).")
+		return rx, ry
 
 	def test_multiprocessing(self, args, workspace):
 		arcpy.env.workspace = workspace

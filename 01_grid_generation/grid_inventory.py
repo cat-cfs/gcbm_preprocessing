@@ -27,22 +27,21 @@ import os
 import inspect
 
 class GridInventory(object):
-    def __init__(self, inventory, ProgressPrinter):
+    def __init__(self, inventory, outputDBF, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.workspace = inventory.getWorkspace()
-        arcpy.env.overwriteOutput = True
-
-        self.inventory_path = r"{}\{}".format(inventory.getWorkspace(), inventory.getLayerName())
-        self.grid = r"{}\XYgrid".format(inventory.getWorkspace())
-        self.gridded_inventory = r"{}\inventory_gridded".format(inventory.getWorkspace())
+        self.inventory = inventory
 
         self.inventory_layer = r"in_memory\inventory_layer"
         self.inventory_layer2 = r"in_memory\inventory_layer2"
 
-        self.invAge_fieldName = inventory.getFieldNames()['age']
-
     def gridInventory(self):
+        arcpy.env.workspace = self.inventory.getWorkspace()
+        arcpy.env.overwriteOutput = True
         arcpy.Delete_management("in_memory")
+        self.grid = r"{}\XYgrid".format(self.inventory.getWorkspace())
+        self.gridded_inventory = r"{}\inventory_gridded".format(self.inventory.getWorkspace())
+        self.invAge_fieldName = self.inventory.getFieldNames()['age']
+
         tasks = [
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
@@ -68,12 +67,12 @@ class GridInventory(object):
 
     def makeFeatureLayer(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        arcpy.MakeFeatureLayer_management(self.inventory_path, self.inventory_layer)
+        arcpy.MakeFeatureLayer_management(os.path.join(self.inventory.getWorkspace(), self.inventory.getLayerName()), self.inventory_layer)
         pp.finish()
 
     def selectGreaterThanZeroAgeStands(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        invAge_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.inventory_path, self.invAge_fieldName), 0)
+        invAge_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(os.path.join(self.inventory.getWorkspace(), self.inventory.getLayerName()), self.invAge_fieldName), 0)
         arcpy.Select_analysis(self.inventory_layer, self.inventory_layer2, invAge_whereClause)
         pp.finish()
 
@@ -132,6 +131,11 @@ class GridInventory(object):
             arcpy.management.JoinField(out_fc, "JOIN_FID", join_features, arcpy.Describe(join_features).OIDFieldName, joinfields)
             pp2.finish()
         pp1.finish()
+
+    def exportGriddedInvDBF(self):
+        arcpy.env.workspace = self.inventory.getWorkspace()
+        arcpy.TableToDBASE_conversion(self.inventory.getFilter(), self.outputDBF)
+
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script
 '''

@@ -11,21 +11,22 @@ from dbfread import DBF
 class CalculateDistDEdifference(object):
     def __init__(self, inventory, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.workspace = inventory.getWorkspace()
-        arcpy.env.overwriteOutput = True
+        self.inventory = inventory
 
         # VARIABLES:
         self.disturbedInventory = "DisturbedInventory"
         self.disturbedInventory_layer = "disturbedInventory_layer"
 
+    def calculateDistDEdifference(self):
+        arcpy.env.workspace = self.inventory.getWorkspace()
+        arcpy.env.overwriteOutput = True
         #local variables
-        self.invAge_fieldName = inventory.getFieldNames()['age']
-        self.invVintage = inventory.getYear()
+        self.invAge_fieldName = self.inventory.getFieldNames()['age']
+        self.invVintage = self.inventory.getYear()
         self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
         self.disturbance_fieldName = "DistYEAR"
         self.inv_dist_dateDiff = "Dist_DE_DIFF"
 
-    def calculateDistDEdifference(self):
         tasks = [
             lambda:self.makeLayers(),
             lambda:self.calculateFields()
@@ -64,12 +65,16 @@ class CalculateDistDEdifference(object):
 class CalculateNewDistYr(object):
     def __init__(self, inventory, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
-        arcpy.env.workspace = inventory.getWorkspace()
-        arcpy.env.overwriteOutput = True
+        self.inventory = inventory
 
-        #local variables
+        #Constants
         self.DisturbedInventory = "DisturbedInventory"
         self.disturbedInventory_layer = "disturbedInventory_layer"
+
+    def calculateNewDistYr(self):
+        arcpy.env.workspace = self.inventory.getWorkspace()
+        arcpy.env.overwriteOutput = True
+        #local variables
         self.inv_age_field = "Age2011"
         self.establishment_date_field = "DE_2011"
         self.inv_vintage = 2011
@@ -83,7 +88,6 @@ class CalculateNewDistYr(object):
         self.preDistAge = "preDistAge"
         self.rollback_vintage_field = "Age1990"
 
-    def calculateNewDistYr(self):
         tasks = [
             lambda:self.makeLayers(),
             lambda:self.calculateDistType(),
@@ -212,17 +216,22 @@ class updateInvRollback(object):
         self.rasterOutput = rollbackInvOut
         self.resolution = resolution
 
-        #local variables
         #data
         self.gridded_inventory = "inventory_gridded"
         self.disturbedInventory = "DisturbedInventory"
         self.RolledBackInventory = "inv_gridded_1990"
         self.inv_vintage = 2011
         self.rollback_year = 1990
+
         #layers
         self.RolledBackInventory_layer = "RolledBackInventory_layer"
         self.gridded_inventory_layer = "gridded_inventory_layer"
         self.disturbedInventory_layer = "disturbedInventory_layer"
+
+    def updateInvRollback(self):
+        arcpy.env.workspace = self.inventory.getWorkspace()
+        arcpy.env.overwriteOutput = True
+        #local variables
         #fields
         self.inv_age_field = "Age2011"
         self.establishment_date_field = "DE_2011"
@@ -238,9 +247,6 @@ class updateInvRollback(object):
         self.GY_linkField = "FEATURE_ID"
         self.CELL_ID = "CELL_ID"
 
-    def updateInvRollback(self):
-        arcpy.env.workspace = self.inventory.getWorkspace()
-        arcpy.env.overwriteOutput = True
         tasks = [
             lambda:self.makeLayers1(),
             lambda:self.remergeDistPolyInv(),

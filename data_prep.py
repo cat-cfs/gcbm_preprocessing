@@ -7,7 +7,6 @@ import arcpy
 import os
 import preprocess_tools
 import cPickle
-import preprocessor
 import shutil
 
 def save_inputs():
@@ -39,6 +38,7 @@ def save_inputs():
         cPickle.dump(tiler_output_dir, open(r'inputs\tiler_output_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_config_dir, open(r'inputs\recliner2gcbm_config_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_output_path, open(r'inputs\recliner2gcbm_output_path.pkl', 'wb'))
+        cPickle.dump(future_dist_input_dir, open(r'inputs\future_dist_input_dir.pkl', 'wb'))
         print "Done\n---------------------"
     except:
         print "Failed to save inputs."
@@ -156,8 +156,10 @@ if __name__=="__main__":
     ## Rollback Output
     # rolled back inventory output directory
     rollback_inv_out = r"{}\01a_pretiled_layers\02_inventory".format(working_directory)
-    ## rollback disturbances output file
+    # rollback disturbances output file
     rollback_dist_out = r"{}\01a_pretiled_layers\03_disturbances\03_rollback\rollbackDist.shp".format(working_directory)
+    # future disturbances input directory for woodstock
+    future_dist_input_dir = r'{}\01a_pretiled_layers\03_disturbances\02_future\inputs'.format(working_directory)
 
     reprojected_redirection = ('01_spatial', '03_spatial_reprojected')
     clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{}\01a_pretiled_layers'.format(TSA))
