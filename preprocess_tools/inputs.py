@@ -2,6 +2,7 @@ import arcpy
 import gcbm_aws
 import os
 import glob
+import shutil
 
 class SpatialInputs(object):
 	def __init__(self, workspace, filter):
@@ -16,20 +17,14 @@ class SpatialInputs(object):
 
 	def reproject(self, new_workspace, name=None):
 		# Project the layer from NAD 1983 to WGS 1984
-		# Project in place (use in_memory then overwrite)
 		if not os.path.exists(new_workspace):
-			if '.gdb' in os.path.basename(new_workspace):
-				if os.path.exists(os.path.dirname(new_workspace)):
-					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
-				else:
-					os.makedirs(os.path.dirname(new_workspace))
-					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
-			else:
-				os.makedirs(new_workspace)
+			self.createWorkspace(new_workspace)
+		if new_workspace==self.getWorkspace() and name==None:
+			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 		arcpy.env.overwriteOutput = True
 		transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
 		output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
-		print "Reprojecting {}... ".format(self.getFilter()),
+		print "Reprojecting {}...".format(self.getFilter()),
 		for layer in self.scan_for_layers():
 			if name==None:
 				if '.tif' in os.path.basename(layer):
@@ -46,32 +41,53 @@ class SpatialInputs(object):
 		self._workspace = new_workspace
 		print "Done"
 
-	def clip(self, clip_feature, new_workspace, name=None):
+	def clip(self, workspace, clip_feature_name, new_workspace, name=None):
 		if not os.path.exists(new_workspace):
-			if '.gdb' in os.path.basename(new_workspace):
-				if os.path.exists(os.path.dirname(new_workspace)):
-					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
-				else:
-					os.makedirs(os.path.dirname(new_workspace))
-					arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
-			else:
-				os.makedirs(new_workspace)
-		print "Clipping {}... ".format(self.getFilter()),
+			self.createWorkspace(new_workspace)
+		if new_workspace==self.getWorkspace() and name==None:
+			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
+		print "Clipping {}...".format(self.getFilter()),
+		arcpy.env.workspace = workspace
+		arcpy.env.overwriteOutput = True
 		for layer in self.scan_for_layers():
 			if name==None:
-				new_layer = os.path.join(new_workspace, os.path.basename(layer))
-				arcpy.MakeFeatureLayer_management(layer, new_layer)
-				arcpy.SelectLayerByLocation_management(new_layer, "INTERSECT", clip_feature, "", "NEW_SELECTION", "NOT_INVERT")
-				# arcpy.Clip_analysis(layer, clip_feature, os.path.join(new_workspace, os.path.basename(layer)), "")
+				arcpy.MakeFeatureLayer_management(layer, 'clip')
+				arcpy.SelectLayerByLocation_management('clip', "INTERSECT", clip_feature_name, "", "NEW_SELECTION", "NOT_INVERT")
+				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
 			else:
-				# new_layer = os.path.join(new_workspace, os.path.basename(layer))
-				# arcpy.MakeFeatureLayer_management(layer, new_layer)
-				# arcpy.SelectLayerByLocation_management(new_layer, 'intersect', clip_feature)
-				arcpy.Clip_analysis(layer, clip_feature, os.path.join(new_workspace, name), "")
+				arcpy.MakeFeatureLayer_management(layer, 'clip')
+				arcpy.SelectLayerByLocation_management('clip', "INTERSECT", clip_feature_name, "", "NEW_SELECTION", "NOT_INVERT")
+				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, name)
 				self._filter = name
 				break
 		self._workspace = new_workspace
 		print "Done"
+
+	def copy(self, new_workspace):
+		if not os.path.exists(new_workspace):
+			self.createWorkspace(new_workspace)
+		if new_workspace==self.getWorkspace() and name==None:
+			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
+		print "Copying {}...".format(self.getFilter()),
+		for layer in self.scan_for_layers():
+			if '.gdb' in self.getWorkspace():
+				arcpy.env.workspace = self.getWorkspace()
+				arcpy.FeatureClassToFeatureClass_conversion(os.path.basename(layer), new_workspace, os.path.basename(layer))
+			else:
+				for file in self.scan_for_files(os.path.basename(layer).split('.')[0]):
+					shutil.copyfile(file, os.path.join(new_workspace, os.path.basename(file)))
+		self._workspace = new_workspace
+		print 'Done'
+
+	def createWorkspace(self, new_workspace):
+		if '.gdb' in os.path.basename(new_workspace):
+			if os.path.exists(os.path.dirname(new_workspace)):
+				arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
+			else:
+				os.makedirs(os.path.dirname(new_workspace))
+				arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
+		else:
+			os.makedirs(new_workspace)
 
 	def scan_for_layers(self):
 		if '.gdb' in self.getWorkspace():
@@ -79,6 +95,9 @@ class SpatialInputs(object):
 			all = arcpy.ListFeatureClasses()
 			return [os.path.join(self.getWorkspace(), layer) for layer in all if layer==self.getFilter()]
 		return sorted(glob.glob(os.path.join(self.getWorkspace(), self.getFilter())), key=os.path.basename)
+
+	def scan_for_files(self, name):
+		return sorted(glob.glob(os.path.join(self.getWorkspace(), '{}*'.format(name))), key=os.path.basename)
 
 class Inventory(SpatialInputs):
 	def __init__(self, workspace, filter, year, classifiers_attr, field_names=None):

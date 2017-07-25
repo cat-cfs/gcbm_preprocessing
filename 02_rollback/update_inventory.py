@@ -205,10 +205,10 @@ class RollbackDistributor(object):
 
 
 class updateInvRollback(object):
-    def __init__(self, inventory, rollbackInvOut, rollbackDistOut, resolution, ProgressPrinter):
+    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, resolution, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
-        self.rollbackDisturbanceOutput = rollbackDistOut
+        self.rollbackDisturbanceOutput = rollbackDisturbances
         self.rasterOutput = rollbackInvOut
         self.resolution = resolution
 
@@ -312,7 +312,7 @@ class updateInvRollback(object):
         selectClause =  "{} IS NOT NULL".format(self.new_disturbance_field)
 
         arcpy.SelectLayerByAttribute_management(self.RolledBackInventory_layer, "NEW_SELECTION", selectClause)
-        arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput,dissolveFields,
+        arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput.getPath(),dissolveFields,
             "","SINGLE_PART","DISSOLVE_LINES")
 
         pp.finish()

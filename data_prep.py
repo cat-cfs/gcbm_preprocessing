@@ -7,9 +7,12 @@ import arcpy
 import os
 import preprocess_tools
 import cPickle
+import preprocessor
+import shutil
 
-def save_objects():
+def save_inputs():
     try:
+        print "---------------------\nSaving inputs...",
         if not os.path.exists('inputs'):
             os.mkdir('inputs')
         cPickle.dump(inventory, open(r'inputs\inventory.pkl', 'wb'))
@@ -18,23 +21,61 @@ def save_objects():
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
         cPickle.dump(historicMPB, open(r'inputs\historicMPB.pkl', 'wb'))
         cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
+        cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
         cPickle.dump(NAmat, open(r'inputs\NAmat.pkl', 'wb'))
         cPickle.dump(transitionRules, open(r'inputs\transitionRules.pkl', 'wb'))
         cPickle.dump(yieldTable, open(r'inputs\yieldTable.pkl', 'wb'))
         cPickle.dump(AIDB, open(r'inputs\AIDB.pkl', 'wb'))
+        cPickle.dump(resolution, open(r'inputs\resolution.pkl', 'wb'))
+        cPickle.dump(rollback_enabled, open(r'inputs\rollback_enabled.pkl', 'wb'))
+        cPickle.dump(historic_range, open(r'inputs\historic_range.pkl', 'wb'))
+        cPickle.dump(rollback_range, open(r'inputs\rollback_range.pkl', 'wb'))
+        cPickle.dump(future_range, open(r'inputs\future_range.pkl', 'wb'))
+        cPickle.dump(activity_start_year, open(r'inputs\activity_start_year.pkl', 'wb'))
+        cPickle.dump(rollback_inv_out, open(r'inputs\rollback_inv_out.pkl', 'wb'))
+        cPickle.dump(tiler_scenarios, open(r'inputs\tiler_scenarios.pkl', 'wb'))
+        cPickle.dump(GCBM_scenarios, open(r'inputs\GCBM_scenarios.pkl', 'wb'))
+        cPickle.dump(tiler_output_dir, open(r'inputs\tiler_output_dir.pkl', 'wb'))
+        cPickle.dump(recliner2gcbm_config_dir, open(r'inputs\recliner2gcbm_config_dir.pkl', 'wb'))
+        cPickle.dump(recliner2gcbm_output_path, open(r'inputs\recliner2gcbm_output_path.pkl', 'wb'))
+        print "Done\n---------------------"
     except:
-        print "Failed to save objects."
+        print "Failed to save inputs."
         raise
+
+
+###############################################################################
+#                            Required Inputs (BC)
+#                                                     []: Restricting qualities
+# Inventory [feature layer in geodatabase]
+# Historic Fire Disturbances (NFDB, NBAC) [shapefiles where year is the last 4
+#    characters before file extention]
+# Historic Harvest Disturbances (BC Cutblocks) [shapefile]
+# Historic MPB Disturbances [shapefiles where year is the last 4 characters
+#    before file extention]
+# Projected Disturbances [shapefiles]
+# Spatial Boundaries (TSA and PSPU) [shapefiles]
+# NAmerica MAT (Mean Annual Temperature) [tiff]
+# Yield Table (Growth Curves) [AIDB species matching column, classifier columns,
+#    csv format]
+# AIDB [pre-setup with disturbance matrix values etc.]
+###############################################################################
+
 
 if __name__=="__main__":
     #### Variables
     # directory path to the working directory for relative paths
-    working_directory = r'G:\Nick\GCBM\05_Test_Automation\05_working'
+    working_directory = r'G:\Nick\GCBM\05_Test_Automation\05_working_new\TSA_05'
+    # directory path to the external data directory for relative paths
+    external_data = r'G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data'
+    # TSA number as a string
+    TSA = '05'
     # Tile resolution in degrees
     resolution = 0.001
-    # Deprecated ?
-    tiles = 1
+
+    # Set true to automatically run preprocessor after data prep
+    run_preprocessor = True
 
     # Set true to enable rollback
     rollback_enabled = True
@@ -50,7 +91,7 @@ if __name__=="__main__":
 
     ## Inventory
     # Path the the inventory gdb workspace
-    inventory_workspace = r"{}\02_layers\01_external_spatial_data\00_Workspace.gdb".format(working_directory)
+    inventory_workspace = r"{}\01a_pretiled_layers\00_Workspace.gdb".format(working_directory)
     # Layer name of the inventory in the gdb
     inventory_layer = "tsaTEST"
     # The age field name in the inventory layer
@@ -66,21 +107,21 @@ if __name__=="__main__":
 
     ## Disturbances
     # directory or geodatabase
-    NFDB_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles".format(working_directory)
-    # filter to get all layers within the directory/geodatabase following glob syntax
+    NFDB_workspace = r"{}\01_spatial\03_disturbances\01_historic\01_fire\shapefiles".format(external_data)
+    # filter to get all layers within the directory/geodatabase, following glob syntax
     NFDB_filter = "NFDB*.shp"
     # the field from which the year can be extracted
     NFDB_year_field = "YEAR_"
-    NBAC_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\01_fire\shapefiles".format(working_directory)
+    NBAC_workspace = r"{}\01_spatial\03_disturbances\01_historic\01_fire\shapefiles".format(external_data)
     NBAC_filter = "NBAC*.shp"
     NBAC_year_field = "EDATE"
-    harvest_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\02_harvest".format(working_directory)
+    harvest_workspace = r"{}\01_spatial\03_disturbances\01_historic\02_harvest".format(external_data)
     harvest_filter = "BC_cutblocks90_15.shp"
     harvest_year_field = "HARV_YR"
-    MPB_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\01_historic\03_MPB\BCMPB\shapefiles".format(working_directory)
-    MPB_filter = "mpb2015.shp"
+    MPB_workspace = r"{}\01_spatial\03_disturbances\01_historic\03_insect".format(external_data)
+    MPB_filter = "mpb*.shp"
 
-    projScenBase_workspace = r"{}\02_layers\01_external_spatial_data\03_disturbances\02_future\projDist_BASE".format(working_directory)
+    projScenBase_workspace = r"{}\01_spatial\03_disturbances\02_future\projDist_BASE".format(external_data)
     projScenBase_filter = "TS_*.shp"
     projScenBase_lookuptable = {
         11: "Base CC",
@@ -93,12 +134,12 @@ if __name__=="__main__":
     }
 
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
-    spatial_reference = r"{}\02_layers\01_external_spatial_data\01_spatial_reference".format(working_directory)
+    spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
     # file name or filter to find the TSA boundaries in the spatial reference directory
     spatial_boundaries_tsa = "TSA_boundaries_2016.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
     spatial_boundaries_pspu = "PSPUS_2016.shp"
-    # filter used to get the desired study area. change only the values for "field" and "code"
+    # filter used to get the desired study area. change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "TSA_NUMBER",
         "code": "'Cranbrook TSA'"
@@ -110,16 +151,16 @@ if __name__=="__main__":
     }
 
     # path to NAmerica MAT (Mean Annual Temperature)
-    NAmat_path = r"{}\02_layers\01_external_spatial_data\04_environment\NAmerica_MAT_1971_2000.tif".format(working_directory)
+    NAmat_path = r"{}\01_spatial\04_environment\NAmerica_MAT_1971_2000.tif".format(external_data)
 
     ## Rollback Output
     # rolled back inventory output directory
-    rollbackInvOut = r"{}\02_layers\01_external_spatial_data\02_inventory".format(working_directory)
+    rollback_inv_out = r"{}\01a_pretiled_layers\02_inventory".format(working_directory)
     ## rollback disturbances output file
-    rollbackDistOut = r"{}\02_layers\01_external_spatial_data\03_disturbances\03_rollbackDisturbances\rollbackDist.shp".format(working_directory)
+    rollback_dist_out = r"{}\01a_pretiled_layers\03_disturbances\03_rollback\rollbackDist.shp".format(working_directory)
 
-
-    # reprojected_redirection =
+    reprojected_redirection = ('01_spatial', '03_spatial_reprojected')
+    clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{}\01a_pretiled_layers'.format(TSA))
 
     ### Initialize Spatial Inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
@@ -134,39 +175,45 @@ if __name__=="__main__":
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
 
     external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries]
-    reproject = [historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries]
-    reproject = [historicMPB]
-    clip = [historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase]
+    # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
+    # to be reprojected
+    reproject = [
+        # historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries
+    ]
+    clip = [historicFire1, historicFire2, historicHarvest, historicMPB]
     copy = [sp for sp in external_spatial_data if sp not in clip]
 
     inventory.reproject(inventory.getWorkspace(), name='inv_reprojected')
 
     for spatial_input in reproject:
-        spatial_input.reproject(spatial_input.getWorkspace().replace(r'01_external_spatial_data', r'01a_reprojected'))
-    # for spatial_input in clip:
-    #     spatial_input.clip(os.path.join(inventory.getWorkspace(), inventory.getFilter()), os.path.join(spatial_input.getWorkspace(), 'clipped'))
-    # for spatial_input in copy:
-    #     spatial_input.copy(spatial_input.getWorkspace().replace('00_external_data', pretiled_layers_redirection))
+        spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
+    for spatial_input in clip:
+        spatial_input.clip(spatial_input.getWorkspace(), os.path.join(inventory.getWorkspace(), inventory.getFilter()),
+            spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
+    for spatial_input in copy:
+        spatial_input.copy(spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
 
-    rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollbackDistOut)
+    rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
 
 
     ### Aspatial Inputs
 
     # Different scenarios to be ran by the tiler (before Disturbance Matrix distinctions)
-    tilerScenarios = ['Base']
+    tiler_scenarios = ['Base']
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
-    GCBMScenarios = {'Base':'Base'}
+    GCBM_scenarios = {'Base':'Base'}
 
     ## Recliner2GCBM
-    recliner2gcbm_config_dir = r"G:\Nick\GCBM\05_Test_Automation\05_working\01_configs\Recliner2GCBM"
-    recliner2gcbm_output_path = r"G:\Nick\GCBM\05_Test_Automation\05_working\01_configs\GCBMinput.db"
+    recliner2gcbm_config_dir = r"{}\02a_recliner2GCBM_input".format(working_directory)
+    recliner2gcbm_output_path = r"{}\02b_recliner2GCBM_output\GCBMinput.db".format(working_directory)
 
     # directory where the tiler will output to
-    tiler_output_dir = r"{}\02_layers\02_GCBM_tiled_input\SCEN_TEST".format(working_directory)
+    tiler_output_dir = r"{}\01b_tiled_layers\SCEN_TEST".format(working_directory)
 
     ## Yield table
-    # path to the yield table (recommened to be in the recliner2gcbm config directory)
+    # path to yield table in external data
+    original_yieldTable_path = r"{}\02_aspatial\02_yield_table\yield.csv".format(external_data)
+    # path to the yield table (recommended to be in the recliner2gcbm config directory)
     yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
     # The classifiers as keys and the column as value
     yieldTable_classifier_cols = {"AU":0, "LDSPP":1}
@@ -178,9 +225,15 @@ if __name__=="__main__":
     yieldTable_cols = {"SpeciesCol":2,"IncrementRange":[3,38]}
 
     ## AIDB
-    # path to aidb where disturbance matrix is already configured according to
-    # scenario definitions
-    aidb_path = r"{}\00_AIDB\ArchiveIndex_Beta_Install_BASE.mdb".format(working_directory)
+    # path to aidb in external data where disturbance matrix is already configured
+    # according to scenario definitions
+    original_aidb_path = r'{}\02_aspatial\01_AIDB\ArchiveIndex_Beta_Install_BASE.mdb'.format(external_data)
+    # path to aidb
+    aidb_path = r"{}\02a_recliner2GCBM_input\ArchiveIndex_Beta_Install_BASE.mdb".format(working_directory)
+
+    ## Copy yield table and aidb
+    shutil.copyfile(original_yieldTable_path, yieldTable_path)
+    shutil.copyfile(original_aidb_path, aidb_path)
 
 
     ### Initialize Aspatial Inputs
@@ -189,6 +242,7 @@ if __name__=="__main__":
     AIDB = preprocess_tools.inputs.AIDB(path=aidb_path)
     transitionRules = None
 
+    save_inputs()
 
-
-    save_objects()
+    # if run_preprocessor == True:
+    #     preprocessor.main()
