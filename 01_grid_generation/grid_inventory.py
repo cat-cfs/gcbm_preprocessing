@@ -30,6 +30,7 @@ class GridInventory(object):
     def __init__(self, inventory, outputDBF, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
+        self.output_dbf_dir = outputDBF
 
         self.inventory_layer = r"in_memory\inventory_layer"
         self.inventory_layer2 = r"in_memory\inventory_layer2"
@@ -46,7 +47,8 @@ class GridInventory(object):
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
             lambda:self.selectGreaterThanZeroAgeStands(),
-            lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap")
+            lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap"),
+            lambda:self.exportGriddedInvDBF()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
         for t in tasks:
@@ -82,7 +84,7 @@ class GridInventory(object):
         pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         if spatial_rel == "largest_overlap":
             # Calculate intersection between Target Feature and Join Features
-            intersect = arcpy.analysis.Intersect([target_features, join_features], "in_memory/intersect", "ONLY_FID")
+            intersect = arcpy.analysis.Intersect([target_features, join_features], "intersect", "ONLY_FID")
             # Find which Join Feature has the largest overlap with each Target Feature
             # Need to know the Target Features shape type, to know to read the SHAPE_AREA oR SHAPE_LENGTH property
             geom = "AREA" if arcpy.Describe(target_features).shapeType.lower() == "polygon" and arcpy.Describe(join_features).shapeType.lower() == "polygon" else "LENGTH"
@@ -93,13 +95,14 @@ class GridInventory(object):
             with arcpy.da.SearchCursor(intersect, fields) as scur:
                 pp2 = self.ProgressPrinter.newProcess("search for overlap", 1, 2).start()
                 for row in scur:
+                    row = (row[0], row[1], round(row[2]*1000000,8))
                     try:
                         if row[2] > overlap_dict[row[0]][1]:
                             overlap_dict[row[0]] = [row[1], row[2]]
                     except:
                         overlap_dict[row[0]] = [row[1], row[2]]
                 pp2.finish()
-
+            arcpy.management.Delete("intersect")
             # Copy the target features and write the largest overlap join feature ID to each record
             # Set up all fields from the target features + ORIG_FID
             fieldmappings = arcpy.FieldMappings()
@@ -134,7 +137,8 @@ class GridInventory(object):
 
     def exportGriddedInvDBF(self):
         arcpy.env.workspace = self.inventory.getWorkspace()
-        arcpy.TableToDBASE_conversion(self.inventory.getFilter(), self.outputDBF)
+        _ = arcpy.TableToDBASE_conversion("inventory_gridded", self.output_dbf_dir)
+        self.inventory.setLayerName("inventory_gridded")
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script
