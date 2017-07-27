@@ -26,10 +26,11 @@ import arcpy
 import inspect
 
 class IntersectDisturbancesInventory(object):
-    def __init__(self, inventory, spatialBoundaries, ProgressPrinter):
+    def __init__(self, inventory, spatialBoundaries, rollback_range, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.spatialBoundaries = spatialBoundaries
+        self.rollback_start = rollback_range[0]
 
         # Temp Layers
         self.disturbances_layer = r"in_memory\disturbances_layer"
@@ -41,8 +42,7 @@ class IntersectDisturbancesInventory(object):
         self.StudyArea = self.spatialBoundaries.getAreaFilter()["code"]
         self.studyAreaOperator = self.spatialBoundaries.getAreaFilter()["operator"]
         self.invVintage = self.inventory.getYear()
-        rollback_start = 1990
-        self.rolledback_years = self.invVintage - rollback_start
+        self.rolledback_years = self.invVintage - self.rollback_start
         self.inv_workspace = self.inventory.getWorkspace()
         self.invAge_fieldName = self.inventory.getFieldNames()['age']
 
@@ -50,13 +50,13 @@ class IntersectDisturbancesInventory(object):
         self.disturbance_fieldName = "DistYEAR"
         self.studyArea_fieldName = self.spatialBoundaries.getAreaFilter()["field"]
         self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
-        self.inv_dist_dateDiff = "Dist_DE_DIFF"
-        self.preDistAge = "preDistAge"
-        self.dist_type_field = "DistType"
-        self.regen_delay_field = "RegenDelay"
-        self.rollback_vintage_field = "Age1990"
-        self.new_disturbance_field = "DistYEAR_new"
-        self.nullID_field = "TileID"
+        self.inv_dist_dateDiff = self.inventory.getFieldNames()['dist_date_diff']
+        self.preDistAge = self.inventory.getFieldNames()['pre_dist_age']
+        self.dist_type_field = self.inventory.getFieldNames()['dist_type']
+        self.regen_delay_field = self.inventory.getFieldNames()['regen_delay']
+        self.rollback_age_field = self.inventory.getFieldNames()['rollback_age']
+        self.new_disturbance_field = self.inventory.getFieldNames()['new_disturbance_yr']
+        self.nullID_field = self.inventory.getFieldNames()['regen_delay']
 
         self.gridded_inventory = r"{}\inventory_gridded".format(self.inv_workspace)
         self.disturbances = r"{}\MergedDisturbances".format(self.inv_workspace)
@@ -85,7 +85,7 @@ class IntersectDisturbancesInventory(object):
             self.preDistAge,
             self.dist_type_field,
             self.regen_delay_field,
-            self.rollback_vintage_field,
+            self.rollback_age_field,
             self.new_disturbance_field
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_names), 1).start()

@@ -10,17 +10,15 @@
       "tileLonSize": 1.0,
       "blockLatSize": 0.1,
       "blockLonSize": 0.1,
-      "cellLatSize": 0.00100,
-      "cellLonSize": 0.00100,
+      "cellLatSize": $resolution,
+      "cellLonSize": $resolution,
       "layers": [
         $rollbackHarvest,
         $historicHarvest,
         $rollbackFire,
         $historicFire,
         $MPB,
-        $projectedDisturbances,
-        $classifiers,
-        $reportingIndicators
+        $projectedDisturbances
         {
           "name": "fire_2011",
           "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\NBAC2011_moja",

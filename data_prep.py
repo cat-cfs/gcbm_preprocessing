@@ -74,9 +74,6 @@ if __name__=="__main__":
     # Tile resolution in degrees
     resolution = 0.001
 
-    # Set true to automatically run preprocessor after data prep
-    run_preprocessor = True
-
     # Set true to enable rollback
     rollback_enabled = True
 
@@ -100,9 +97,16 @@ if __name__=="__main__":
     inventory_year = 2011
     # A dictionary with the classifiers as keys and the associated field names (as
     # they appear in the inventory) as values.
-    inv_classifier_attr = {
+    inventory_classifier_attr = {
         "LdSpp": "LeadSpp",
         "AU": "AU"
+    }
+    inventory_field_names = {
+        "age": "Age2011",
+        "species": "LeadSpp",
+        "ownership": "Own",
+        "FMLB": "FMLB",
+        "THLB": "THLB"
     }
 
     ## Disturbances
@@ -166,7 +170,7 @@ if __name__=="__main__":
 
     ### Initialize Spatial Inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
-        year=inventory_year, classifiers_attr=inv_classifier_attr)
+        year=inventory_year, classifiers_attr=inventory_classifier_attr, field_names=inventory_field_names)
     historicFire1 = preprocess_tools.inputs.HistoricDisturbance(NFDB_workspace, NFDB_filter, NFDB_year_field)
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
@@ -175,6 +179,7 @@ if __name__=="__main__":
     spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
+    rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
 
     external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries]
     # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
@@ -194,8 +199,6 @@ if __name__=="__main__":
             spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
     for spatial_input in copy:
         spatial_input.copy(spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
-
-    rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
 
 
     ### Aspatial Inputs
@@ -245,6 +248,3 @@ if __name__=="__main__":
     transitionRules = None
 
     save_inputs()
-
-    # if run_preprocessor == True:
-    #     preprocessor.main()

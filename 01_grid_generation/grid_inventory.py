@@ -25,6 +25,7 @@ archook.get_arcpy()
 import arcpy
 import os
 import inspect
+import sys
 
 class GridInventory(object):
     def __init__(self, inventory, outputDBF, ProgressPrinter):
@@ -34,13 +35,13 @@ class GridInventory(object):
 
         self.inventory_layer = r"in_memory\inventory_layer"
         self.inventory_layer2 = r"in_memory\inventory_layer2"
+        self.grid = "XYgrid"
+        self.gridded_inventory = "inventory_gridded"
 
     def gridInventory(self):
         arcpy.env.workspace = self.inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
         arcpy.Delete_management("in_memory")
-        self.grid = r"{}\XYgrid".format(self.inventory.getWorkspace())
-        self.gridded_inventory = r"{}\inventory_gridded".format(self.inventory.getWorkspace())
         self.invAge_fieldName = self.inventory.getFieldNames()['age']
 
         tasks = [
@@ -76,6 +77,7 @@ class GridInventory(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         invAge_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(os.path.join(self.inventory.getWorkspace(), self.inventory.getLayerName()), self.invAge_fieldName), 0)
         arcpy.Select_analysis(self.inventory_layer, self.inventory_layer2, invAge_whereClause)
+        arcpy.RepairGeometry_management(self.inventory_layer2, "DELETE_NULL")
         pp.finish()
 
     # Spatial Join tool--------------------------------------------------------------------
@@ -84,7 +86,7 @@ class GridInventory(object):
         pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         if spatial_rel == "largest_overlap":
             # Calculate intersection between Target Feature and Join Features
-            intersect = arcpy.analysis.Intersect([target_features, join_features], "intersect", "ONLY_FID")
+            intersect = arcpy.analysis.Intersect([target_features, join_features], "intersect", "ONLY_FID", "", "INPUT")
             # Find which Join Feature has the largest overlap with each Target Feature
             # Need to know the Target Features shape type, to know to read the SHAPE_AREA oR SHAPE_LENGTH property
             geom = "AREA" if arcpy.Describe(target_features).shapeType.lower() == "polygon" and arcpy.Describe(join_features).shapeType.lower() == "polygon" else "LENGTH"
@@ -95,14 +97,14 @@ class GridInventory(object):
             with arcpy.da.SearchCursor(intersect, fields) as scur:
                 pp2 = self.ProgressPrinter.newProcess("search for overlap", 1, 2).start()
                 for row in scur:
-                    row = (row[0], row[1], round(row[2]*1000000,8))
+                    row = (row[0], row[1], round(row[2]*1000000,6))
                     try:
                         if row[2] > overlap_dict[row[0]][1]:
                             overlap_dict[row[0]] = [row[1], row[2]]
                     except:
                         overlap_dict[row[0]] = [row[1], row[2]]
                 pp2.finish()
-            arcpy.management.Delete("intersect")
+            arcpy.Delete_management("intersect")
             # Copy the target features and write the largest overlap join feature ID to each record
             # Set up all fields from the target features + ORIG_FID
             fieldmappings = arcpy.FieldMappings()
@@ -114,7 +116,7 @@ class GridInventory(object):
             fieldmap.outputField = fld
             fieldmappings.addFieldMap(fieldmap)
             # Perform the copy
-            arcpy.conversion.FeatureClassToFeatureClass(target_features, os.path.dirname(out_fc), os.path.basename(out_fc), "", fieldmappings)
+            arcpy.conversion.FeatureClassToFeatureClass(target_features, self.inventory.getWorkspace(), os.path.basename(out_fc), "", fieldmappings)
             # Add a new field JOIN_FID to contain the fid of the join feature with the largest overlap
             arcpy.management.AddField(out_fc, "JOIN_FID", "LONG")
             # Calculate the JOIN_FID field
@@ -136,9 +138,16 @@ class GridInventory(object):
         pp1.finish()
 
     def exportGriddedInvDBF(self):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.env.workspace = self.inventory.getWorkspace()
-        _ = arcpy.TableToDBASE_conversion("inventory_gridded", self.output_dbf_dir)
+        prev = sys.stdout
+        silenced = open('nul', 'w')
+        sys.stdout = silenced
+        arcpy.TableToDBASE_conversion("inventory_gridded", self.output_dbf_dir)
+        pp.finish()
+        sys.stdout = prev
         self.inventory.setLayerName("inventory_gridded")
+        pp.finish()
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script

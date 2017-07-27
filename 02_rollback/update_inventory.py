@@ -23,9 +23,9 @@ class CalculateDistDEdifference(object):
         #local variables
         self.invAge_fieldName = self.inventory.getFieldNames()['age']
         self.invVintage = self.inventory.getYear()
-        self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
-        self.disturbance_fieldName = "DistYEAR"
-        self.inv_dist_dateDiff = "Dist_DE_DIFF"
+        self.establishmentDate_fieldName = self.inventory.getFieldNames()['establishment_date']
+        self.disturbance_fieldName = self.inventory.getFieldNames()['disturbance_yr']
+        self.inv_dist_dateDiff = self.inventory.getFieldNames()['dist_date_diff']
 
         tasks = [
             lambda:self.makeLayers(),
@@ -63,9 +63,12 @@ class CalculateDistDEdifference(object):
         pp.finish()
 
 class CalculateNewDistYr(object):
-    def __init__(self, inventory, ProgressPrinter):
+    def __init__(self, inventory, rollback_range, harv_yr_field, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
+        self.rollback_start = rollback_range[0]
+        self.inv_vintage = inventory.getYear()
+        self.harv_yr_field = harv_yr_field
 
         #Constants
         self.DisturbedInventory = "DisturbedInventory"
@@ -75,18 +78,15 @@ class CalculateNewDistYr(object):
         arcpy.env.workspace = self.inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
         #local variables
-        self.inv_age_field = "Age2011"
-        self.establishment_date_field = "DE_2011"
-        self.inv_vintage = 2011
-        self.rollback_year = 1990
-        self.disturbance_yr = "DistYEAR"
-        self.new_disturbance_field = "DistYEAR_new"
-        self.inv_dist_date_diff_field = "Dist_DE_DIFF"
-        self.dist_type_field = "DistType"
-        self.harv_yr_field = "HARV_YR"
-        self.regen_delay_field = "RegenDelay"
-        self.preDistAge = "preDistAge"
-        self.rollback_vintage_field = "Age1990"
+        self.inv_age_field = self.inventory.getFieldNames()['age']
+        self.establishment_date_field = self.inventory.getFieldNames()['establishment_date']
+        self.disturbance_yr = self.inventory.getFieldNames()['disturbance_yr']
+        self.new_disturbance_field = self.inventory.getFieldNames()['new_disturbance_yr']
+        self.inv_dist_date_diff_field = self.inventory.getFieldNames()['dist_date_diff']
+        self.dist_type_field = self.inventory.getFieldNames()['dist_type']
+        self.regen_delay_field = self.inventory.getFieldNames()['regen_delay']
+        self.preDistAge = self.inventory.getFieldNames()['pre_dist_age']
+        self.rollback_vintage_field = self.inventory.getFieldNames()['rollback_age']
 
         tasks = [
             lambda:self.makeLayers(),
@@ -178,7 +178,7 @@ class CalculateNewDistYr(object):
         for row in cur:
             pre_DistAge = row.getValue(self.preDistAge)
             dist_yearNew = row.getValue(self.new_disturbance_field)
-            row.setValue(self.rollback_vintage_field, (pre_DistAge + self.rollback_year - dist_yearNew))
+            row.setValue(self.rollback_vintage_field, (pre_DistAge + self.rollback_start - dist_yearNew))
             # if dist_yearNew == rollback_year:
                 # row.setValue(rollback_vintage_field, (pre_DistAge + rollback_year - dist_yearNew))
             # else:
@@ -219,9 +219,9 @@ class updateInvRollback(object):
         #data
         self.gridded_inventory = "inventory_gridded"
         self.disturbedInventory = "DisturbedInventory"
-        self.RolledBackInventory = "inv_gridded_1990"
+        self.RolledBackInventory = "inventory_gridded_1990"
         self.inv_vintage = 2011
-        self.rollback_year = 1990
+        self.rollback_start = 1990
 
         #layers
         self.RolledBackInventory_layer = "RolledBackInventory_layer"
@@ -233,24 +233,16 @@ class updateInvRollback(object):
         arcpy.env.overwriteOutput = True
         #local variables
         #fields
-        self.inv_age_field = "Age2011"
-        self.establishment_date_field = "DE_2011"
-        self.disturbance_yr = "DistYEAR"
-        self.new_disturbance_field = "DistYEAR_new"
-        self.inv_dist_date_diff_field = "Dist_DE_DIFF"
-        self.dist_type_field = "DistType"
-        self.harv_yr_field = "HARV_YR"
-        self.regen_delay_field = "RegenDelay"
-        self.preDistAge = "preDistAge"
-        self.rollback_vintage_field = "Age1990"
-        self.species_field = "LeadSpp"
-        self.GY_linkField = "FEATURE_ID"
+        self.inv_age_field = self.inventory.getFieldNames()['age']
+        self.new_disturbance_field = self.inventory.getFieldNames()['new_disturbance_yr']
+        self.dist_type_field = self.inventory.getFieldNames()['dist_type']
+        self.regen_delay_field = self.inventory.getFieldNames()['regen_delay']
+        self.rollback_vintage_field = self.inventory.getFieldNames()['rollback_age']
         self.CELL_ID = "CELL_ID"
 
         tasks = [
             lambda:self.makeLayers1(),
             lambda:self.remergeDistPolyInv(),
-            lambda:self.addFieldMaps(),
             lambda:self.makeLayers2(),
             lambda:self.rollbackAgeNonDistStands(),
             lambda:self.exportRollbackDisturbances(),
@@ -274,23 +266,6 @@ class updateInvRollback(object):
             self.RolledBackInventory, "BORDERS", "0.25 Meters")
         pp.finish()
 
-    def addFieldMaps(self):
-        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-
-        field_names = [
-            self.species_field,
-            self.rollback_vintage_field,
-            self.inv_age_field,
-            self.GY_linkField
-        ]
-
-        for field_name in field_names:
-            fm = arcpy.FieldMap()
-            fms = arcpy.FieldMappings()
-            fm.addInputField(self.RolledBackInventory, field_name)
-            fms.addFieldMap(fm)
-        pp.finish()
-
     def makeLayers2(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.MakeFeatureLayer_management(self.RolledBackInventory, self.RolledBackInventory_layer)
@@ -304,7 +279,7 @@ class updateInvRollback(object):
             RegenDelay = row.getValue(self.regen_delay_field)
             invAge = row.getValue(self.inv_age_field)
             if rolledBackAge is None:
-                row.setValue(self.rollback_vintage_field, (invAge - (self.inv_vintage - self.rollback_year)))
+                row.setValue(self.rollback_vintage_field, (invAge - (self.inv_vintage - self.rollback_start)))
                 row.setValue(self.regen_delay_field, 0)
             cur.updateRow(row)
         pp.finish()

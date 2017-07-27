@@ -69,11 +69,6 @@ class MergeDisturbances(object):
         fm_year = arcpy.FieldMap()
         self.fms = arcpy.FieldMappings()
 
-        # Get the field names for all original files
-        # NBAC_yr = "EDATE"
-        # NFDB_yr = "YEAR_"
-        # CC_YR = "HARV_YR"
-
         self.vTab = arcpy.ValueTable()
         for dist in self.disturbances:
             ws = dist.getWorkspace()
@@ -90,21 +85,6 @@ class MergeDisturbances(object):
                     else:
                         fm_year.addInputField(fc, dist.getYearField())
                     self.vTab.addRow(fc)
-            # fcs2 = arcpy.ListFeatureClasses(dist.getFilter(), "Polygon")
-            #     # print "New fire list is: ", fcs2
-            #     for fc in fcs2:
-            #         fc = os.path.join(ws, fc)
-            #         self.fms.addTable(fc)
-            #         fm_year.addInputField(fc, self.NBAC_yr, 0,3)
-            #         self.vTab.addRow(fc)
-            # harvest = arcpy.ListFeatureClasses(dist.getFilter(), "Polygon")
-            # if harvest:
-            #     # print "Cutblocks list is: ", harvest
-            #     for fc in harvest:
-            #         fc = os.path.join(ws, fc)
-            #         self.fms.addTable(fc)
-            #         fm_year.addInputField(fc, self.CC_yr)
-            #         self.vTab.addRow(fc)
 
         # Set the merge rule to find the First value of all fields in the
         # FieldMap object

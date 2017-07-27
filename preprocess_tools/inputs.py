@@ -165,22 +165,19 @@ class Inventory(SpatialInputs):
 
 	def getFieldNames(self):
 		field_names = {
-			"disturbed_inventory": "DisturbedInventory",
-			"disturbed_inventory_layer": "disturbedInventory_layer",
 			"age": "Age2011",
-			"establishment_date": "DE_2011",
-			"disturbance_yr": "DistYEAR",
-			"new_disturbance_yr": "DistYEAR_new",
-			"inv_dist_date_diff": "Dist_DE_DIFF",
-			"dist_type": "DistType",
-			"harv_yr": "HARV_YR",
-			"regen_delay": "RegenDelay",
-			"pre_dist_age": "preDistAge",
-			"rollback_vintage": "Age1990",
 			"species": "LeadSpp",
 			"ownership": "Own",
 			"FMLB": "FMLB",
-			"THLB": "THLB"
+			"THLB": "THLB",
+			"establishment_date": "DE_2011",
+			"dist_date_diff": "Dist_DE_DIFF",
+			"pre_dist_age": "preDistAge",
+			"dist_type": "DistType",
+			"regen_delay": "RegenDelay",
+			"rollback_age": "Age1990",
+			"disturbance_yr": "DistYEAR",
+			"new_disturbance_yr": "DistYEAR_new"
 		}
 		if self._field_names != None:
 			field_names.update(self._field_names)

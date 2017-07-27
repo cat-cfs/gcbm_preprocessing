@@ -162,9 +162,9 @@ if __name__=="__main__":
     fishnet = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
     inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, future_dist_input_dir, PP)
     mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory, [historicFire1, historicFire2, historicHarvest], PP)
-    intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, PP)
+    intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, rollback_range, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
-    calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, PP)
+    calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, rollback_range, historicHarvest.getYearField(), PP)
     updateInv = rollback.update_inventory.updateInvRollback(inventory, rollback_inv_out, rollbackDisturbances, resolution, PP)
     tiler = tiler.tiler.Tiler(
         spatialBoundaries=spatialBoundaries,
@@ -203,7 +203,7 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire1)
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest)
-    # tiler.processHistoricMPBDisturbances(historicMPB)
+    tiler.processHistoricMPBDisturbances(historicMPB)
     tiler.processProjectedDisturbances(projectedDistBase)
     transitionRules = tiler.runTiler(tiler_output_dir)
     # -- Prep and run recliner2GCBM
