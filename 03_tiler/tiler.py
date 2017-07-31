@@ -54,9 +54,11 @@ class Tiler(object):
 
     def processGeneralLayers(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3],1).start()
+        general_lyrs = []
         for raster in self.inventory.getRasters():
             if raster.getAttrTable() == None:
                 self.layers.append(RasterLayer(raster.getPath()))
+                general_lyrs.append(raster.getPath().split('.')[0])
             else:
                 self.layers.append(RasterLayer(raster.getPath(),
                     nodata_value=255,
@@ -67,10 +69,14 @@ class Tiler(object):
             attr_field = self.spatial_boundaries.getAttrField(attr)
             self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathPSPU(),
                 Attribute(attr_field)))
+            general_lyrs.append(attr)
 
         self.layers.append(RasterLayer(self.NAmat.getPath(), nodata_value=1.0e38))
+        general_lyrs.append(self.NAmat.getPath().split('.')[0])
 
         pp.finish()
+
+        return general_lyrs
 
 
     def processRollbackDisturbances(self):
@@ -78,13 +84,18 @@ class Tiler(object):
             1: "Wild Fires",
             2: "Clearcut harvesting with salvage"
         }
+        rollback_name_lookup = {
+            1: "fire",
+            2: "harvest"
+        }
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         for year in range(self.rollback_range[0], self.rollback_range[1]+1):
             for dist_code in rollback_dist_lookup:
                 label = rollback_dist_lookup[dist_code]
+                name = rollback_name_lookup[dist_code]
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    VectorLayer("rollback_{}_{}".format(label, year),
+                    VectorLayer("rollback_{}_{}".format(name, year),
                                 self.rollback_disturbances.getPath(),
                                 [
                                     Attribute("DistYEAR_n", filter=lambda v, yr=year: v == yr),
@@ -170,7 +181,7 @@ class Tiler(object):
             if year in range(self.historic_range[0], self.historic_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    VectorLayer(file_name_no_ext, file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
+                    VectorLayer("mpb_{}".format(year), file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
                     year=year,
                     disturbance_type=Attribute("Severity"),
                     transition=TransitionRule(

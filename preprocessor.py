@@ -11,6 +11,7 @@ gridGeneration = __import__("01_grid_generation")
 rollback = __import__("02_rollback")
 tiler = __import__("03_tiler")
 recliner2GCBM = __import__("04_recliner2GCBM")
+GCBMconfig = __import__("05_GCBM_config")
 
 def save_inputs():
     try:
@@ -198,7 +199,7 @@ if __name__=="__main__":
 # ------------------------------------------------------------------------------
     # -- Run Tiler
     tiler.defineBoundingBox(tiler_output_dir)
-    tiler.processGeneralLayers()
+    general_lyrs = tiler.processGeneralLayers()
     tiler.processRollbackDisturbances()
     tiler.processHistoricFireDisturbances(historicFire1)
     tiler.processHistoricFireDisturbances(historicFire2)

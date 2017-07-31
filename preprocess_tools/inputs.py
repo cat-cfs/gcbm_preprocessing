@@ -1,5 +1,4 @@
 import arcpy
-import gcbm_aws
 import os
 import glob
 import shutil
@@ -137,10 +136,6 @@ class Inventory(SpatialInputs):
 		desc = arcpy.Describe(self._filter)
 		e = desc.extent
 		return [e.XMin, e.YMin, e.XMax, e.YMax]
-
-	def getBoundingBoxD(self):
-		extent = list(gcbm_aws.util.get_bbox(self._workspace, self._layer_name))
-		return extent
 
 	def getBottomLeftCorner(self):
 		return self._bounding_box[0], self._bounding_box[1]
