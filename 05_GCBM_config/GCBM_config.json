@@ -142,10 +142,10 @@
                 "library": "internal.flint",
                 "type": "LocationIdxFromFlintDataTransform",
                 "provider": "RasterTiled",
-                "data_id": "forest_age"
+                "data_id": "age"
             }
         },
-        "admin_boundary": "British Columbia",
+        "admin_boundary": "Ontario",
         "initial_classifier_set": {
             "transform": {
                 "library": "internal.flint",
@@ -310,7 +310,7 @@
            "transform": {
                "library": "internal.flint",
                "type": "CompositeTransform",
-               "vars": [ "classifier_set", "eco_boundary", "THLB", "ProtectedAreas", "LandscapePosition" ],
+               "vars": [ "classifier_set", "eco_boundary", "age" ],
                "allow_nulls": true
             }
         }

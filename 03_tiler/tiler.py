@@ -45,7 +45,7 @@ class Tiler(object):
     def defineBoundingBox(self, output_dir):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         cwd = os.getcwd()
-        os.chdir(output_dir)
+        os.chdir(os.path.join(output_dir, 'bbox'))
         self.bbox = BoundingBox(RasterLayer(self.inventory.getRasters()[0].getPath()), pixel_size=self.resolution)
         self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
         os.chdir(cwd)
@@ -150,11 +150,11 @@ class Tiler(object):
 
     def processHistoricHarvestDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
+        C2C_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
         for year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("harvest_{}".format(year), cutblock_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
+                VectorLayer("harvest_{}".format(year), C2C_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
                 year=year,
                 disturbance_type="Clearcut harvesting with salvage",
                 transition=TransitionRule(

@@ -62,7 +62,7 @@ class SpatialInputs(object):
 		self._workspace = new_workspace
 		print "Done"
 
-	def copy(self, new_workspace):
+	def copy(self, new_workspace, name=None):
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
 		if new_workspace==self.getWorkspace() and name==None:
@@ -161,10 +161,7 @@ class Inventory(SpatialInputs):
 	def getFieldNames(self):
 		field_names = {
 			"age": "Age2011",
-			"species": "LeadSpp",
-			"ownership": "Own",
-			"FMLB": "FMLB",
-			"THLB": "THLB",
+			"species": "Species",
 			"establishment_date": "DE_2011",
 			"dist_date_diff": "Dist_DE_DIFF",
 			"pre_dist_age": "preDistAge",
