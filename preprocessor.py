@@ -198,18 +198,18 @@ if __name__=="__main__":
 
     ### Execute Functions
     # -- Grid generation
-    # fishnet.createFishnet()
+    fishnet.createFishnet()
     # -- Grid inventory
-    # inventoryGridder.gridInventory()
-    # if not rollback_enabled:
-    #     inventoryGridder.exportInventory(inventory_raster_out, resolution)
+    inventoryGridder.gridInventory()
+    if not rollback_enabled:
+        inventoryGridder.exportInventory(inventory_raster_out, resolution)
     # else:
         # -- Start of rollback
-        # mergeDist.runMergeDisturbances()
-        # intersect.runIntersectDisturbancesInventory()
-        # calcDistDEdiff.calculateDistDEdifference()
-        # calcNewDistYr.calculateNewDistYr()
-    updateInv.updateInvRollback()
+        mergeDist.runMergeDisturbances()
+        intersect.runIntersectDisturbancesInventory()
+        calcDistDEdiff.calculateDistDEdifference()
+        calcNewDistYr.calculateNewDistYr()
+        updateInv.updateInvRollback()
         # -- End of rollback
     # -- Upload to S3
     # s3.upload()
