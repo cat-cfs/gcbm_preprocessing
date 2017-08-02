@@ -32,13 +32,17 @@ def save_inputs():
         cPickle.dump(rollback_range, open(r'inputs\rollback_range.pkl', 'wb'))
         cPickle.dump(future_range, open(r'inputs\future_range.pkl', 'wb'))
         cPickle.dump(activity_start_year, open(r'inputs\activity_start_year.pkl', 'wb'))
-        cPickle.dump(rollback_inv_out, open(r'inputs\rollback_inv_out.pkl', 'wb'))
+        cPickle.dump(inventory_raster_out, open(r'inputs\inventory_raster_out.pkl', 'wb'))
         cPickle.dump(tiler_scenarios, open(r'inputs\tiler_scenarios.pkl', 'wb'))
         cPickle.dump(GCBM_scenarios, open(r'inputs\GCBM_scenarios.pkl', 'wb'))
         cPickle.dump(tiler_output_dir, open(r'inputs\tiler_output_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_config_dir, open(r'inputs\recliner2gcbm_config_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_output_path, open(r'inputs\recliner2gcbm_output_path.pkl', 'wb'))
         cPickle.dump(future_dist_input_dir, open(r'inputs\future_dist_input_dir.pkl', 'wb'))
+        cPickle.dump(gcbm_raw_output_dir, open(r'inputs\gcbm_raw_output_dir.pkl', 'wb'))
+        cPickle.dump(gcbm_configs_dir, open(r'inputs\gcbm_configs_dir.pkl', 'wb'))
+        cPickle.dump(reportingIndicators, open(r'inputs\reportingIndicators.pkl', 'wb'))
+        cPickle.dump(gcbm_exe, open(r'inputs\gcbm_exe.pkl', 'wb'))
         print "Done\n---------------------"
     except:
         print "Failed to save inputs."
@@ -159,7 +163,7 @@ if __name__=="__main__":
 
     ## Rollback Output
     # rolled back inventory output directory
-    rollback_inv_out = r"{}\01a_pretiled_layers\02_inventory".format(working_directory)
+    inventory_raster_out = r"{}\01a_pretiled_layers\02_inventory".format(working_directory)
     # rollback disturbances output file
     rollback_dist_out = r"{}\01a_pretiled_layers\03_disturbances\03_rollback\rollbackDist.shp".format(working_directory)
     # future disturbances input directory for woodstock
@@ -213,7 +217,7 @@ if __name__=="__main__":
     recliner2gcbm_output_path = r"{}\02b_recliner2GCBM_output\GCBMinput.db".format(working_directory)
 
     # directory where the tiler will output to
-    tiler_output_dir = r"{}\01b_tiled_layers\SCEN_TEST".format(working_directory)
+    tiler_output_dir = r"{}\01b_tiled_layers".format(working_directory)
 
     ## Yield table
     # path to yield table in external data
@@ -221,7 +225,7 @@ if __name__=="__main__":
     # path to the yield table (recommended to be in the recliner2gcbm config directory)
     yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
     # The classifiers as keys and the column as value
-    yieldTable_classifier_cols = {"AU":0, "LDSPP":1}
+    yieldTable_classifier_cols = {"AU":0, "LdSpp":1}
     # True if the first row of the yield table is a header
     yieldTable_header = True
     # year interval between age increments
@@ -240,11 +244,21 @@ if __name__=="__main__":
     shutil.copyfile(original_yieldTable_path, yieldTable_path)
     shutil.copyfile(original_aidb_path, aidb_path)
 
+    ## GCBM Configuration
+    gcbm_configs_dir = r'{}\04_GCBM\00_configs'.format(working_directory)
+    gcbm_raw_output_dir = r'{}\04_GCBM\01_run\raw_output'.format(working_directory)
+    reporting_indicators = {
+        "LandscapePosition":r"G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data\01_spatial\05_reporting_indicators\landscapePosition_moja",
+        "ProtectedAreas":r"G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data\01_spatial\05_reporting_indicators\protectedAreas_moja"
+    }
+    gcbm_exe = r'm:\spatially_explicit\03_tools\gcbm\moja.cli.exe'
+
 
     ### Initialize Aspatial Inputs
     yieldTable = preprocess_tools.inputs.YieldTable(path=yieldTable_path, classifier_cols=yieldTable_classifier_cols,
         header=yieldTable_header, interval=yieldTable_interval, cols=yieldTable_cols)
     AIDB = preprocess_tools.inputs.AIDB(path=aidb_path)
     transitionRules = None
+    reportingIndicators = preprocess_tools.inputs.ReportingIndicators(reporting_indicators)
 
     save_inputs()

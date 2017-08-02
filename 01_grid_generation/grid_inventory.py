@@ -26,6 +26,7 @@ import arcpy
 import os
 import inspect
 import sys
+from dbfread import DBF
 
 class GridInventory(object):
     def __init__(self, inventory, outputDBF, ProgressPrinter):
@@ -148,6 +149,42 @@ class GridInventory(object):
         sys.stdout = prev
         self.inventory.setLayerName("inventory_gridded")
         pp.finish()
+
+    def exportInventory(self, inventory_raster_out, resolution):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        print "\tExporting inventory to raster..."
+        arcpy.env.overwriteOutput = True
+        classifier_names = self.inventory.getClassifiers()
+        fields = {
+            "age": self.inventory.getFieldNames()["age"],
+            "species": self.inventory.getFieldNames()["species"],
+            "ownership": self.inventory.getFieldNames()["ownership"],
+            "FMLB": self.inventory.getFieldNames()["FMLB"],
+            "THLB": self.inventory.getFieldNames()["THLB"]
+        }
+        for classifier_name in classifier_names:
+            field_name = self.inventory.getClassifierAttr(classifier_name)
+            file_path = os.path.join(inventory_raster_out, "{}.tif".format(classifier_name))
+            arcpy.FeatureToRaster_conversion("inventory_gridded", field_name, file_path, resolution)
+            self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
+                os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
+            # arcpy.DeleteField_management(file_path, field_name)
+        for attr in fields:
+            field_name = fields[attr]
+            file_path = os.path.join(inventory_raster_out,"{}.tif".format(attr))
+            arcpy.FeatureToRaster_conversion("inventory_gridded", field_name, file_path, resolution)
+            self.inventory.addRaster(file_path, attr, self.createAttributeTable(
+                os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
+            # arcpy.DeleteField_management(file_path, field_name)
+        pp.finish()
+
+    def createAttributeTable(self, dbf_path, field_name):
+        attr_table = {}
+        for row in DBF(dbf_path):
+            if len(row)<3:
+                return None
+            attr_table.update({row.items()[0][1]: [row.items()[-1][1]]})
+        return attr_table
 
 # --------------------------------------------------------------------------------------------------------------------------------------------------------------
 ## Old Script

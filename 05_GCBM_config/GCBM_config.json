@@ -15,18 +15,7 @@
             "tile_size_y": 1.0,
             "x_pixels": 1000,
             "y_pixels": 1000,
-            "tiles": $tiles
-            [
-                { "x": -121, "y": 51 },
-                { "x": -121, "y": 52 },
-                { "x": -121, "y": 53 },
-                { "x": -122, "y": 51 },
-                { "x": -122, "y": 52 },
-                { "x": -122, "y": 53 },
-                { "x": -123, "y": 51 },
-                { "x": -123, "y": 52 },
-                { "x": -123, "y": 53 }
-            ]
+            "tiles": "$tiles"
         }
     },
     "Libraries": {
@@ -156,60 +145,12 @@
                 "data_id": "forest_age"
             }
         },
-        "LDSPP": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "species_code"
-            }
-        },
-        "AU": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "analysis_unit"
-            }
-        },
         "admin_boundary": "British Columbia",
-        "eco_boundary": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "EcoBoundary"
-            }
-        },
-        "THLB": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "THLB"
-            }
-        },
-        "ProtectedAreas": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "ProtectedAreas"
-            }
-        },
-        "LandscapePosition": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "LandscapePosition"
-            }
-        },
         "initial_classifier_set": {
             "transform": {
                 "library": "internal.flint",
                 "type": "CompositeTransform",
-                "vars": [ "AU", "LDSPP" ]
+                "vars": "$classifiers"
             }
         },
         "classifier_set": {},
@@ -349,15 +290,6 @@
                "queryString": "SELECT dt.name AS disturbance_type, dt.code AS disturbance_type_code FROM disturbance_type dt"
            }
        },
-       $disturbances,
-        "harvest_1990": {
-            "transform": {
-                "library": "internal.flint",
-                "type": "LocationIdxFromFlintDataTransform",
-                "provider": "RasterTiled",
-                "data_id": "harvest_1990"
-            }
-        },
         "species": "placeholder for moss module",
         "root_parameters": {
             "hw_a": 1.576,
@@ -396,7 +328,7 @@
             "library": "moja.modules.cbm",
             "order": 3,
             "settings": {
-                "vars": $disturbance_vars
+                "vars": "$disturbance_vars"
             },
             "enabled": true
         },

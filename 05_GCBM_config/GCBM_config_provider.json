@@ -10,77 +10,9 @@
       "tileLonSize": 1.0,
       "blockLatSize": 0.1,
       "blockLonSize": 0.1,
-      "cellLatSize": $resolution,
-      "cellLonSize": $resolution,
-      "layers": [
-        $rollbackHarvest,
-        $historicHarvest,
-        $rollbackFire,
-        $historicFire,
-        $MPB,
-        $projectedDisturbances
-        {
-          "name": "fire_2011",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\NBAC2011_moja",
-          "layer_prefix": "NBAC2011_moja"
-        },
-
-        {
-          "name": "analysis_unit",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\AU_moja",
-          "layer_prefix": "AU_moja"
-        },
-        {
-          "name": "FMLB",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\FMLB_moja",
-          "layer_prefix": "FMLB_moja"
-        },
-        {
-          "name": "THLB",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\THLB_moja",
-          "layer_prefix": "THLB_moja"
-        },
-        {
-          "name": "Ownership",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\Ownership_moja",
-          "layer_prefix": "Ownership_moja"
-        },
-        {
-          "name": "species_code",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\species_moja",
-          "layer_prefix": "species_moja"
-        },
-        {
-          "name": "tmean",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\NAmerica_MAT_1971_2000_moja",
-          "layer_prefix": "NAmerica_MAT_1971_2000_moja"
-        },
-        {
-          "name": "AdminBoundary",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\Admin_moja",
-          "layer_prefix": "Admin_moja"
-        },
-        {
-          "name": "ProtectedAreas",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\reporting_indicators\\protectedAreas_moja",
-          "layer_prefix": "protectedAreas_moja"
-        },
-        {
-          "name": "LandscapePosition",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\reporting_indicators\\landscapePosition_moja",
-          "layer_prefix": "landscapePosition_moja"
-        },
-        {
-          "name": "EcoBoundary",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\Eco_moja",
-          "layer_prefix": "Eco_moja"
-        },
-        {
-          "name": "forest_age",
-          "layer_path": "$dir\\05_working\\02_layers\\02_GCBM_tiled_input\\BASE\\age1990_moja",
-          "layer_prefix": "age1990_moja"
-        }
-      ]
+      "cellLatSize": "$resolution",
+      "cellLonSize": "$resolution",
+      "layers": "$layers"
     }
   }
 }

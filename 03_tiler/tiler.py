@@ -58,12 +58,12 @@ class Tiler(object):
         for raster in self.inventory.getRasters():
             if raster.getAttrTable() == None:
                 self.layers.append(RasterLayer(raster.getPath()))
-                general_lyrs.append(raster.getPath().split('.')[0])
             else:
                 self.layers.append(RasterLayer(raster.getPath(),
                     nodata_value=255,
                     attributes = [raster.getAttr()],
                     attribute_table = raster.getAttrTable()))
+            general_lyrs.append(os.path.basename(raster.getPath()).split('.')[0])
 
         for attr in self.spatial_boundaries.getAttributes():
             attr_field = self.spatial_boundaries.getAttrField(attr)
@@ -72,7 +72,7 @@ class Tiler(object):
             general_lyrs.append(attr)
 
         self.layers.append(RasterLayer(self.NAmat.getPath(), nodata_value=1.0e38))
-        general_lyrs.append(self.NAmat.getPath().split('.')[0])
+        general_lyrs.append(os.path.basename(self.NAmat.getPath()).split('.')[0])
 
         pp.finish()
 
@@ -162,7 +162,7 @@ class Tiler(object):
                     age_after=0)))
         pp.finish()
 
-    def processHistoricMPBDisturbances(self, dist):
+    def processHistoricInsectDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         mpb_shp_severity_to_dist_type_lookup = {
             "V": "Mountain Pine Beetle - Very Severe Impact",
@@ -181,7 +181,7 @@ class Tiler(object):
             if year in range(self.historic_range[0], self.historic_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    VectorLayer("mpb_{}".format(year), file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
+                    VectorLayer("insect_{}".format(year), file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
                     year=year,
                     disturbance_type=Attribute("Severity"),
                     transition=TransitionRule(
@@ -208,15 +208,22 @@ class Tiler(object):
                         age_after=0)))
         pp.finish()
 
-    def runTiler(self, output_dir):
+    def runTiler(self, output_dir, scenario, make_transition_rules):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        output_dir_scen = r'{}\{}'.format(output_dir, scenario)
+        if not os.path.exists(output_dir_scen):
+            os.makedirs(output_dir_scen)
         cwd = os.getcwd()
-        os.chdir(output_dir)
+        os.chdir(output_dir_scen)
         with cleanup():
             self.tiler.tile(self.layers)
             self.rule_manager.write_rules()
-            transitionRules = TransitionRules(path=r"{}\transition_rules.csv".format(output_dir),
-                classifier_cols={"AU":None, "LDSPP":None}, header=True, cols={"NameCol":0, "AgeCol":2, "DelayCol":1})
+            if make_transition_rules == True:
+                ccol = {}
+                for classifier in self.inventory.getClassifiers():
+                    ccol.update({classifier:None})
+                transitionRules = TransitionRules(path=r"{}\transition_rules.csv".format(output_dir_scen),
+                    classifier_cols=ccol, header=True, cols={"NameCol":0, "AgeCol":2, "DelayCol":1})
         os.chdir(cwd)
         self.layers = []
         pp.finish()

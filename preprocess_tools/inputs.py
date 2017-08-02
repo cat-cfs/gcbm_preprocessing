@@ -343,13 +343,13 @@ class SpatialBoundaries(SpatialInputs):
 
 class ReportingIndicators(object):
 	def __init__(self, indicators):
-		self._indicators = indicators
+		self._reporting_indicators = indicators
 
-	def getReportingIndicators(self):
-		pass
+	def getIndicators(self):
+		return self._reporting_indicators
 
-	def addReportingIndicator(self, name, path, attribute):
-		pass
+	def addReportingIndicator(self, indicator):
+		self._reporting_indicators.update(indicator)
 
 class RollbackDisturbances(object):
 	def __init__(self, path):
