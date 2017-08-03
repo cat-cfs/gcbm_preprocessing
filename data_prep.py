@@ -72,7 +72,7 @@ if __name__=="__main__":
     # directory path to the working directory for relative paths
     working_directory = r'G:\Nick\GCBM\05_Test_Automation\05_working_new\TSA_05'
     # directory path to the external data directory for relative paths
-    external_data = r'G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data'
+    external_data = r'G:\Nick\BC_ON_1ha\05_working_BC\00_external_data'
     # TSA number as a string
     TSA = '05'
     # Tile resolution in degrees
@@ -92,25 +92,22 @@ if __name__=="__main__":
 
     ## Inventory
     # Path the the inventory gdb workspace
-    inventory_workspace = r"{}\01a_pretiled_layers\00_Workspace.gdb".format(working_directory)
+    inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "tsaTEST"
+    inventory_layer = "inv_reprojected"
     # The age field name in the inventory layer
-    inventory_age_field = "Age2011"
+    inventory_age_field = "Age2015"
     # The starting year of the inventory
-    inventory_year = 2011
+    inventory_year = 2015
     # A dictionary with the classifiers as keys and the associated field names (as
     # they appear in the inventory) as values.
     inventory_classifier_attr = {
-        "LdSpp": "LeadSpp",
+        "LdSpp": "LdSpp",
         "AU": "AU"
     }
     inventory_field_names = {
-        "age": "Age2011",
-        "species": "LeadSpp",
-        "ownership": "Own",
-        "FMLB": "FMLB",
-        "THLB": "THLB"
+        "age": "Age2015",
+        "species": "LdSpp"
     }
 
     ## Disturbances
@@ -147,7 +144,8 @@ if __name__=="__main__":
     spatial_boundaries_tsa = "TSA_boundaries_2016.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
     spatial_boundaries_pspu = "PSPUS_2016.shp"
-    # filter used to get the desired study area. change only the associated values for "field" and "code"
+    # filter used to get the desired study area from the TSA boundaries.
+    # change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "TSA_NUMBER",
         "code": "'Cranbrook TSA'"
@@ -194,12 +192,15 @@ if __name__=="__main__":
     clip = [historicFire1, historicFire2, historicHarvest, historicMPB]
     copy = [sp for sp in external_spatial_data if sp not in clip]
 
-    inventory.reproject(inventory.getWorkspace(), name='inv_reprojected')
+    TSA_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
+
+    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
+        r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='tsa{}'.format(TSA))
 
     for spatial_input in reproject:
         spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
     for spatial_input in clip:
-        spatial_input.clip(spatial_input.getWorkspace(), os.path.join(inventory.getWorkspace(), inventory.getFilter()),
+        spatial_input.clip(spatial_input.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
             spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
     for spatial_input in copy:
         spatial_input.copy(spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))

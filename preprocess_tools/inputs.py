@@ -40,7 +40,7 @@ class SpatialInputs(object):
 		self._workspace = new_workspace
 		print "Done"
 
-	def clip(self, workspace, clip_feature_name, new_workspace, name=None):
+	def clip(self, workspace, clip_feature, clip_feature_filter, new_workspace, name=None):
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
 		if new_workspace==self.getWorkspace() and name==None:
@@ -49,14 +49,33 @@ class SpatialInputs(object):
 		arcpy.env.workspace = workspace
 		arcpy.env.overwriteOutput = True
 		for layer in self.scan_for_layers():
+			arcpy.MakeFeatureLayer_management(layer, 'clip')
+			arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
+			arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
 			if name==None:
-				arcpy.MakeFeatureLayer_management(layer, 'clip')
-				arcpy.SelectLayerByLocation_management('clip', "INTERSECT", clip_feature_name, "", "NEW_SELECTION", "NOT_INVERT")
 				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
 			else:
-				arcpy.MakeFeatureLayer_management(layer, 'clip')
-				arcpy.SelectLayerByLocation_management('clip', "INTERSECT", clip_feature_name, "", "NEW_SELECTION", "NOT_INVERT")
 				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, name)
+				self._filter = name
+				break
+		self._workspace = new_workspace
+		print "Done"
+
+	def clipCutPolys(self, workspace, clip_feature, clip_feature_filter, new_workspace, name=None):
+		if not os.path.exists(new_workspace):
+			self.createWorkspace(new_workspace)
+		if new_workspace==self.getWorkspace() and name==None:
+			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
+		print "Clipping {}{}...".format(self.getFilter(), ' to {}'.format(name) if name else ''),
+		arcpy.env.workspace = workspace
+		arcpy.env.overwriteOutput = True
+		for layer in self.scan_for_layers():
+			arcpy.MakeFeatureLayer_management(layer, 'clip')
+			arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
+			if name==None:
+				arcpy.Clip_analysis('clip', 'clip_to', os.path.join(new_workspace, os.path.basename(layer)))
+			else:
+				arcpy.Clip_analysis('clip', 'clip_to', os.path.join(new_workspace, name))
 				self._filter = name
 				break
 		self._workspace = new_workspace
@@ -65,7 +84,7 @@ class SpatialInputs(object):
 	def copy(self, new_workspace):
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
-		if new_workspace==self.getWorkspace() and name==None:
+		if new_workspace==self.getWorkspace():
 			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 		print "Copying {}...".format(self.getFilter()),
 		for layer in self.scan_for_layers():

@@ -196,40 +196,41 @@ if __name__=="__main__":
         GCBM_scenarios=GCBM_scenarios, inventory=inventory, reportingIndicators=reportingIndicators, resolution=resolution,
         rollback_range=rollback_range,future_range=future_range,ProgressPrinter=PP)
 
+
     ### Execute Functions
     # -- Grid generation
     fishnet.createFishnet()
     # -- Grid inventory
     inventoryGridder.gridInventory()
-    if not rollback_enabled:
+    if not rollback_enabled: # ***
         inventoryGridder.exportInventory(inventory_raster_out, resolution)
-    # else:
+    else: # ***
         # -- Start of rollback
         mergeDist.runMergeDisturbances()
         intersect.runIntersectDisturbancesInventory()
         calcDistDEdiff.calculateDistDEdifference()
         calcNewDistYr.calculateNewDistYr()
-        updateInv.updateInvRollback()
+        updateInv.updateInvRollback()  # ***
         # -- End of rollback
     # -- Upload to S3
     # s3.upload()
 # ------------------------------------------------------------------------------
     # -- Run Tiler
-    tiler.defineBoundingBox(tiler_output_dir)
-    general_lyrs = tiler.processGeneralLayers()
+    tiler.defineBoundingBox(tiler_output_dir) # ***
+    general_lyrs = tiler.processGeneralLayers() # ***
     tiler.processRollbackDisturbances()
     tiler.processHistoricFireDisturbances(historicFire1)
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest)
     tiler.processHistoricInsectDisturbances(historicMPB)
     tiler.processProjectedDisturbances(projectedDistBase)
-    transitionRules = tiler.runTiler(tiler_output_dir, 'TEST', True)
+    transitionRules = tiler.runTiler(tiler_output_dir, 'TEST', True) # ***
     # -- Prep and run recliner2GCBM
-    r2GCBM.prepTransitionRules(transitionRules)
+    r2GCBM.prepTransitionRules(transitionRules) # ***
     r2GCBM.prepYieldTable(yieldTable)
-    r2GCBM.runRecliner2GCBM()
+    r2GCBM.runRecliner2GCBM() # ***
     # -- Configure GCBM
-    gcbmConfigurer.configureGCBM(recliner2gcbm_output_path, general_lyrs, tiler_output_dir)
+    gcbmConfigurer.configureGCBM(recliner2gcbm_output_path, general_lyrs, tiler_output_dir) # ***
     # -- Run GCBM
     # gcbm.runGCBM()
     # -- Run CompileGCBM
