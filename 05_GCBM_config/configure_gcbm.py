@@ -153,7 +153,10 @@ class ConfigureGCBM(object):
                 classifiers.append(classifier)
             else:
                 print "Warning: Classifier '{}' not added to GCBM config".format(classifier)
+        reporting_ind_names = [ri for ri in self.reporting_indicators.getIndicators()]
         gcbm_config["Variables"]["initial_classifier_set"]["transform"]["vars"] = classifiers
+        gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] = (
+            gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] + reporting_ind_names)
         gcbm_config["Modules"]["CBMDisturbanceEventModule"]["settings"]["vars"] = disturbance_names
         gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]["settings"]["databasename"] = os.path.join(self.output_dir, 'GCBMoutput.db')
         gcbm_config["Modules"]["WriteVariableGrid"]["settings"]["output_path"] = self.output_dir

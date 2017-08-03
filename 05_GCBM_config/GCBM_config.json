@@ -310,7 +310,7 @@
            "transform": {
                "library": "internal.flint",
                "type": "CompositeTransform",
-               "vars": [ "classifier_set", "eco_boundary", "THLB", "ProtectedAreas", "LandscapePosition" ],
+               "vars": [ "classifier_set", "eco_boundary" ],
                "allow_nulls": true
             }
         }
