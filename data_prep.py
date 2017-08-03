@@ -249,7 +249,6 @@ if __name__=="__main__":
     gcbm_configs_dir = r'{}\04_GCBM\00_configs'.format(working_directory)
     gcbm_raw_output_dir = r'{}\04_GCBM\01_run\raw_output'.format(working_directory)
     reporting_indicators = {
-        "LandscapePosition":r"G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data\01_spatial\05_reporting_indicators\landscapePosition_moja",
         "ProtectedAreas":r"G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data\01_spatial\05_reporting_indicators\protectedAreas_moja"
     }
     gcbm_exe = r'm:\spatially_explicit\03_tools\gcbm\moja.cli.exe'
