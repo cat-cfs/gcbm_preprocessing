@@ -196,7 +196,6 @@ if __name__=="__main__":
         GCBM_scenarios=GCBM_scenarios, inventory=inventory, reportingIndicators=reportingIndicators, resolution=resolution,
         rollback_range=rollback_range,future_range=future_range,ProgressPrinter=PP)
 
-
     ### Execute Functions
     # -- Grid generation
     fishnet.createFishnet()

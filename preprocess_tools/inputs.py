@@ -152,11 +152,21 @@ class Inventory(SpatialInputs):
 		super(Inventory, self).reproject(new_workspace, name=name)
 		self._bounding_box = self.getBoundingBox()
 
+	def clipCutPolys(self, workspace, clip_feature, clip_feature_filter, new_workspace, name=None):
+		super(Inventory, self).clipCutPolys(workspace, clip_feature, clip_feature_filter, new_workspace, name=name)
+		self.refreshBoundingBox()
+
 	def getBoundingBox(self):
 		arcpy.env.workspace = self._workspace
 		desc = arcpy.Describe(self._filter)
 		e = desc.extent
 		return [e.XMin, e.YMin, e.XMax, e.YMax]
+
+	def refreshBoundingBox(self):
+		arcpy.env.workspace = self._workspace
+		desc = arcpy.Describe(self._filter)
+		e = desc.extent
+		self._bounding_box = [e.XMin, e.YMin, e.XMax, e.YMax]
 
 	def getBottomLeftCorner(self):
 		return self._bounding_box[0], self._bounding_box[1]

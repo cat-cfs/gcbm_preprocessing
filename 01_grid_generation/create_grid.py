@@ -31,6 +31,7 @@ class Fishnet(object):
 	def createFishnet(self):
 		arcpy.env.workspace = self.inventory.getWorkspace()
 		arcpy.env.overwriteOutput=True
+		self.inventory.refreshBoundingBox()
 
 		oCorner = self.inventory.getBottomLeftCorner()
 		tCorner = self.inventory.getTopRightCorner()
@@ -42,7 +43,7 @@ class Fishnet(object):
 		self.origin_coord = "{} {}".format(self.blc_x, self.blc_y)
 		self.y_axis_coord = "{} {}".format(self.blc_x, self.blc_y+1)
 		self.corner_coord = "{} {}".format(self.trc_x, self.trc_y)
-
+		
 		tasks = [
 			lambda:arcpy.CreateFishnet_management(self.XYgrid, self.origin_coord, self.y_axis_coord, self.resolution_degrees, self.resolution_degrees,
 				"", "", self.corner_coord, "NO_LABELS", self.inventory_template, "POLYGON"),
