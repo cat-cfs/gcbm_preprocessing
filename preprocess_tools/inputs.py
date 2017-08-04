@@ -48,9 +48,9 @@ class SpatialInputs(object):
 		print "Clipping {}...".format(self.getFilter()),
 		arcpy.env.workspace = workspace
 		arcpy.env.overwriteOutput = True
+		arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
 		for layer in self.scan_for_layers():
 			arcpy.MakeFeatureLayer_management(layer, 'clip')
-			arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
 			arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
 			if name==None:
 				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
@@ -58,6 +58,7 @@ class SpatialInputs(object):
 				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, name)
 				self._filter = name
 				break
+		arcpy.Delete_management('clip_to')
 		self._workspace = new_workspace
 		print "Done"
 
@@ -69,15 +70,16 @@ class SpatialInputs(object):
 		print "Clipping {}{}...".format(self.getFilter(), ' to {}'.format(name) if name else ''),
 		arcpy.env.workspace = workspace
 		arcpy.env.overwriteOutput = True
+		arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
 		for layer in self.scan_for_layers():
 			arcpy.MakeFeatureLayer_management(layer, 'clip')
-			arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
 			if name==None:
 				arcpy.Clip_analysis('clip', 'clip_to', os.path.join(new_workspace, os.path.basename(layer)))
 			else:
 				arcpy.Clip_analysis('clip', 'clip_to', os.path.join(new_workspace, name))
 				self._filter = name
 				break
+		arcpy.Delete_management('clip_to')
 		self._workspace = new_workspace
 		print "Done"
 
