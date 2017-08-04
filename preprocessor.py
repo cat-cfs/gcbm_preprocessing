@@ -5,8 +5,11 @@ import archook
 archook.get_arcpy()
 import arcpy
 import os
-import preprocess_tools
+import sys
 import cPickle
+
+sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
+import preprocess_tools
 gridGeneration = __import__("01_grid_generation")
 rollback = __import__("02_rollback")
 tiler = __import__("03_tiler")
@@ -223,7 +226,7 @@ if __name__=="__main__":
     tiler.processHistoricHarvestDisturbances(historicHarvest)
     tiler.processHistoricInsectDisturbances(historicMPB)
     # tiler.processProjectedDisturbances(projectedDistBase)
-    transitionRules = tiler.runTiler(tiler_output_dir, 'TEST', True) # ***
+    transitionRules = tiler.runTiler(tiler_output_dir, 'Base', True) # ***
     # -- Prep and run recliner2GCBM
     r2GCBM.prepTransitionRules(transitionRules) # ***
     r2GCBM.prepYieldTable(yieldTable)

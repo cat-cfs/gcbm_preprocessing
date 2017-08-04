@@ -5,9 +5,12 @@ import archook
 archook.get_arcpy()
 import arcpy
 import os
-import preprocess_tools
+import sys
 import cPickle
 import shutil
+
+sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
+import preprocess_tools
 
 def save_inputs():
     try:
@@ -70,7 +73,7 @@ def save_inputs():
 if __name__=="__main__":
     #### Variables
     # directory path to the working directory for relative paths
-    working_directory = r'G:\Nick\GCBM\05_Test_Automation\05_working_new\TSA_05'
+    working_directory = r'G:\Nick\BC_ON_1ha\05_working_BC\TSA_05'
     # directory path to the external data directory for relative paths
     external_data = r'G:\Nick\BC_ON_1ha\05_working_BC\00_external_data'
     # TSA number as a string
@@ -82,10 +85,10 @@ if __name__=="__main__":
     rollback_enabled = True
 
     ## Year ranges
-    historic_range = [1990,2014]
-    rollback_range = [1990,2010]
+    historic_range = [1990,2015]
+    rollback_range = [1990,2015]
     future_range = [2010,2050]
-    activity_start_year = 2018
+    activity_start_year = 2010
 
 
     #### Spatial Inputs
@@ -94,7 +97,7 @@ if __name__=="__main__":
     # Path the the inventory gdb workspace
     inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "inv_reprojected"
+    inventory_layer = "BC_inventory"
     # The age field name in the inventory layer
     inventory_age_field = "Age2015"
     # The starting year of the inventory
@@ -126,17 +129,17 @@ if __name__=="__main__":
     MPB_workspace = r"{}\01_spatial\03_disturbances\01_historic\03_insect".format(external_data)
     MPB_filter = "mpb*.shp"
 
-    projScenBase_workspace = r"{}\01_spatial\03_disturbances\02_future\projDist_BASE".format(external_data)
-    projScenBase_filter = "TS_*.shp"
-    projScenBase_lookuptable = {
-        11: "Base CC",
-        7: "Wild Fires",
-        13: "SlashBurning",
-        10: "Partial Cut",
-        6: "Base Salvage",
-        2: "Wild Fire",
-        1: "Clearcut harvesting with salvage"
-    }
+    # projScenBase_workspace = r"{}\01_spatial\03_disturbances\02_future\projDist_BASE".format(external_data)
+    # projScenBase_filter = "TS_*.shp"
+    # projScenBase_lookuptable = {
+    #     11: "Base CC",
+    #     7: "Wild Fires",
+    #     13: "SlashBurning",
+    #     10: "Partial Cut",
+    #     6: "Base Salvage",
+    #     2: "Wild Fire",
+    #     1: "Clearcut harvesting with salvage"
+    # }
 
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
@@ -177,13 +180,14 @@ if __name__=="__main__":
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
     historicMPB = preprocess_tools.inputs.HistoricDisturbance(MPB_workspace, MPB_filter, None)
-    projectedDistBase = preprocess_tools.inputs.ProjectedDisturbance(projScenBase_workspace, projScenBase_filter, "Base", projScenBase_lookuptable)
+    # projectedDistBase = preprocess_tools.inputs.ProjectedDisturbance(projScenBase_workspace, projScenBase_filter, "Base", projScenBase_lookuptable)
+    projectedDistBase = None
     spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
     rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
 
-    external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries]
+    external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicMPB, NAmat, spatialBoundaries]
     # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
     # to be reprojected
     reproject = [
@@ -232,7 +236,7 @@ if __name__=="__main__":
     # year interval between age increments
     yieldTable_interval = 10
     # species column and increment range
-    yieldTable_cols = {"SpeciesCol":2,"IncrementRange":[3,38]}
+    yieldTable_cols = {"SpeciesCol":1,"IncrementRange":[2,37]}
 
     ## AIDB
     # path to aidb in external data where disturbance matrix is already configured
@@ -246,10 +250,14 @@ if __name__=="__main__":
     shutil.copyfile(original_aidb_path, aidb_path)
 
     ## GCBM Configuration
+    # directory where the GCBM configuration JSON will be outputted
     gcbm_configs_dir = r'{}\04_GCBM\00_configs'.format(working_directory)
+    # directory where GCBM will output the spatial data and output database to
     gcbm_raw_output_dir = r'{}\04_GCBM\01_run\raw_output'.format(working_directory)
+    # paths to the tiled layers of any extra reporting indicators. these would be in
+    # addition to the classifiers and eco boundary as reporting indicators
     reporting_indicators = {
-        "ProtectedAreas":r"G:\Nick\GCBM\05_Test_Automation\05_working_new\00_external_data\01_spatial\05_reporting_indicators\protectedAreas_moja"
+        "ProtectedAreas":r"{}\01_spatial\05_reporting_indicators\protectedAreas_moja".format(external_data)
     }
     gcbm_exe = r'm:\spatially_explicit\03_tools\gcbm\moja.cli.exe'
 
