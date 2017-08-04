@@ -184,7 +184,7 @@ class Inventory(SpatialInputs):
 			"ownership": "Own",
 			"FMLB": "FMLB",
 			"THLB": "THLB",
-			"establishment_date": "DE_2011",
+			"establishment_date": "DE",
 			"dist_date_diff": "Dist_DE_DIFF",
 			"pre_dist_age": "preDistAge",
 			"dist_type": "DistType",

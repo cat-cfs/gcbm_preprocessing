@@ -49,7 +49,7 @@ class IntersectDisturbancesInventory(object):
         # Field Names
         self.disturbance_fieldName = "DistYEAR"
         self.studyArea_fieldName = self.spatialBoundaries.getAreaFilter()["field"]
-        self.establishmentDate_fieldName = "DE_{}".format(self.invVintage)
+        self.establishmentDate_fieldName = self.inventory.getFieldNames()["establishment_date"]
         self.inv_dist_dateDiff = self.inventory.getFieldNames()['dist_date_diff']
         self.preDistAge = self.inventory.getFieldNames()['pre_dist_age']
         self.dist_type_field = self.inventory.getFieldNames()['dist_type']

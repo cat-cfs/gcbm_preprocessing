@@ -223,7 +223,7 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest)
     tiler.processHistoricInsectDisturbances(historicMPB)
-    tiler.processProjectedDisturbances(projectedDistBase)
+    # tiler.processProjectedDisturbances(projectedDistBase)
     transitionRules = tiler.runTiler(tiler_output_dir, 'TEST', True) # ***
     # -- Prep and run recliner2GCBM
     r2GCBM.prepTransitionRules(transitionRules) # ***
