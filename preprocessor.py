@@ -205,7 +205,7 @@ if __name__=="__main__":
     # -- Grid inventory
     inventoryGridder.gridInventory()
     if not rollback_enabled: # ***
-        inventoryGridder.exportInventory(inventory_raster_out, resolution)
+        inventoryGridder.exportInventory(inventory_raster_out, resolution) # ***
     else: # ***
         # -- Start of rollback
         mergeDist.runMergeDisturbances()

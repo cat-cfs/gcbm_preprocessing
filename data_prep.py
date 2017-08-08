@@ -87,8 +87,8 @@ if __name__=="__main__":
     ## Year ranges
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
-    future_range = [2010,2050]
-    activity_start_year = 2010
+    future_range = [2010,2070]
+    activity_start_year = 2018
 
 
     #### Spatial Inputs
@@ -97,7 +97,7 @@ if __name__=="__main__":
     # Path the the inventory gdb workspace
     inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "BC_inventory"
+    inventory_layer = "inv_reprojected"
     # The age field name in the inventory layer
     inventory_age_field = "Age2015"
     # The starting year of the inventory
@@ -144,9 +144,9 @@ if __name__=="__main__":
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
     # file name or filter to find the TSA boundaries in the spatial reference directory
-    spatial_boundaries_tsa = "TSA_boundaries_2016.shp"
+    spatial_boundaries_tsa = "PSPUS_2016_FINAL_1_Reprojected.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
-    spatial_boundaries_pspu = "PSPUS_2016.shp"
+    spatial_boundaries_pspu = "PSPUS_2016_FINAL_1_Reprojected.shp"
     # filter used to get the desired study area from the TSA boundaries.
     # change only the associated values for "field" and "code"
     study_area_filter = {

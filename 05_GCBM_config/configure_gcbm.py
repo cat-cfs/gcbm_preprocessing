@@ -21,8 +21,9 @@ class ConfigureGCBM(object):
 
     def configureGCBM(self, input_db, general_lyrs, tiler_output_dir):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        layer_config_names, disturbance_names = self.configureProvider(input_db, general_lyrs, tiler_output_dir, 'TEST')
-        self.configureConfig(layer_config_names, disturbance_names, 'TEST')
+        for scen in self.GCBM_scenarios:
+            layer_config_names, disturbance_names = self.configureProvider(input_db, general_lyrs, tiler_output_dir, scen)
+            self.configureConfig(layer_config_names, disturbance_names, scen)
         pp.finish()
 
     def getTiles(self):
@@ -43,7 +44,7 @@ class ConfigureGCBM(object):
         provider_layers = []
         layer_config_names = {}
         # harvest layers
-        for moja_dir in glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, scenario))+glob.glob(r'{}\SCEN_{}\harvest_*_moja'.format(tiler_output, scenario)):
+        for moja_dir in glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario]))+glob.glob(r'{}\SCEN_{}\harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
             if self.tiler_template_dir == None:
                 self.tiler_template_dir = moja_dir
             basename = os.path.basename(moja_dir)
@@ -57,7 +58,7 @@ class ConfigureGCBM(object):
             })
             layer_config_names.update({name_year:name_year})
         # fire layers
-        for moja_dir in glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, scenario))+glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, scenario)):
+        for moja_dir in glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario]))+glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
             basename = os.path.basename(moja_dir)
             year = basename.split('_moja')[0][-4:]
             name = basename.split('_moja')[0][:-5].split('_')[-1]
@@ -69,7 +70,7 @@ class ConfigureGCBM(object):
             })
             layer_config_names.update({name_year:name_year})
         # insect layers
-        for moja_dir in glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, scenario)):
+        for moja_dir in glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
             basename = os.path.basename(moja_dir)
             year = basename.split('_moja')[0][-4:]
             name = basename.split('_moja')[0][:-5].split('_')[-1]
@@ -87,7 +88,7 @@ class ConfigureGCBM(object):
 
         # general layers
         for name in general_lyrs:
-            moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, scenario, name)
+            moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, self.GCBM_scenarios[scenario], name)
             provider_layers.append({
                 "name": name,
                 "layer_path": moja_dir,

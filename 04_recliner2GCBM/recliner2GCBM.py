@@ -109,7 +109,7 @@ class Recliner2GCBM(object):
         with open(config_path, "w") as config:
             json.dump(default_config, config)
         run = subprocess.Popen([self.exe_path, "-c", config_path])
-        run.communicate(input=' ')
+        run.communicate()
         pp.finish()
 
     def prepTransitionRules(self, transitionRules):

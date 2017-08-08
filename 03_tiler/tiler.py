@@ -210,7 +210,7 @@ class Tiler(object):
 
     def runTiler(self, output_dir, scenario, make_transition_rules):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        output_dir_scen = r'{}\{}'.format(output_dir, scenario)
+        output_dir_scen = r'{}\SCEN_{}'.format(output_dir, scenario)
         if not os.path.exists(output_dir_scen):
             os.makedirs(output_dir_scen)
         cwd = os.getcwd()
