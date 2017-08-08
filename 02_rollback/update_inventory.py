@@ -4,6 +4,7 @@ import arcpy
 import csv
 import random
 import os
+import sys
 import inspect
 import logging
 from dbfread import DBF
@@ -142,7 +143,7 @@ class CalculateNewDistYr(object):
     def calculatePreDistAge(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         dist_age_props = {}
-        with open(".\\02_rollback\\DistAgeProp.csv", "r") as age_prop_file:
+        with open("{}\\02_rollback\\DistAgeProp.csv".format(sys.path[0]), "r") as age_prop_file:
             reader = csv.reader(age_prop_file)
             reader.next() # skip header
             for dist_type, age, prop in reader:
