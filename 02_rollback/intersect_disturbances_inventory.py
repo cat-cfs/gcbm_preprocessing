@@ -56,7 +56,6 @@ class IntersectDisturbancesInventory(object):
         self.regen_delay_field = self.inventory.getFieldNames()['regen_delay']
         self.rollback_age_field = self.inventory.getFieldNames()['rollback_age']
         self.new_disturbance_field = self.inventory.getFieldNames()['new_disturbance_yr']
-        self.nullID_field = self.inventory.getFieldNames()['regen_delay']
 
         self.gridded_inventory = r"{}\inventory_gridded".format(self.inv_workspace)
         self.disturbances = r"{}\MergedDisturbances".format(self.inv_workspace)
@@ -125,10 +124,10 @@ class IntersectDisturbancesInventory(object):
 
     def removeNonConcurring(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        nonConcurrence_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.output, self.nullID_field), 0)
+        # nonConcurrence_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.output, self.nullID_field), 0)
         # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
         # print nonConcurrence_whereClause
-        arcpy.Select_analysis(self.temp_overlay, self.output, nonConcurrence_whereClause)
+        arcpy.Select_analysis(self.temp_overlay, self.output)
         # Repairing Geometry...
         arcpy.RepairGeometry_management(self.output, "DELETE_NULL")
         # print(arcpy.GetMessages())
