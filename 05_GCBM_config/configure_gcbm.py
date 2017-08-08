@@ -2,6 +2,7 @@ import os
 import glob
 import inspect
 import json
+import sys
 
 class ConfigureGCBM(object):
     def __init__(self, output_dir, gcbm_configs_dir, GCBM_scenarios, inventory, reportingIndicators,
@@ -111,7 +112,7 @@ class ConfigureGCBM(object):
             })
             layer_config_names.update({ri:ri})
 
-        with open(r'05_GCBM_config\GCBM_config_provider.json', 'rb') as provider_file:
+        with open(r'{}\05_GCBM_config\GCBM_config_provider.json'.format(sys.path[0]), 'rb') as provider_file:
             config_provider = json.load(provider_file)
         config_provider["Providers"]["SQLite"]["path"] = input_db
         config_provider["Providers"]["RasterTiled"]["cellLatSize"] = self.resolution
@@ -126,7 +127,7 @@ class ConfigureGCBM(object):
         return layer_config_names, disturbance_names
 
     def configureConfig(self, layer_config_names, disturbance_names, scenario):
-        with open(r'05_GCBM_config\GCBM_config.json', 'rb') as config_file:
+        with open(r'{}\05_GCBM_config\GCBM_config.json'.format(sys.path[0]), 'rb') as config_file:
             gcbm_config = json.load(config_file)
 
         gcbm_config["LocalDomain"]["start_date"] = r'{}/01/01'.format(self.start_year-1)
