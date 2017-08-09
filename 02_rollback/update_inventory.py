@@ -210,7 +210,7 @@ class RollbackDistributor(object):
 
 
 class updateInvRollback(object):
-    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, resolution, ProgressPrinter):
+    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, ProgressPrinter):
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.rollbackDisturbanceOutput = rollbackDisturbances
@@ -221,8 +221,8 @@ class updateInvRollback(object):
         self.gridded_inventory = "inventory_gridded"
         self.disturbedInventory = "DisturbedInventory"
         self.RolledBackInventory = "inventory_gridded_1990"
-        self.inv_vintage = 2011
-        self.rollback_start = 1990
+        self.inv_vintage = rollback_range[1]
+        self.rollback_start = rollback_range[0]
 
         #layers
         self.RolledBackInventory_layer = "RolledBackInventory_layer"

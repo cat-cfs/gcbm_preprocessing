@@ -181,7 +181,7 @@ if __name__=="__main__":
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, rollback_range, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
     calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, rollback_range, historicHarvest.getYearField(), PP)
-    updateInv = rollback.update_inventory.updateInvRollback(inventory, inventory_raster_out, rollbackDisturbances, resolution, PP)
+    updateInv = rollback.update_inventory.updateInvRollback(inventory, inventory_raster_out, rollbackDisturbances, rollback_range, resolution, PP)
     tiler = tiler.tiler.Tiler(
         spatialBoundaries=spatialBoundaries,
         inventory=inventory,
