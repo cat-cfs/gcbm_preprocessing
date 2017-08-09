@@ -45,6 +45,7 @@ def save_inputs():
         cPickle.dump(tiler_output_dir, open(r'inputs\tiler_output_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_config_dir, open(r'inputs\recliner2gcbm_config_dir.pkl', 'wb'))
         cPickle.dump(recliner2gcbm_output_path, open(r'inputs\recliner2gcbm_output_path.pkl', 'wb'))
+        cPickle.dump(recliner2gcbm_exe_path, open(r'inputs\recliner2gcbm_exe_path.pkl', 'wb'))
         cPickle.dump(future_dist_input_dir, open(r'inputs\future_dist_input_dir.pkl', 'wb'))
         cPickle.dump(gcbm_raw_output_dir, open(r'inputs\gcbm_raw_output_dir.pkl', 'wb'))
         cPickle.dump(gcbm_configs_dir, open(r'inputs\gcbm_configs_dir.pkl', 'wb'))
@@ -80,6 +81,7 @@ def load_inputs():
     global GCBM_scenarios
     global recliner2gcbm_config_dir
     global recliner2gcbm_output_path
+    global recliner2gcbm_exe_path
     global tiler_output_dir
     global future_dist_input_dir
     global gcbm_raw_output_dir
@@ -112,6 +114,7 @@ def load_inputs():
         tiler_output_dir = cPickle.load(open(r'inputs\tiler_output_dir.pkl'))
         recliner2gcbm_config_dir = cPickle.load(open(r'inputs\recliner2gcbm_config_dir.pkl'))
         recliner2gcbm_output_path = cPickle.load(open(r'inputs\recliner2gcbm_output_path.pkl'))
+        recliner2gcbm_exe_path = cPickle.load(open(r'inputs\recliner2gcbm_exe_path.pkl'))
         future_dist_input_dir = cPickle.load(open(r'inputs\future_dist_input_dir.pkl'))
         gcbm_raw_output_dir = cPickle.load(open(r'inputs\gcbm_raw_output_dir.pkl'))
         gcbm_configs_dir = cPickle.load(open(r'inputs\gcbm_configs_dir.pkl'))
@@ -193,8 +196,8 @@ if __name__=="__main__":
         rollback_range=rollback_range, historic_range=historic_range, future_range=future_range,
         resolution=resolution, ProgressPrinter=PP
     )
-    r2GCBM = recliner2GCBM.recliner2GCBM.Recliner2GCBM(config_dir=recliner2gcbm_config_dir,
-        output_path=recliner2gcbm_output_path,transitionRules=transitionRules,yieldTable=yieldTable,aidb=AIDB,ProgressPrinter=PP)
+    r2GCBM = recliner2GCBM.recliner2GCBM.Recliner2GCBM(config_dir=recliner2gcbm_config_dir, output_path=recliner2gcbm_output_path,
+        transitionRules=transitionRules,yieldTable=yieldTable,aidb=AIDB,ProgressPrinter=PP, exe_path=recliner2gcbm_exe_path)
     gcbmConfigurer = GCBMconfig.configure_gcbm.ConfigureGCBM(output_dir=gcbm_raw_output_dir, gcbm_configs_dir=gcbm_configs_dir,
         GCBM_scenarios=GCBM_scenarios, inventory=inventory, reportingIndicators=reportingIndicators, resolution=resolution,
         rollback_range=rollback_range,future_range=future_range,ProgressPrinter=PP)
