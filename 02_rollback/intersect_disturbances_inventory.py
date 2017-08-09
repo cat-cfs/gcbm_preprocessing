@@ -124,10 +124,10 @@ class IntersectDisturbancesInventory(object):
 
     def removeNonConcurring(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        # nonConcurrence_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(self.output, self.nullID_field), 0)
+        nonConcurrence_whereClause = "{} <> ' '".format(arcpy.AddFieldDelimiters(self.output, "CELL_ID"))
         # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
         # print nonConcurrence_whereClause
-        arcpy.Select_analysis(self.temp_overlay, self.output)
+        arcpy.Select_analysis(self.temp_overlay, self.output, nonConcurrence_whereClause)
         # Repairing Geometry...
         arcpy.RepairGeometry_management(self.output, "DELETE_NULL")
         # print(arcpy.GetMessages())
