@@ -160,8 +160,11 @@ class ConfigureGCBM(object):
         gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] = (
             gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] + reporting_ind_names)
         gcbm_config["Modules"]["CBMDisturbanceEventModule"]["settings"]["vars"] = disturbance_names
-        gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]["settings"]["databasename"] = os.path.join(self.output_dir, 'GCBMoutput.db')
-        gcbm_config["Modules"]["WriteVariableGrid"]["settings"]["output_path"] = self.output_dir
+        output_directory = os.path.join(self.output_dir, 'SCEN_{}'.format(scenario))
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+        gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]["settings"]["databasename"] = os.path.join(output_directory, 'GCBMoutput.db')
+        gcbm_config["Modules"]["WriteVariableGrid"]["settings"]["output_path"] = output_directory
 
         with open(r'{}\SCEN_{}\GCBM_config.json'.format(self.gcbm_configs_dir, scenario), 'w') as config_file:
             json.dump(gcbm_config, config_file, sort_keys=True, indent=4)
