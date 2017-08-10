@@ -73,12 +73,14 @@ def save_inputs():
 
 if __name__=="__main__":
     #### Variables
+    # TSA number as a string
+    TSA_number = '23'
+    # TSA name, replace spaces in the name with underscores
+    TSA_name = '100_Mile_House'
     # directory path to the working directory for relative paths
-    working_directory = r'G:\Nick\BC_ON_1ha\05_working_BC\TSA_05'
+    working_directory = r'G:\Nick\BC_ON_1ha\05_working_BC\TSA_{0}_{1}'.format(TSA_number,TSA_name)
     # directory path to the external data directory for relative paths
     external_data = r'G:\Nick\BC_ON_1ha\05_working_BC\00_external_data'
-    # TSA number as a string
-    TSA = '05'
     # Tile resolution in degrees
     resolution = 0.001
 
@@ -147,12 +149,12 @@ if __name__=="__main__":
     # file name or filter to find the TSA boundaries in the spatial reference directory
     spatial_boundaries_tsa = "PSPUS_2016_FINAL_1_Reprojected.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
-    spatial_boundaries_pspu = "PSPUS_2016_FINAL_1_Reprojected.shp"
+    spatial_boundaries_pspu = "PSPUS_2016.shp"
     # filter used to get the desired study area from the TSA boundaries.
     # change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "TSA_NUMBER",
-        "code": "'Cranbrook TSA'"
+        "code": "'100 Mile House TSA'"
     }
     # field names for the Admin and Eco attributes in the PSPU boundaries file
     spatial_boundaries_attr = {
@@ -172,7 +174,7 @@ if __name__=="__main__":
     future_dist_input_dir = r'{}\01a_pretiled_layers\03_disturbances\02_future\inputs'.format(working_directory)
 
     reprojected_redirection = ('01_spatial', '03_spatial_reprojected')
-    clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{}\01a_pretiled_layers'.format(TSA))
+    clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{1}_{2}\01a_pretiled_layers'.format(TSA_number, TSA_name))
 
     ### Initialize Spatial Inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
@@ -200,7 +202,7 @@ if __name__=="__main__":
     TSA_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
 
     inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
-        r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='tsa{}'.format(TSA))
+        r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='tsa{}'.format(TSA_number))
 
     for spatial_input in reproject:
         spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
