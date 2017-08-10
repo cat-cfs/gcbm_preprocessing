@@ -78,7 +78,7 @@ if __name__=="__main__":
     # TSA name, replace spaces in the name with underscores
     TSA_name = '100_Mile_House'
     # directory path to the working directory for relative paths
-    working_directory = r'G:\Nick\BC_ON_1ha\05_working_BC\TSA_{0}_{1}'.format(TSA_number,TSA_name)
+    working_directory = r'G:\Nick\BC_ON_1ha\05_working_BC\TSA_{}_{}'.format(TSA_number,TSA_name)
     # directory path to the external data directory for relative paths
     external_data = r'G:\Nick\BC_ON_1ha\05_working_BC\00_external_data'
     # Tile resolution in degrees
@@ -174,7 +174,7 @@ if __name__=="__main__":
     future_dist_input_dir = r'{}\01a_pretiled_layers\03_disturbances\02_future\inputs'.format(working_directory)
 
     reprojected_redirection = ('01_spatial', '03_spatial_reprojected')
-    clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{1}_{2}\01a_pretiled_layers'.format(TSA_number, TSA_name))
+    clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{}_{}\01a_pretiled_layers'.format(TSA_number, TSA_name))
 
     ### Initialize Spatial Inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
