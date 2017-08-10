@@ -141,12 +141,20 @@ class GridInventory(object):
     def exportGriddedInvDBF(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.env.workspace = self.inventory.getWorkspace()
-        prev = sys.stdout
-        silenced = open('nul', 'w')
-        sys.stdout = silenced
-        arcpy.TableToDBASE_conversion("inventory_gridded", self.output_dbf_dir)
-        pp.finish()
-        sys.stdout = prev
+        arcpy.env.overwriteOutput = True
+        fmd = {}
+        for i in range(len(self.inventory.getClassifiers())+1):
+            fmd.update({i:arcpy.FieldMap()})
+        fmd[0].addInputField("inventory_gridded", self.inventory.getFieldNames()['age'])
+        # fmd[1].addInputField("inventory_gridded", self.inventory.getFieldNames()['FMLB'])
+        # fmd[2].addInputField("inventory_gridded", self.inventory.getFieldNames()['THLB'])
+        for i, classifier in enumerate(self.inventory.getClassifiers()):
+            fmd[i+1].addInputField("inventory_gridded", self.inventory.getClassifierAttr(classifier))
+        fms = arcpy.FieldMappings()
+        for fm in fmd.values():
+            fms.addFieldMap(fm)
+            
+        arcpy.TableToTable_conversion("inventory_gridded", self.output_dbf_dir, "inventory.dbf", "", fms)
         self.inventory.setLayerName("inventory_gridded")
         pp.finish()
 
