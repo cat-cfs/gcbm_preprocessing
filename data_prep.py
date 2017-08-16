@@ -8,6 +8,7 @@ import os
 import sys
 import cPickle
 import shutil
+import logging
 
 sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
 import preprocess_tools
@@ -72,15 +73,23 @@ def save_inputs():
 
 
 if __name__=="__main__":
+    # Logging
+    debug_log = 'logs\DebugLogDataPrep.log'
+    if not os.path.exists(os.path.dirname(debug_log)):
+        os.makedirs(os.path.dirname(debug_log))
+    elif os.path.exists(debug_log):
+        os.unlink(debug_log)
+    logging.basicConfig(filename=debug_log, format='[%(asctime)s] %(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%b%d %H:%M:%S')
+
     #### Variables
     # TSA number as a string
     TSA_number = '23'
     # TSA name, replace spaces in the name with underscores
     TSA_name = '100_Mile_House'
     # directory path to the working directory for relative paths
-    working_directory = r'G:\Nick\BC_ON_1ha\05_working_BC\TSA_{}_{}'.format(TSA_number,TSA_name)
+    working_directory = r'G:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_{}_{}'.format(TSA_number,TSA_name)
     # directory path to the external data directory for relative paths
-    external_data = r'G:\Nick\BC_ON_1ha\05_working_BC\00_external_data'
+    external_data = r'G:\GCBM\17_BC_ON_1ha\05_working_BC\00_external_data'
     # Tile resolution in degrees
     resolution = 0.001
 
@@ -91,7 +100,7 @@ if __name__=="__main__":
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
     future_range = [2010,2070]
-    activity_start_year = 2018
+    activity_start_year = 2016
 
 
     #### Spatial Inputs
@@ -218,7 +227,7 @@ if __name__=="__main__":
     # Different scenarios to be ran by the tiler (before Disturbance Matrix distinctions)
     tiler_scenarios = ['Base']
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
-    GCBM_scenarios = {'Base':'Base'}
+    GCBM_scenarios = {'Base':'Base', 'A':'Base'}
 
     ## Recliner2GCBM
     recliner2gcbm_config_dir = r"{}\02a_recliner2GCBM_input".format(working_directory)
@@ -255,9 +264,9 @@ if __name__=="__main__":
 
     ## GCBM Configuration
     # directory where the GCBM configuration JSON will be outputted
-    gcbm_configs_dir = r'{}\04_GCBM\00_configs'.format(working_directory)
+    gcbm_configs_dir = r'{}\04_run_GCBM\00_configs'.format(working_directory)
     # directory where GCBM will output the spatial data and output database to
-    gcbm_raw_output_dir = r'{}\04_GCBM\01_run\raw_output'.format(working_directory)
+    gcbm_raw_output_dir = '$output_dir'
     # paths to the tiled layers of any extra reporting indicators. these would be in
     # addition to the classifiers and eco boundary as reporting indicators
     reporting_indicators = {

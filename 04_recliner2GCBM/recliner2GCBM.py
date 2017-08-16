@@ -3,9 +3,11 @@ import json
 import os
 import subprocess
 import inspect
+import logging
 
 class Recliner2GCBM(object):
     def __init__(self, config_dir, output_path, transitionRules, yieldTable, aidb, ProgressPrinter, exe_path=None):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         if exe_path==None:
             self.exe_path = r"M:\Spatially_explicit\03_Tools\Recliner2GCBM-x64\Recliner2GCBM.exe"
@@ -108,6 +110,7 @@ class Recliner2GCBM(object):
         config_path = os.path.join(self.config_dir, "recliner2GCBM_config.json")
         with open(config_path, "w") as config:
             json.dump(default_config, config)
+            logging.info('Recliner2GCBM config json created at {}'.format(config_path))
         run = subprocess.Popen([self.exe_path, "-c", config_path])
         run.communicate()
         pp.finish()
@@ -135,6 +138,7 @@ class Recliner2GCBM(object):
             writer.writerows(all_rows)
         transitionRules.setPath(out)
         self.transition_rules = transitionRules
+        logging.info('Transition rules prepped and saved to {}'.format(out))
         pp.finish()
         return transitionRules
 

@@ -1,6 +1,7 @@
 import sys
 import random
 import time
+import logging
 
 class ProgressPrinter(object):
 	def __init__(self, size=100):
@@ -47,8 +48,9 @@ class ProgressProcess(object):
 		return l
 
 	def start(self):
-		sys.stdout.write("[{0}] {1}Starting Process: {2}\n".format(time.strftime('%a %H:%M:%S'),
-			self.level, self.name))
+		s = "{0}Starting Process: {1}".format(self.level, self.name)
+		sys.stdout.write("[{}] {}\n".format(time.strftime('%a %H:%M:%S'),s))
+		logging.info(s)
 		return self
 
 	def updateProgressP(self):
@@ -66,5 +68,6 @@ class ProgressProcess(object):
 				self.level, self.value, self.total))
 
 	def finish(self):
-		sys.stdout.write("{0}[{1}] {2}Finished Process: {3}\n".format("\n" if self.type=="P" else "",
-			time.strftime('%a %H:%M:%S'), self.level, self.name))
+		s = "{0}Finished Process: {1}".format(self.level, self.name)
+		sys.stdout.write("{0}[{1}] {2}\n".format("\n" if self.type=="P" else "",time.strftime('%a %H:%M:%S'),s))
+		logging.info(s)

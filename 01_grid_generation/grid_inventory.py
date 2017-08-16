@@ -26,10 +26,12 @@ import arcpy
 import os
 import inspect
 import sys
+import logging
 from dbfread import DBF
 
 class GridInventory(object):
     def __init__(self, inventory, outputDBF, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.output_dbf_dir = outputDBF
@@ -153,7 +155,7 @@ class GridInventory(object):
         fms = arcpy.FieldMappings()
         for fm in fmd.values():
             fms.addFieldMap(fm)
-            
+
         arcpy.TableToTable_conversion("inventory_gridded", self.output_dbf_dir, "inventory.dbf", "", fms)
         self.inventory.setLayerName("inventory_gridded")
         pp.finish()
@@ -176,17 +178,18 @@ class GridInventory(object):
             arcpy.FeatureToRaster_conversion("inventory_gridded", field_name, file_path, resolution)
             self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
-            # arcpy.DeleteField_management(file_path, field_name)
         for attr in fields:
             field_name = fields[attr]
             file_path = os.path.join(inventory_raster_out,"{}.tif".format(attr))
             arcpy.FeatureToRaster_conversion("inventory_gridded", field_name, file_path, resolution)
             self.inventory.addRaster(file_path, attr, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
-            # arcpy.DeleteField_management(file_path, field_name)
         pp.finish()
 
     def createAttributeTable(self, dbf_path, field_name):
+        # Creates an attribute table with the field name given
+        # to be used in the tiler along with the tif. This is
+        # necessary for fields that are not integers.
         attr_table = {}
         for row in DBF(dbf_path):
             if len(row)<3:

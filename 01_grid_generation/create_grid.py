@@ -13,6 +13,7 @@ import arcpy
 import inspect
 import math
 import time
+import logging
 
 import preprocess_tools
 
@@ -21,6 +22,7 @@ import preprocess_tools
 
 class Fishnet(object):
 	def __init__(self, inventory, resolution_degrees, ProgressPrinter):
+		logging.info("Initializing class {}".format(self.__class__.__name__))
 		self.ProgressPrinter = ProgressPrinter
 		self.inventory = inventory
 		self.resolution_degrees = resolution_degrees
@@ -43,7 +45,8 @@ class Fishnet(object):
 		self.origin_coord = "{} {}".format(self.blc_x, self.blc_y)
 		self.y_axis_coord = "{} {}".format(self.blc_x, self.blc_y+1)
 		self.corner_coord = "{} {}".format(self.trc_x, self.trc_y)
-		
+		logging.info('Creating fishnet grid with {0}x{0} degree cell size in box bounded by ({1},{2})({3},{4})'.format(
+			self.resolution_degrees, self.blc_x, self.blc_y, self.trc_x, self.trc_y))
 		tasks = [
 			lambda:arcpy.CreateFishnet_management(self.XYgrid, self.origin_coord, self.y_axis_coord, self.resolution_degrees, self.resolution_degrees,
 				"", "", self.corner_coord, "NO_LABELS", self.inventory_template, "POLYGON"),
@@ -65,12 +68,8 @@ class Fishnet(object):
 			ry = math.floor(float(y)/res)*res
 		else:
 			raise Exception("Invalid value for 'ud'. Provide 1 (Round up) or -1 (Round down).")
+		logging.info('Rounded bounding box corner coord ({0},{1}) to ({2},{3})'.format(x,y,rx,ry))
 		return rx, ry
-
-	def test_multiprocessing(self, args, workspace):
-		arcpy.env.workspace = workspace
-		arcpy.env.overwriteOutput=True
-		arcpy.AddField_management(args)
 
 	def _createFields(self):
 		field_name_types = {
@@ -89,23 +88,15 @@ class Fishnet(object):
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)
 		pp.start()
 
-		# jobs = []
 		for field_name in field_name_types:
 			field_type = field_name_types[field_name]
 			field_length = "25" if field_type.upper()=="TEXT" else ""
 			arcpy.AddField_management(self.XYgrid, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", "")
 			pp.updateProgressP()
-		# 	process = multiprocessing.Process(target=self.test_multiprocessing,args=((self.XYgrid, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", ""),self.workspace))
-		# 	jobs.append(process)
-		# 	process.start()
-		#
-		# for j in jobs:
-		# 	j.join()
 
 		pp.finish()
 
 	def _calculateFields(self):
-
 		x_middle_coord = self.blc_x + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile x coordinate - 1
 		y_middle_coord = self.blc_y + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile y coordinate - 1
 

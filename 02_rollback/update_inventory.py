@@ -11,6 +11,7 @@ from dbfread import DBF
 
 class CalculateDistDEdifference(object):
     def __init__(self, inventory, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
 
@@ -41,12 +42,12 @@ class CalculateDistDEdifference(object):
     def makeLayers(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.MakeFeatureLayer_management(self.disturbedInventory, self.disturbedInventory_layer)
-        # print(arcpy.GetMessages())
         pp.finish()
 
     def calculateFields(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         #Calculate date of establishment and difference between date of establishment (inventory) and date of stand-replacing disturbance
+        logging.info('Calculating date of establishment and difference between date of establishment (inventory) and date of disturbance')
         cur = arcpy.UpdateCursor(self.disturbedInventory_layer)
         for row in cur:
             # The variable 'age' will get the value from the column
@@ -60,11 +61,11 @@ class CalculateDistDEdifference(object):
             else:
                 row.setValue(self.inv_dist_dateDiff, 0)
             cur.updateRow(row)
-        # print(arcpy.GetMessages())
         pp.finish()
 
 class CalculateNewDistYr(object):
     def __init__(self, inventory, rollback_range, harv_yr_field, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.rollback_start = rollback_range[0]
@@ -142,6 +143,7 @@ class CalculateNewDistYr(object):
 
     def calculatePreDistAge(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        logging.info('Calculating pre disturbance age using {}\\02_rollback\\DistAgeProp.csv to select age'.format(sys.path[0]))
         dist_age_props = {}
         with open("{}\\02_rollback\\DistAgeProp.csv".format(sys.path[0]), "r") as age_prop_file:
             reader = csv.reader(age_prop_file)
@@ -170,7 +172,7 @@ class CalculateNewDistYr(object):
             cur.updateRow(row)
 
         for dist_type, age_distributor in age_distributors.iteritems():
-            logging.info("Age picks for disturbance type {}:\n{}".format(dist_type,str(age_distributor)))
+            logging.info("Age picks for disturbance type {}:{}".format(dist_type,str(age_distributor)))
         pp.finish()
 
     def calculateRolledBackInvAge(self):
@@ -192,6 +194,7 @@ class CalculateNewDistYr(object):
 
 class RollbackDistributor(object):
     def __init__(self, **age_proportions):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self._rand = random.Random()
         self._ages = []
         for age, proportion in age_proportions.iteritems():
@@ -211,6 +214,7 @@ class RollbackDistributor(object):
 
 class updateInvRollback(object):
     def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.rollbackDisturbanceOutput = rollbackDisturbances
@@ -265,6 +269,7 @@ class updateInvRollback(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         arcpy.Update_analysis(self.gridded_inventory_layer, self.disturbedInventory_layer,
             self.RolledBackInventory, "BORDERS", "0.25 Meters")
+        self.inventory.setLayerName(self.RolledBackInventory)
         pp.finish()
 
     def makeLayers2(self):
@@ -274,6 +279,7 @@ class updateInvRollback(object):
 
     def rollbackAgeNonDistStands(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        logging.info('Rolling back ages for age{}'.format(self.rollback_start))
         cur = arcpy.UpdateCursor(self.RolledBackInventory_layer)
         for row in cur:
             rolledBackAge = row.getValue(self.rollback_vintage_field)
@@ -290,6 +296,7 @@ class updateInvRollback(object):
 
         #Export rollback disturbances
         print "\tExporting Rollback Disturbances..."
+        logging.info('Exporting rollback disturbances to {}'.format(self.rollbackDisturbanceOutput.getPath()))
         dissolveFields = [self.dist_type_field, self.new_disturbance_field,self.regen_delay_field, self.CELL_ID]
         selectClause =  "{} IS NOT NULL".format(self.new_disturbance_field)
 
@@ -301,7 +308,8 @@ class updateInvRollback(object):
 
     def exportRollbackInventory(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        print "\tExporting rolledback inventory to raster..."
+        print "\tExporting rolled back inventory to rasters..."
+        logging.info('Exporting rolled back inventory rasters to {}'.format(self.rasterOutput))
         arcpy.env.overwriteOutput = True
         classifier_names = self.inventory.getClassifiers()
         fields = {
@@ -309,22 +317,25 @@ class updateInvRollback(object):
             "species": self.inventory.getFieldNames()["species"]
         }
         for classifier_name in classifier_names:
+            logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))
             field_name = self.inventory.getClassifierAttr(classifier_name)
             file_path = os.path.join(self.rasterOutput, "{}.tif".format(classifier_name))
             arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path, self.resolution)
             self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
-            # arcpy.DeleteField_management(file_path, field_name)
         for attr in fields:
+            logging.info('Exporting field {} from {}'.format(attr, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))
             field_name = fields[attr]
             file_path = os.path.join(self.rasterOutput,"{}.tif".format(attr))
             arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path, self.resolution)
             self.inventory.addRaster(file_path, attr, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
-            # arcpy.DeleteField_management(file_path, field_name)
         pp.finish()
 
     def createAttributeTable(self, dbf_path, field_name):
+        # Creates an attribute table with the field name given
+        # to be used in the tiler along with the tif. This is
+        # necessary for fields that are not integers.
         attr_table = {}
         for row in DBF(dbf_path):
             if len(row)<3:

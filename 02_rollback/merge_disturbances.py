@@ -21,10 +21,12 @@ archook.get_arcpy()
 import arcpy
 import inspect
 import glob
+import logging
 
 
 class MergeDisturbances(object):
     def __init__(self, inventory, disturbances, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.disturbances = disturbances
@@ -85,17 +87,16 @@ class MergeDisturbances(object):
                     else:
                         fm_year.addInputField(fc, dist.getYearField())
                     self.vTab.addRow(fc)
-
         # Set the merge rule to find the First value of all fields in the
         # FieldMap object
         fm_year.mergeRule = 'First'
-        # print "vTab equals: "
-        # print self.vTab
+
         # Set the output field properties for FieldMap objects
         field_name = fm_year.outputField
         field_name.name = 'DistYEAR'
         field_name.aliasName = 'DistYEAR'
         fm_year.outputField = field_name
+        logging.info('Mapping stand-replacing disturbance years to field {}'.format(fm_year.outputField.name))
 
         # Add the FieldMap objects to the FieldMappings object
         self.fms.addFieldMap(fm_year)

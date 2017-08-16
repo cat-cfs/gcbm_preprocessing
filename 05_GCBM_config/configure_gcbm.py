@@ -3,10 +3,12 @@ import glob
 import inspect
 import json
 import sys
+import logging
 
 class ConfigureGCBM(object):
     def __init__(self, output_dir, gcbm_configs_dir, GCBM_scenarios, inventory, reportingIndicators,
                         resolution, rollback_range, future_range, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.output_dir = output_dir
         self.gcbm_configs_dir = gcbm_configs_dir
@@ -35,6 +37,7 @@ class ConfigureGCBM(object):
         for tile_text in tiles_text:
             x, y = tile_text.split('_')
             tiles.append({"x":int(x), "y":int(y)})
+        logging.info('Tiles found: {}'.format(tiles))
         return tiles
 
 
@@ -46,6 +49,7 @@ class ConfigureGCBM(object):
         # harvest layers
         for moja_dir in glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario]))+glob.glob(r'{}\SCEN_{}\harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
             if self.tiler_template_dir == None:
+                logging.info('Tiler template directory found.')
                 self.tiler_template_dir = moja_dir
             basename = os.path.basename(moja_dir)
             year = basename.split('_moja')[0][-4:]
@@ -124,6 +128,7 @@ class ConfigureGCBM(object):
             os.makedirs(os.path.dirname(output_path))
         with open(output_path, 'w') as provider_file:
             json.dump(config_provider, provider_file, sort_keys=True, indent=4)
+        logging.info('GCBM config provider generated for scenario {} at {}'.format(scenario, output_path))
 
         return layer_config_names, disturbance_names
 
@@ -154,43 +159,21 @@ class ConfigureGCBM(object):
             if classifier in [name for name in layer_config_names]:
                 classifiers.append(classifier)
             else:
+                logging.warning("Classifier '{}' not added to GCBM config".format(classifier))
                 print "Warning: Classifier '{}' not added to GCBM config".format(classifier)
         reporting_ind_names = [ri for ri in self.reporting_indicators.getIndicators()]
         gcbm_config["Variables"]["initial_classifier_set"]["transform"]["vars"] = classifiers
         gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] = (
             gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] + reporting_ind_names)
         gcbm_config["Modules"]["CBMDisturbanceEventModule"]["settings"]["vars"] = disturbance_names
-        output_directory = os.path.join(self.output_dir, 'SCEN_{}'.format(scenario))
-        if not os.path.exists(output_directory):
+        output_directory = os.path.join(self.output_dir)
+        if not os.path.exists(output_directory) and output_directory[0]!='$':
             os.makedirs(output_directory)
         gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]["settings"]["databasename"] = os.path.join(output_directory, 'GCBMoutput.db')
         gcbm_config["Modules"]["WriteVariableGrid"]["settings"]["output_path"] = output_directory
-
-        with open(r'{}\SCEN_{}\GCBM_config.json'.format(self.gcbm_configs_dir, scenario), 'w') as config_file:
+        output_path = r'{}\SCEN_{}\GCBM_config.json'.format(self.gcbm_configs_dir, scenario)
+        if not os.path.exists(os.path.dirname(output_path)):
+            os.makedirs(os.path.dirname(output_path))
+        with open(output_path, 'w') as config_file:
             json.dump(gcbm_config, config_file, sort_keys=True, indent=4)
-
-'''
-Parameters
-
-config:
-$start_year
-$end_year
-$tiles
-$disturbances
-$disturbance_vars
-$output_db
-$output_dir
-
-config_provider:
-$input_db
-resolution
-$rollbackHarvest
-$historicHarvest
-$rollbackFire
-$historicFire
-$MPB
-$projectedDisturbances
-$classifiers
-$reportingIndicators
-
-'''
+            logging.info('GCBM config generated for scenario {} at {}'.format(scenario, output_path))

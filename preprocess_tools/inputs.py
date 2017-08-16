@@ -2,6 +2,8 @@ import arcpy
 import os
 import glob
 import shutil
+import logging
+import time
 
 class SpatialInputs(object):
 	def __init__(self, workspace, filter):
@@ -16,15 +18,18 @@ class SpatialInputs(object):
 
 	def reproject(self, new_workspace, name=None):
 		# Project the layer from NAD 1983 to WGS 1984
+		logging.info('Starting process: reproject from {} to {}'.format(self.getWorkspace(), new_workspace))
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
 		if new_workspace==self.getWorkspace() and name==None:
+			logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 		arcpy.env.overwriteOutput = True
 		transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
 		output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
-		print "Reprojecting {}...".format(self.getFilter()),
+		print "[{}] Reprojecting {}...".format(time.strftime('%a %H:%M:%S'),self.getFilter()),
 		for layer in self.scan_for_layers():
+			logging.info('Reprojecting {}'.format(os.path.basename(layer)))
 			if name==None:
 				if '.tif' in os.path.basename(layer):
 					arcpy.ProjectRaster_management(layer, os.path.join(new_workspace, os.path.basename(layer)), output_proj, "", "", transform_method, "", "")
@@ -44,8 +49,9 @@ class SpatialInputs(object):
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
 		if new_workspace==self.getWorkspace() and name==None:
+			logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
-		print "Clipping {}...".format(self.getFilter()),
+		print "[{}] Clipping {}...".format(time.strftime('%a %H:%M:%S'),self.getFilter()),
 		arcpy.env.workspace = workspace
 		arcpy.env.overwriteOutput = True
 		arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
@@ -53,8 +59,10 @@ class SpatialInputs(object):
 			arcpy.MakeFeatureLayer_management(layer, 'clip')
 			arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
 			if name==None:
+				logging.info('Clipping {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace,os.path.basename(layer))))
 				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
 			else:
+				logging.info('Clipping {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace, name)))
 				arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, name)
 				self._filter = name
 				break
@@ -66,16 +74,19 @@ class SpatialInputs(object):
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
 		if new_workspace==self.getWorkspace() and name==None:
+			logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
-		print "Clipping {}{}...".format(self.getFilter(), ' to {}'.format(name) if name else ''),
+		print "[{}] Clipping {}{}...".format(time.strftime('%a %H:%M:%S'),self.getFilter(), ' to {}'.format(name) if name else ''),
 		arcpy.env.workspace = workspace
 		arcpy.env.overwriteOutput = True
 		arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
 		for layer in self.scan_for_layers():
 			arcpy.MakeFeatureLayer_management(layer, 'clip')
 			if name==None:
+				logging.info('Clipping(cut polygons) {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace, os.path.basename(layer))))
 				arcpy.Clip_analysis('clip', 'clip_to', os.path.join(new_workspace, os.path.basename(layer)))
 			else:
+				logging.info('Clipping(cut polygons) {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace, name)))
 				arcpy.Clip_analysis('clip', 'clip_to', os.path.join(new_workspace, name))
 				self._filter = name
 				break
@@ -87,9 +98,11 @@ class SpatialInputs(object):
 		if not os.path.exists(new_workspace):
 			self.createWorkspace(new_workspace)
 		if new_workspace==self.getWorkspace():
+			logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
-		print "Copying {}...".format(self.getFilter()),
+		print "[{}] Copying {}...".format(time.strftime('%a %H:%M:%S'),self.getFilter()),
 		for layer in self.scan_for_layers():
+			logging.info('Copying {}, saving to '.format(os.path.basename(layer),os.path.join(new_workspace, os.path.basename(layer))))
 			if '.gdb' in self.getWorkspace():
 				arcpy.env.workspace = self.getWorkspace()
 				arcpy.FeatureClassToFeatureClass_conversion(os.path.basename(layer), new_workspace, os.path.basename(layer))
@@ -130,9 +143,6 @@ class Inventory(SpatialInputs):
 		self._classifiers_attr = classifiers_attr
 		self._rasters = []
 
-	def getWorkspace(self):
-		return self._workspace
-
 	def setWorkspace(self, path):
 		self._workspace = path
 
@@ -141,9 +151,6 @@ class Inventory(SpatialInputs):
 
 	def setLayerName(self, layer):
 		self._filter = layer
-
-	def getFilter(self):
-		return self._filter
 
 	def getYear(self):
 		return self._year
@@ -339,9 +346,6 @@ class SpatialBoundaries(SpatialInputs):
 		else:
 			print "Warning: invalid area filter object"
 
-	def getWorkspace(self):
-		return self._workspace
-
 	def getFilter(self):
 		return "*.shp"
 
@@ -382,24 +386,11 @@ class ReportingIndicators(object):
 	def addReportingIndicator(self, indicator):
 		self._reporting_indicators.update(indicator)
 
-class RollbackDisturbances(object):
-	def __init__(self, path):
-		self._path = path
-
-	def getPath(self):
-		return self._path
-
 class HistoricDisturbance(SpatialInputs):
 	def __init__(self, workspace, filter, year_field):
 		self._workspace = workspace
 		self._filter = filter
 		self._year_field = year_field
-
-	def getWorkspace(self):
-		return self._workspace
-
-	def getFilter(self):
-		return self._filter
 
 	def getYearField(self):
 		return self._year_field
@@ -411,14 +402,15 @@ class ProjectedDisturbance(SpatialInputs):
 		self._scenario = scenario
 		self._lookup_table = lookup_table
 
-	def getWorkspace(self):
-		return self._workspace
-
-	def getFilter(self):
-		return self._filter
-
 	def getScenario(self):
 		return self._scenario
 
 	def getLookupTable(self):
 		return self._lookup_table
+
+class RollbackDisturbances(object):
+	def __init__(self, path):
+		self._path = path
+
+	def getPath(self):
+		return self._path

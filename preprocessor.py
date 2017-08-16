@@ -7,6 +7,7 @@ import arcpy
 import os
 import sys
 import cPickle
+import logging
 
 sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
 import preprocess_tools
@@ -90,6 +91,7 @@ def load_inputs():
     global gcbm_exe
     try:
         print "----------------------\nLoading inputs...",
+        logging.info('Loading inputs from {}'.format(os.path.join(os.getcwd(),'inputs')))
         inventory = cPickle.load(open(r'inputs\inventory.pkl'))
         historicFire1 = cPickle.load(open(r'inputs\historicFire1.pkl'))
         historicFire2 = cPickle.load(open(r'inputs\historicFire2.pkl'))
@@ -176,6 +178,14 @@ if __name__=="__main__":
 
     load_inputs()
 
+    # Logging
+    debug_log = 'logs\DebugLogPreprocessor.log'
+    if not os.path.exists(os.path.dirname(debug_log)):
+        os.makedirs(os.path.dirname(debug_log))
+    elif os.path.exists(debug_log):
+        os.unlink(debug_log)
+    logging.basicConfig(filename=debug_log, format='[%(asctime)s] %(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%b%d %H:%M:%S')
+
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
     fishnet = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
@@ -203,12 +213,16 @@ if __name__=="__main__":
         rollback_range=rollback_range,future_range=future_range,ProgressPrinter=PP)
 
     ### Execute Functions
+    
     # -- Grid generation
     fishnet.createFishnet()
+
     # -- Grid inventory
     inventoryGridder.gridInventory()
+
     if not rollback_enabled: # ***
         inventoryGridder.exportInventory(inventory_raster_out, resolution) # ***
+
     else: # ***
         # -- Start of rollback
         mergeDist.runMergeDisturbances()
@@ -217,9 +231,7 @@ if __name__=="__main__":
         calcNewDistYr.calculateNewDistYr()
         updateInv.updateInvRollback()  # ***
         # -- End of rollback
-    # -- Upload to S3
-    # s3.upload()
-# ------------------------------------------------------------------------------
+
     # -- Run Tiler
     tiler.defineBoundingBox(tiler_output_dir) # ***
     general_lyrs = tiler.processGeneralLayers() # ***
@@ -228,18 +240,14 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest)
     tiler.processHistoricInsectDisturbances(historicMPB)
-    # tiler.processProjectedDisturbances(projectedDistBase)
-    transitionRules = tiler.runTiler(tiler_output_dir, 'Base', True) # ***
+    for i, scenario in enumerate(tiler_scenarios):
+        # tiler.processProjectedDisturbances(projectedDistBase)
+        transitionRules = tiler.runTiler(tiler_output_dir, scenario, True if i==0 else False) # ***
+
     # -- Prep and run recliner2GCBM
     r2GCBM.prepTransitionRules(transitionRules) # ***
     r2GCBM.prepYieldTable(yieldTable)
     r2GCBM.runRecliner2GCBM() # ***
+
     # -- Configure GCBM
     gcbmConfigurer.configureGCBM(recliner2gcbm_output_path, general_lyrs, tiler_output_dir) # ***
-    # -- Run GCBM
-    # gcbm.runGCBM()
-    # -- Run CompileGCBM
-    # GCBMcompiler.compileGCBM()
-    # -- Run CBM Rollup
-    # CBMRollup.runCBMRollup()
-    # -- Download from S3
