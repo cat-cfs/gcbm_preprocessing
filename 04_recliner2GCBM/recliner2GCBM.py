@@ -11,6 +11,7 @@ class Recliner2GCBM(object):
         self.ProgressPrinter = ProgressPrinter
         if exe_path==None:
             self.exe_path = r"M:\Spatially_explicit\03_Tools\Recliner2GCBM-x64\Recliner2GCBM.exe"
+            self.exe_path_32 = r'M:\Spatially_explicit\03_Tools\Recliner2GCBM-x86\Recliner2GCBM.exe'
         else:
             self.exe_path = exe_path
         self.config_dir = config_dir
@@ -111,8 +112,17 @@ class Recliner2GCBM(object):
         with open(config_path, "w") as config:
             json.dump(default_config, config)
             logging.info('Recliner2GCBM config json created at {}'.format(config_path))
-        run = subprocess.Popen([self.exe_path, "-c", config_path])
-        run.communicate()
+        try:
+            run = subprocess.Popen([self.exe_path, "-c", config_path])
+            run.communicate()
+        except:
+            try:
+                run = subprocess.Popen([self.exe_path_32, "-c", config_path])
+                run.communicate()
+            except:
+                print "Recliner2GCBM Failed"
+                raise
+
         pp.finish()
 
     def prepTransitionRules(self, transitionRules):

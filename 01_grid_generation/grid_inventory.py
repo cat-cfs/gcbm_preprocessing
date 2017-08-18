@@ -142,22 +142,37 @@ class GridInventory(object):
 
     def exportGriddedInvDBF(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        self.inventory.setLayerName(self.gridded_inventory)
         arcpy.env.workspace = self.inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
         fmd = {}
-        for i in range(len(self.inventory.getClassifiers())+1):
+        for i in range(len(self.inventory.getClassifiers())+4):
             fmd.update({i:arcpy.FieldMap()})
-        fmd[0].addInputField("inventory_gridded", self.inventory.getFieldNames()['age'])
-        # fmd[1].addInputField("inventory_gridded", self.inventory.getFieldNames()['FMLB'])
-        # fmd[2].addInputField("inventory_gridded", self.inventory.getFieldNames()['THLB'])
+        fmd[0].addInputField(self.gridded_inventory, self.inventory.getFieldNames()['age'])
+
+        logging.info('Adding and calculating theme fields...')
+        arcpy.AddField_management(self.gridded_inventory, "THEME1", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
+        #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
+        arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!TileID!", "PYTHON_9.3", "")
+        arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
         for i, classifier in enumerate(self.inventory.getClassifiers()):
-            fmd[i+1].addInputField("inventory_gridded", self.inventory.getClassifierAttr(classifier))
+            if i>1: i+=1
+            arcpy.AddField_management(self.gridded_inventory, "THEME{}".format(i+2), "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+            arcpy.CalculateField_management(self.gridded_inventory, "THEME{}".format(i+2), "!{}!".format(self.inventory.getClassifierAttr(classifier)), "PYTHON_9.3", "")
+
+        fmd[1].addInputField("inventory_gridded", 'THEME1')
+        for i, classifier in enumerate(self.inventory.getClassifiers()):
+            fmd[i+2].addInputField(self.gridded_inventory, 'THEME{}'.format(i+2))
+
+        fmd[len(fmd)-2].addInputField("inventory_gridded", 'THEME4')
+        fmd[len(fmd)-1].addInputField(self.gridded_inventory, 'Shape_Area')
+
         fms = arcpy.FieldMappings()
         for fm in fmd.values():
             fms.addFieldMap(fm)
-
-        arcpy.TableToTable_conversion("inventory_gridded", self.output_dbf_dir, "inventory.dbf", "", fms)
-        self.inventory.setLayerName("inventory_gridded")
+        arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
         pp.finish()
 
     def exportInventory(self, inventory_raster_out, resolution):
@@ -175,13 +190,13 @@ class GridInventory(object):
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)
             file_path = os.path.join(inventory_raster_out, "{}.tif".format(classifier_name))
-            arcpy.FeatureToRaster_conversion("inventory_gridded", field_name, file_path, resolution)
+            arcpy.FeatureToRaster_conversion(self.gridded_inventory, field_name, file_path, resolution)
             self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
         for attr in fields:
             field_name = fields[attr]
             file_path = os.path.join(inventory_raster_out,"{}.tif".format(attr))
-            arcpy.FeatureToRaster_conversion("inventory_gridded", field_name, file_path, resolution)
+            arcpy.FeatureToRaster_conversion(self.gridded_inventory, field_name, file_path, resolution)
             self.inventory.addRaster(file_path, attr, self.createAttributeTable(
                 os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
         pp.finish()

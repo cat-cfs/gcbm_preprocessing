@@ -74,7 +74,7 @@ def save_inputs():
 
 if __name__=="__main__":
     # Logging
-    debug_log = 'logs\DebugLogDataPrep.log'
+    debug_log = r'logs\DebugLogDataPrep.log'
     if not os.path.exists(os.path.dirname(debug_log)):
         os.makedirs(os.path.dirname(debug_log))
     elif os.path.exists(debug_log):
@@ -100,6 +100,7 @@ if __name__=="__main__":
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
     future_range = [2010,2070]
+    # Activity start year must be after historic range
     activity_start_year = 2016
 
 

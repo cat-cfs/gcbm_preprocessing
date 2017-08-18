@@ -10,6 +10,8 @@ import inspect
 import sys
 import logging
 
+from projected_disturbances_placeholder import ProjectedDisturbancesPlaceholder
+
 from mojadata.boundingbox import BoundingBox
 from mojadata.tiler2d import Tiler2D
 from mojadata.layer.vectorlayer import VectorLayer
@@ -197,23 +199,53 @@ class Tiler(object):
                         age_after=-1)))
         pp.finish()
 
-    def processProjectedDisturbances(self, dist):
-        pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3],dist.getScenario()), 1).start()
-        futureDistTypeLookup = dist.getLookupTable()
-        future_start_year = self.future_range[0]
+    def processProjectedDisturbances(self, scenario):
+        pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3],scenario), 1).start()
+        placeholder = ProjectedDisturbancesPlaceholder(self.inventory, self.rollback_disturbances, self.ProgressPrinter)
+        projectedDisturbances = placeholder.copyRollbackDistAsFuture(scenario)
 
-        for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
-            file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-            year = future_start_year + int(file_name_no_ext.split("_")[-1])
-            if year in range(self.historic_range[1]+1, self.future_range[1]+1):
+        rollback_dist_lookup = {
+            1: "Wild Fires",
+            2: "{} CC".format('Base' if scenario.lower()=='base' else 'CBM_{}'.format(scenario))
+        }
+        rollback_name_lookup = {
+            1: "fire",
+            2: "harvest"
+        }
+        for year in range(self.historic_range[1]+1, self.future_range[1]+1):
+            for dist_code in rollback_dist_lookup:
+                label = rollback_dist_lookup[dist_code]
+                name = rollback_name_lookup[dist_code]
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    VectorLayer("Proj{}_{}".format("Disturbance", year), file_name, Attribute("dist_type_", substitutions=futureDistTypeLookup)),
+                    VectorLayer("projected_{}_{}".format(name, year),
+                                projectedDisturbances,
+                                [
+                                    Attribute("dist_year", filter=lambda v, yr=year: v == yr),
+                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=rollback_dist_lookup),
+                                    Attribute("RegenDelay")
+                                ]),
                     year=year,
-                    disturbance_type=Attribute("dist_type_"),
+                    disturbance_type=Attribute("DistType"),
                     transition=TransitionRule(
-                        regen_delay=0,
+                        regen_delay=Attribute("RegenDelay"),
                         age_after=0)))
+
+
+        # futureDistTypeLookup = dist.getLookupTable()
+        # future_start_year = self.future_range[0]
+        # for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
+        #     file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
+        #     year = future_start_year + int(file_name_no_ext.split("_")[-1])
+        #     if year in range(self.historic_range[1]+1, self.future_range[1]+1):
+        #         self.layers.append(DisturbanceLayer(
+        #             self.rule_manager,
+        #             VectorLayer("Proj{}_{}".format("Disturbance", year), file_name, Attribute("dist_type_", substitutions=futureDistTypeLookup)),
+        #             year=year,
+        #             disturbance_type=Attribute("dist_type_"),
+        #             transition=TransitionRule(
+        #                 regen_delay=0,
+        #                 age_after=0)))
         pp.finish()
 
 
@@ -228,6 +260,7 @@ class Tiler(object):
             logging.info('Tiling layers: {}'.format([l.name for l in self.layers]))
             self.tiler.tile(self.layers)
             self.rule_manager.write_rules()
+            transitionRules = None
             if make_transition_rules == True:
                 ccol = {}
                 for classifier in self.inventory.getClassifiers():

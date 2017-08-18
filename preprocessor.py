@@ -122,6 +122,7 @@ def load_inputs():
         gcbm_configs_dir = cPickle.load(open(r'inputs\gcbm_configs_dir.pkl'))
         reportingIndicators = cPickle.load(open(r'inputs\reportingIndicators.pkl'))
         gcbm_exe = cPickle.load(open(r'inputs\gcbm_exe.pkl'))
+        logging.info('Loaded inputs.')
         print "Done\n----------------------"
     except:
         print "Failed to load inputs."
@@ -133,58 +134,37 @@ def save_objects():
         if not os.path.exists('objects'):
             os.mkdir('objects')
         cPickle.dump(inventory, open(r'objects\inventory.pkl', 'wb'))
-        cPickle.dump(rollbackDisturbances, open(r'objects\rollbackDisturbances.pkl', 'wb'))
-        cPickle.dump(historicFire1, open(r'objects\historicFire1.pkl', 'wb'))
-        cPickle.dump(historicFire2, open(r'objects\historicFire2.pkl', 'wb'))
-        cPickle.dump(historicHarvest, open(r'objects\historicHarvest.pkl', 'wb'))
-        cPickle.dump(historicMPB, open(r'objects\historicMPB.pkl', 'wb'))
-        cPickle.dump(projectedDistBase, open(r'objects\projectedDistBase.pkl', 'wb'))
-        cPickle.dump(NAmat, open(r'objects\NAmat.pkl', 'wb'))
-        cPickle.dump(spatialBoundaries, open(r'objects\spatialBoundaries.pkl', 'wb'))
         cPickle.dump(transitionRules, open(r'objects\transitionRules.pkl', 'wb'))
         cPickle.dump(yieldTable, open(r'objects\yieldTable.pkl', 'wb'))
-        cPickle.dump(AIDB, open(r'objects\AIDB.pkl', 'wb'))
         print 'Done'
+        logging.info('Objects Saved. Can restart from this point forward.')
     except:
         print "Failed to save objects."
         raise
 
 def load_objects():
     global inventory
-    global rollbackDisturbances
-    global historicFire1
-    global historicFire2
-    global historicHarvest
-    global historicMPB
-    global projectedDistBase
+    global transitionRules
+    global yieldTable
     try:
         inventory = cPickle.load(open(r'objects\inventory.pkl'))
-        rollbackDisturbances = cPickle.load(open(r'objects\rollbackDisturbances.pkl'))
-        historicFire1 = cPickle.load(open(r'objects\historicFire1.pkl'))
-        historicFire2 = cPickle.load(open(r'objects\historicFire2.pkl'))
-        historicHarvest = cPickle.load(open(r'objects\historicHarvest.pkl'))
-        historicMPB = cPickle.load(open(r'objects\historicMPB.pkl'))
-        projectedDistBase = cPickle.load(open(r'objects\projectedDistBase.pkl'))
-        NAmat = cPickle.load(open(r'objects\NAmat.pkl'))
-        spatialBoundaries = cPickle.load(open(r'objects\spatialBoundaries.pkl'))
         transitionRules = cPickle.load(open(r'objects\transitionRules.pkl'))
         yieldTable = cPickle.load(open(r'objects\yieldTable.pkl'))
-        AIDB = cPickle.load(open(r'objects\AIDB.pkl'))
+        logging.info('Objects loaded.')
     except:
         print "Failed to load objects."
         raise
 
 if __name__=="__main__":
-
-    load_inputs()
-
     # Logging
-    debug_log = 'logs\DebugLogPreprocessor.log'
+    debug_log = r'logs\DebugLogPreprocessor.log'
     if not os.path.exists(os.path.dirname(debug_log)):
         os.makedirs(os.path.dirname(debug_log))
     elif os.path.exists(debug_log):
         os.unlink(debug_log)
     logging.basicConfig(filename=debug_log, format='[%(asctime)s] %(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%b%d %H:%M:%S')
+
+    load_inputs()
 
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
@@ -209,11 +189,12 @@ if __name__=="__main__":
     r2GCBM = recliner2GCBM.recliner2GCBM.Recliner2GCBM(config_dir=recliner2gcbm_config_dir, output_path=recliner2gcbm_output_path,
         transitionRules=transitionRules,yieldTable=yieldTable,aidb=AIDB,ProgressPrinter=PP, exe_path=recliner2gcbm_exe_path)
     gcbmConfigurer = GCBMconfig.configure_gcbm.ConfigureGCBM(output_dir=gcbm_raw_output_dir, gcbm_configs_dir=gcbm_configs_dir,
-        GCBM_scenarios=GCBM_scenarios, inventory=inventory, reportingIndicators=reportingIndicators, resolution=resolution,
-        rollback_range=rollback_range,future_range=future_range,ProgressPrinter=PP)
+        GCBM_scenarios=GCBM_scenarios, base_scenario=tiler_scenarios[0], inventory=inventory, reportingIndicators=reportingIndicators,
+        resolution=resolution,rollback_range=rollback_range,actv_start_year=activity_start_year,future_range=future_range,ProgressPrinter=PP)
+
 
     ### Execute Functions
-    
+
     # -- Grid generation
     fishnet.createFishnet()
 
@@ -241,8 +222,11 @@ if __name__=="__main__":
     tiler.processHistoricHarvestDisturbances(historicHarvest)
     tiler.processHistoricInsectDisturbances(historicMPB)
     for i, scenario in enumerate(tiler_scenarios):
-        # tiler.processProjectedDisturbances(projectedDistBase)
-        transitionRules = tiler.runTiler(tiler_output_dir, scenario, True if i==0 else False) # ***
+        tiler.processProjectedDisturbances(scenario)
+        if i==0:
+            transitionRules = tiler.runTiler(tiler_output_dir, scenario, True) # ***
+        else:
+            tiler.runTiler(tiler_output_dir, scenario, False) # ***
 
     # -- Prep and run recliner2GCBM
     r2GCBM.prepTransitionRules(transitionRules) # ***

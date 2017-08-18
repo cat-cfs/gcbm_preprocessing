@@ -102,7 +102,7 @@ class SpatialInputs(object):
 			raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
 		print "[{}] Copying {}...".format(time.strftime('%a %H:%M:%S'),self.getFilter()),
 		for layer in self.scan_for_layers():
-			logging.info('Copying {}, saving to '.format(os.path.basename(layer),os.path.join(new_workspace, os.path.basename(layer))))
+			logging.info('Copying {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace, os.path.basename(layer))))
 			if '.gdb' in self.getWorkspace():
 				arcpy.env.workspace = self.getWorkspace()
 				arcpy.FeatureClassToFeatureClass_conversion(os.path.basename(layer), new_workspace, os.path.basename(layer))
