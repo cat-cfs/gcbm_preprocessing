@@ -123,7 +123,8 @@ if __name__=="__main__":
     }
     inventory_field_names = {
         "age": "Age2015",
-        "species": "LdSpp"
+        "species": "LdSpp",
+        "THLB": "THLB"
     }
 
     ## Disturbances
@@ -271,7 +272,8 @@ if __name__=="__main__":
     # paths to the tiled layers of any extra reporting indicators. these would be in
     # addition to the classifiers and eco boundary as reporting indicators
     reporting_indicators = {
-        "ProtectedAreas":r"{}\01_spatial\05_reporting_indicators\protectedAreas_moja".format(external_data)
+        "ProtectedAreas":r"{}\01_spatial\05_reporting_indicators\protectedAreas_moja".format(external_data),
+        "THLB": None
     }
     gcbm_exe = r'm:\spatially_explicit\03_tools\gcbm\moja.cli.exe'
 

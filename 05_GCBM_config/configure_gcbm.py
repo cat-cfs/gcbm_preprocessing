@@ -122,6 +122,17 @@ class ConfigureGCBM(object):
 
         disturbance_names = [dn for dn in layer_config_names]
 
+        # reporting indicators
+        reporting_ind = self.reporting_indicators.getIndicators()
+        for ri in reporting_ind:
+            if reporting_ind[ri]!=None:
+                provider_layers.append({
+                    "name": ri,
+                    "layer_path": reporting_ind[ri],
+                    "layer_prefix": os.path.basename(reporting_ind[ri])
+                })
+                layer_config_names.update({ri:ri})
+
         # general layers
         for name in general_lyrs:
             moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, self.base_scenario, name)
@@ -136,18 +147,11 @@ class ConfigureGCBM(object):
                 layer_config_names.update({'mean_annual_temperature':name})
             elif name == "Eco":
                 layer_config_names.update({'eco_boundary':name})
+            # elif name == "THLB":
+            #     self.reporting_indicators.addReportingIndicator({name:moja_dir})
+            #     layer_config_names.update({name:name})
             else:
                 layer_config_names.update({name:name})
-
-        # reporting indicators
-        reporting_ind = self.reporting_indicators.getIndicators()
-        for ri in reporting_ind:
-            provider_layers.append({
-                "name": ri,
-                "layer_path": reporting_ind[ri],
-                "layer_prefix": os.path.basename(reporting_ind[ri])
-            })
-            layer_config_names.update({ri:ri})
 
         with open(r'{}\05_GCBM_config\GCBM_config_provider.json'.format(sys.path[0]), 'rb') as provider_file:
             config_provider = json.load(provider_file)
