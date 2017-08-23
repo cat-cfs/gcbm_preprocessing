@@ -108,21 +108,21 @@ if __name__=="__main__":
     # Path the the inventory gdb workspace
     inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "inv_reprojected"
+    inventory_layer = "new_inventory"
     # The age field name in the inventory layer
-    inventory_age_field = "Age2015"
+    inventory_age_field = "age2015"
     # The starting year of the inventory
     inventory_year = 2015
     # A dictionary with the classifiers as keys and the associated field names (as
     # they appear in the inventory) as values.
     inventory_classifier_attr = {
-        "FU": "FU",
+        "SFU": "SFU",
         "SI":"SI",
         "SUBMU":"SUBMU",
         "SPCOMP":"SPCOMP"
     }
     inventory_field_names = {
-        "age": "Age2015",
+        "age": "age2015",
         "species": "Species"
     }
 
@@ -230,7 +230,7 @@ if __name__=="__main__":
     # path to the yield table (recommended to be in the recliner2gcbm config directory)
     yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
     # The classifiers as keys and the column as value
-    yieldTable_classifier_cols = {"SUBMU":0, "FU":1, "SI":2, "SPCOMP":3}
+    yieldTable_classifier_cols = {"SUBMU":0, "SFU":1, "SI":2, "SPCOMP":3}
     # True if the first row of the yield table is a header
     yieldTable_header = True
     # year interval between age increments
