@@ -79,6 +79,37 @@ class ConfigureGCBM(object):
                 })
                 layer_config_names.update({name_year:name_year})
 
+        # slashburn layers
+        for moja_dir in (glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\slashburn_*_moja'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.base_scenario))):
+            if self.tiler_template_dir == None:
+                logging.info('Tiler template directory found.')
+                self.tiler_template_dir = moja_dir
+            basename = os.path.basename(moja_dir)
+            year = basename.split('_moja')[0][-4:]
+            name = basename.split('_moja')[0][:-5].split('_')[-1]
+            name_year = '{}_{}'.format(name,year)
+            if int(year) < self.activity_start_year:
+                provider_layers.append({
+                    "name": name_year,
+                    "layer_path": moja_dir,
+                    "layer_prefix": basename
+                })
+                layer_config_names.update({name_year:name_year})
+        for moja_dir in glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
+            basename = os.path.basename(moja_dir)
+            year = basename.split('_moja')[0][-4:]
+            name = basename.split('_moja')[0][:-5].split('_')[-1]
+            name_year = '{}_{}'.format(name,year)
+            if int(year) >= self.activity_start_year:
+                provider_layers.append({
+                    "name": name_year,
+                    "layer_path": moja_dir,
+                    "layer_prefix": basename
+                })
+                layer_config_names.update({name_year:name_year})
+
         # fire layers
         for moja_dir in (glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, self.base_scenario))
@@ -147,9 +178,6 @@ class ConfigureGCBM(object):
                 layer_config_names.update({'mean_annual_temperature':name})
             elif name == "Eco":
                 layer_config_names.update({'eco_boundary':name})
-            # elif name == "THLB":
-            #     self.reporting_indicators.addReportingIndicator({name:moja_dir})
-            #     layer_config_names.update({name:name})
             else:
                 layer_config_names.update({name:name})
 

@@ -133,13 +133,14 @@ class SpatialInputs(object):
 		return sorted(glob.glob(os.path.join(self.getWorkspace(), '{}*'.format(name))), key=os.path.basename)
 
 class Inventory(SpatialInputs):
-	def __init__(self, workspace, filter, year, classifiers_attr, field_names=None):
+	def __init__(self, workspace, filter, year, classifiers_attr, field_names=None, reporting_classifiers=None):
 		arcpy.env.workspace = workspace
 		self._workspace = workspace
 		self._filter = filter
 		self._year = year
 		self._bounding_box = self.getBoundingBox()
 		self._field_names = field_names
+		self._reporting_classifiers = reporting_classifiers
 		self._classifiers_attr = classifiers_attr
 		self._rasters = []
 
@@ -215,6 +216,9 @@ class Inventory(SpatialInputs):
 		if self._field_names != None:
 			field_names.update(self._field_names)
 		return field_names
+
+	def getReportingClassifiers(self):
+		return {} if self._reporting_classifiers==None else self._reporting_classifiers
 
 class Raster(object):
 	def __init__(self, path, attr, attr_table):

@@ -225,6 +225,7 @@ class updateInvRollback(object):
         self.gridded_inventory = "inventory_gridded"
         self.disturbedInventory = "DisturbedInventory"
         self.RolledBackInventory = "inventory_gridded_1990"
+        self.rollback_range = rollback_range
         self.inv_vintage = rollback_range[1]
         self.rollback_start = rollback_range[0]
 
@@ -250,6 +251,7 @@ class updateInvRollback(object):
             lambda:self.remergeDistPolyInv(),
             lambda:self.makeLayers2(),
             lambda:self.rollbackAgeNonDistStands(),
+            lambda:self.makeSlashburn(),
             lambda:self.exportRollbackDisturbances(),
             lambda:self.exportRollbackInventory()
         ]
@@ -291,6 +293,31 @@ class updateInvRollback(object):
             cur.updateRow(row)
         pp.finish()
 
+    def makeSlashburn(self):
+        year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
+        # print "Start of slashburn processing..."
+        arcpy.CheckOutExtension("GeoStats")
+        PercSBofCC = 50
+        arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
+        expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
+        logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
+        logging.info('Selecting {}% of the harvest area in each year as slashburn and adding it to the rollback disturbances...'.format(PercSBofCC))
+        # Create SB records for each timestep
+        for year in range(self.rollback_range[0], self.rollback_range[1]+1):
+            expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.new_disturbance_field), year)
+            arcpy.SelectLayerByAttribute_management("temp_rollback", "NEW_SELECTION", expression2)
+            arcpy.SelectLayerByAttribute_management("temp_rollback", "SUBSET_SELECTION", expression1)
+            if int(arcpy.GetCount_management("temp_rollback").getOutput(0)) > 0:
+                arcpy.SubsetFeatures_ga(in_features="temp_rollback", out_training_feature_class="temp_SB", out_test_feature_class="", size_of_training_dataset=PercSBofCC, subset_size_units="PERCENTAGE_OF_INPUT")
+                arcpy.CalculateField_management("temp_SB", "DistType", 13, "PYTHON", "")
+                arcpy.Append_management("temp_SB", self.RolledBackInventory_layer)
+            arcpy.SelectLayerByAttribute_management("temp_rollback", "CLEAR_SELECTION")
+            pp.updateProgressP()
+
+        arcpy.CheckInExtension("GeoStats")
+        pp.finish()
+
     def exportRollbackDisturbances(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
 
@@ -314,8 +341,8 @@ class updateInvRollback(object):
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": self.inventory.getFieldNames()["rollback_age"],
-            "species": self.inventory.getFieldNames()["species"],
-            "THLB": self.inventory.getFieldNames()["THLB"]
+            "species": self.inventory.getFieldNames()["species"]
+            # "THLB": self.inventory.getFieldNames()["THLB"]
         }
         for classifier_name in classifier_names:
             logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))

@@ -24,18 +24,16 @@ from mojadata.layer.gcbm.transitionrulemanager import TransitionRuleManager
 from preprocess_tools.inputs import TransitionRules
 
 class Tiler(object):
-    def __init__(self, spatialBoundaries, inventory, historicFire, historicHarvest, rollbackDisturbances,
-                    projectedDisturbances, NAmat, rollback_range, historic_range, future_range, resolution, ProgressPrinter):
+    def __init__(self, spatialBoundaries, inventory, rollbackDisturbances, NAmat, rollback_range,
+                                        activity_start_year, historic_range, future_range, resolution, ProgressPrinter):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.spatial_boundaries = spatialBoundaries
         self.inventory = inventory
-        self.historic_fire = historicFire
-        self.historic_harvest = historicHarvest
-        self.projected_disturbances = projectedDisturbances
         self.rollback_disturbances = rollbackDisturbances
         self.NAmat = NAmat
         self.rollback_range = rollback_range
+        self.activity_start_year = activity_start_year
         self.historic_range = historic_range
         self.future_range = future_range
         self.resolution = resolution
@@ -92,11 +90,13 @@ class Tiler(object):
     def processRollbackDisturbances(self):
         rollback_dist_lookup = {
             1: "Wild Fires",
-            2: "Clearcut harvesting with salvage"
+            2: "Clearcut harvesting with salvage",
+            13: "SlashBurning"
         }
         rollback_name_lookup = {
             1: "fire",
-            2: "harvest"
+            2: "harvest",
+            13: "slashburn"
         }
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         for year in range(self.rollback_range[0], self.rollback_range[1]+1):
@@ -199,30 +199,36 @@ class Tiler(object):
                         age_after=-1)))
         pp.finish()
 
-    def processProjectedDisturbances(self, scenario):
+    def processProjectedDisturbances(self, scenario, params):
         pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3],scenario), 1).start()
-        placeholder = ProjectedDisturbancesPlaceholder(self.inventory, self.rollback_disturbances, self.ProgressPrinter)
-        projectedDisturbances = placeholder.copyRollbackDistAsFuture(scenario)
+        percent_sb = params[0]
+        actv_percent_sb = params[1]
+        actv_percent_harv = params[2]
+        placeholder = ProjectedDisturbancesPlaceholder(self.inventory, self.rollback_disturbances,
+            self.future_range, self.rollback_range, self.activity_start_year, self.ProgressPrinter)
+        projectedDisturbances = placeholder.generateProjectedDisturbances(scenario, percent_sb, actv_percent_sb, actv_percent_harv)
 
-        rollback_dist_lookup = {
-            1: "Wild Fires",
-            2: "{} CC".format('Base' if scenario.lower()=='base' else 'CBM_{}'.format(scenario))
+        projected_dist_lookup = {
+            7: "Wild Fires",
+            6: "{} CC".format('Base' if scenario.lower()=='base' else 'CBM_{}'.format(scenario)),
+            13: "SlashBurning"
         }
-        rollback_name_lookup = {
-            1: "fire",
-            2: "harvest"
+        projected_name_lookup = {
+            7: "fire",
+            6: "harvest",
+            13:"slashburn"
         }
         for year in range(self.historic_range[1]+1, self.future_range[1]+1):
-            for dist_code in rollback_dist_lookup:
-                label = rollback_dist_lookup[dist_code]
-                name = rollback_name_lookup[dist_code]
+            for dist_code in projected_dist_lookup:
+                label = projected_dist_lookup[dist_code]
+                name = projected_name_lookup[dist_code]
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
                     VectorLayer("projected_{}_{}".format(name, year),
                                 projectedDisturbances,
                                 [
-                                    Attribute("dist_year", filter=lambda v, yr=year: v == yr),
-                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=rollback_dist_lookup),
+                                    Attribute("DistYEAR_n", filter=lambda v, yr=year: v == yr),
+                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=projected_dist_lookup),
                                     Attribute("RegenDelay")
                                 ]),
                     year=year,
@@ -230,7 +236,7 @@ class Tiler(object):
                     transition=TransitionRule(
                         regen_delay=Attribute("RegenDelay"),
                         age_after=0)))
-
+        pp.finish()
 
         # futureDistTypeLookup = dist.getLookupTable()
         # future_start_year = self.future_range[0]
@@ -246,7 +252,6 @@ class Tiler(object):
         #             transition=TransitionRule(
         #                 regen_delay=0,
         #                 age_after=0)))
-        pp.finish()
 
 
     def runTiler(self, output_dir, scenario, make_transition_rules):

@@ -63,7 +63,6 @@ def save_inputs():
 # Historic Harvest Disturbances (BC Cutblocks) [shapefile]
 # Historic MPB Disturbances [shapefiles where year is the last 4 characters
 #    before file extention]
-# Projected Disturbances [shapefiles]
 # Spatial Boundaries (TSA and PSPU) [shapefiles]
 # NAmerica MAT (Mean Annual Temperature) [tiff]
 # Yield Table (Growth Curves) [AIDB species matching column, classifier columns,
@@ -93,13 +92,15 @@ if __name__=="__main__":
     # Tile resolution in degrees
     resolution = 0.001
 
+    sb_percent = 50
+
     # Set true to enable rollback
     rollback_enabled = True
 
     ## Year ranges
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
-    future_range = [2010,2070]
+    future_range = [2016,2070]
     # Activity start year must be after historic range
     activity_start_year = 2016
 
@@ -226,10 +227,12 @@ if __name__=="__main__":
 
     ### Aspatial Inputs
 
-    # Different scenarios to be ran by the tiler (before Disturbance Matrix distinctions)
-    tiler_scenarios = ['Base']
+    # Different scenarios to be run by the tiler (before Disturbance Matrix distinctions)
+    # The scenario 'Base' must be included
+    # Format: {<Scenario>: [<Slashburn Percent Base>, <Slashburn Percent After Actv>, <Harvest Percent After Actv>]}
+    tiler_scenarios = {'Base':[sb_percent, 50, 100],'B':[sb_percent, 50, 96],'C':[sb_percent, 48,100]}
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
-    GCBM_scenarios = {'Base':'Base', 'A':'Base'}
+    GCBM_scenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
 
     ## Recliner2GCBM
     recliner2gcbm_config_dir = r"{}\02a_recliner2GCBM_input".format(working_directory)
