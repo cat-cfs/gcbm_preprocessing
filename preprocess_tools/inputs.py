@@ -199,11 +199,8 @@ class Inventory(SpatialInputs):
 
 	def getFieldNames(self):
 		field_names = {
-			"age": "Age2011",
-			"species": "LeadSpp",
-			"ownership": "Own",
-			"FMLB": "FMLB",
-			"THLB": "THLB",
+			"age": "Age2015",
+			"species": "Species",
 			"establishment_date": "DE",
 			"dist_date_diff": "Dist_DE_DIFF",
 			"pre_dist_age": "preDistAge",

@@ -182,10 +182,7 @@ class GridInventory(object):
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": self.inventory.getFieldNames()["age"],
-            "species": self.inventory.getFieldNames()["species"],
-            # "ownership": self.inventory.getFieldNames()["ownership"],
-            # "FMLB": self.inventory.getFieldNames()["FMLB"],
-            "THLB": self.inventory.getFieldNames()["THLB"]
+            "species": self.inventory.getFieldNames()["species"]
         }
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)

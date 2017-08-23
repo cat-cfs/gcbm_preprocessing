@@ -342,7 +342,6 @@ class updateInvRollback(object):
         fields = {
             "age": self.inventory.getFieldNames()["rollback_age"],
             "species": self.inventory.getFieldNames()["species"]
-            # "THLB": self.inventory.getFieldNames()["THLB"]
         }
         for classifier_name in classifier_names:
             logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))

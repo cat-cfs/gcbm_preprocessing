@@ -22,7 +22,6 @@ def save_inputs():
         cPickle.dump(historicFire1, open(r'inputs\historicFire1.pkl', 'wb'))
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
-        cPickle.dump(historicMPB, open(r'inputs\historicMPB.pkl', 'wb'))
         cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
@@ -55,15 +54,13 @@ def save_inputs():
 
 
 ###############################################################################
-#                            Required Inputs (BC)
+#                            Required Inputs (ON)
 #                                                     []: Restricting qualities
 # Inventory [feature layer in geodatabase]
 # Historic Fire Disturbances (NFDB, NBAC) [shapefiles where year is the last 4
 #    characters before file extention]
-# Historic Harvest Disturbances (BC Cutblocks) [shapefile]
-# Historic MPB Disturbances [shapefiles where year is the last 4 characters
-#    before file extention]
-# Spatial Boundaries (TSA and PSPU) [shapefiles]
+# Historic Harvest Disturbances (ON C2C Harvest) [shapefile]
+# Spatial Boundaries (PSPU) [shapefiles]
 # NAmerica MAT (Mean Annual Temperature) [tiff]
 # Yield Table (Growth Curves) [AIDB species matching column, classifier columns,
 #    csv format]
@@ -82,13 +79,13 @@ if __name__=="__main__":
 
     #### Variables
     # TSA number as a string
-    TSA_number = '23'
+    FMU_number = '177'
     # TSA name, replace spaces in the name with underscores
-    TSA_name = '100_Mile_House'
+    FMU_name = 'Dog_River'
     # directory path to the working directory for relative paths
-    working_directory = r'G:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_{}_{}'.format(TSA_number,TSA_name)
+    working_directory = r'G:\GCBM\17_BC_ON_1ha\05_working_ON\FMU_{}_{}'.format(FMU_number,FMU_name)
     # directory path to the external data directory for relative paths
-    external_data = r'G:\GCBM\17_BC_ON_1ha\05_working_BC\00_external_data'
+    external_data = r'G:\GCBM\17_BC_ON_1ha\05_working_ON\00_external_data'
     # Tile resolution in degrees
     resolution = 0.001
 
@@ -119,13 +116,14 @@ if __name__=="__main__":
     # A dictionary with the classifiers as keys and the associated field names (as
     # they appear in the inventory) as values.
     inventory_classifier_attr = {
-        "LdSpp": "LdSpp",
-        "AU": "AU"
+        "FU": "FU",
+        "SI":"SI",
+        "SUBMU":"SUBMU",
+        "SPCOMP":"SPCOMP"
     }
     inventory_field_names = {
         "age": "Age2015",
-        "species": "LdSpp",
-        "THLB": "THLB"
+        "species": "Species"
     }
 
     ## Disturbances
@@ -139,34 +137,20 @@ if __name__=="__main__":
     NBAC_filter = "NBAC*.shp"
     NBAC_year_field = "EDATE"
     harvest_workspace = r"{}\01_spatial\03_disturbances\01_historic\02_harvest".format(external_data)
-    harvest_filter = "BC_cutblocks90_15.shp"
+    harvest_filter = "ONT_C2CHarvest1990_2011.shp"
     harvest_year_field = "HARV_YR"
-    MPB_workspace = r"{}\01_spatial\03_disturbances\01_historic\03_insect".format(external_data)
-    MPB_filter = "mpb*.shp"
-
-    # projScenBase_workspace = r"{}\01_spatial\03_disturbances\02_future\projDist_BASE".format(external_data)
-    # projScenBase_filter = "TS_*.shp"
-    # projScenBase_lookuptable = {
-    #     11: "Base CC",
-    #     7: "Wild Fires",
-    #     13: "SlashBurning",
-    #     10: "Partial Cut",
-    #     6: "Base Salvage",
-    #     2: "Wild Fire",
-    #     1: "Clearcut harvesting with salvage"
-    # }
 
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
     # file name or filter to find the TSA boundaries in the spatial reference directory
-    spatial_boundaries_tsa = "PSPUS_2016_FINAL_1_Reprojected.shp"
+    spatial_boundaries_fmu = "PSPUS_2016_FINAL_1_Reprojected.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
     spatial_boundaries_pspu = "PSPUS_2016.shp"
     # filter used to get the desired study area from the TSA boundaries.
     # change only the associated values for "field" and "code"
     study_area_filter = {
-        "field": "TSA_NUMBER",
-        "code": "'100 Mile House TSA'"
+        "field": "FMU_CODE",
+        "code": "'177'"
     }
     # field names for the Admin and Eco attributes in the PSPU boundaries file
     spatial_boundaries_attr = {
@@ -186,7 +170,7 @@ if __name__=="__main__":
     future_dist_input_dir = r'{}\01a_pretiled_layers\03_disturbances\02_future\inputs'.format(working_directory)
 
     reprojected_redirection = ('01_spatial', '03_spatial_reprojected')
-    clipped_redirection = (r'00_external_data\01_spatial', r'TSA_{}_{}\01a_pretiled_layers'.format(TSA_number, TSA_name))
+    clipped_redirection = (r'00_external_data\01_spatial', r'FMU_{}_{}\01a_pretiled_layers'.format(FMU_number, FMU_name))
 
     ### Initialize Spatial Inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
@@ -194,27 +178,25 @@ if __name__=="__main__":
     historicFire1 = preprocess_tools.inputs.HistoricDisturbance(NFDB_workspace, NFDB_filter, NFDB_year_field)
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
-    historicMPB = preprocess_tools.inputs.HistoricDisturbance(MPB_workspace, MPB_filter, None)
-    # projectedDistBase = preprocess_tools.inputs.ProjectedDisturbance(projScenBase_workspace, projScenBase_filter, "Base", projScenBase_lookuptable)
     projectedDistBase = None
-    spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
+    spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_fmu, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
     rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
 
-    external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicMPB, NAmat, spatialBoundaries]
+    external_spatial_data = [historicFire1, historicFire2, historicHarvest, NAmat, spatialBoundaries]
     # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
     # to be reprojected
     reproject = [
-        # historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries
+        # historicFire1, historicFire2, historicHarvest, projectedDistBase, NAmat, spatialBoundaries
     ]
-    clip = [historicFire1, historicFire2, historicHarvest, historicMPB]
+    clip = [historicFire1, historicFire2, historicHarvest]
     copy = [sp for sp in external_spatial_data if sp not in clip]
 
-    TSA_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
+    FMU_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
 
-    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
-        r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='tsa{}'.format(TSA_number))
+    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathTSA(), FMU_filter,
+        r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='fmu{}'.format(FMU_number))
 
     for spatial_input in reproject:
         spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
@@ -248,13 +230,13 @@ if __name__=="__main__":
     # path to the yield table (recommended to be in the recliner2gcbm config directory)
     yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
     # The classifiers as keys and the column as value
-    yieldTable_classifier_cols = {"AU":0, "LdSpp":1}
+    yieldTable_classifier_cols = {"SUBMU":0, "FU":1, "SI":2, "SPCOMP":3}
     # True if the first row of the yield table is a header
     yieldTable_header = True
     # year interval between age increments
     yieldTable_interval = 10
     # species column and increment range
-    yieldTable_cols = {"SpeciesCol":1,"IncrementRange":[2,37]}
+    yieldTable_cols = {"SpeciesCol":4,"IncrementRange":[5,31]}
 
     ## AIDB
     # path to aidb in external data where disturbance matrix is already configured
@@ -274,10 +256,7 @@ if __name__=="__main__":
     gcbm_raw_output_dir = '$output_dir'
     # paths to the tiled layers of any extra reporting indicators. these would be in
     # addition to the classifiers and eco boundary as reporting indicators
-    reporting_indicators = {
-        "ProtectedAreas":r"{}\01_spatial\05_reporting_indicators\protectedAreas_moja".format(external_data),
-        "THLB": None
-    }
+    reporting_indicators = {}
     gcbm_exe = r'm:\spatially_explicit\03_tools\gcbm\moja.cli.exe'
 
 

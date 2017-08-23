@@ -160,11 +160,11 @@ class Tiler(object):
 
     def processHistoricHarvestDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
+        C2C_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
         for year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("harvest_{}".format(year), cutblock_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
+                VectorLayer("harvest_{}".format(year), C2C_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
                 year=year,
                 disturbance_type="Clearcut harvesting with salvage",
                 transition=TransitionRule(
