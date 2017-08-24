@@ -155,7 +155,7 @@ class GridInventory(object):
         arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
         # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
         #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
-        arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!TileID!", "PYTHON_9.3", "")
+        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "", "PYTHON_9.3", "")
         arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
         for i, classifier in enumerate(self.inventory.getClassifiers()):
             if i>1: i+=1
