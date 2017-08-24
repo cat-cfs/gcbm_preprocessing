@@ -340,8 +340,8 @@ class updateInvRollback(object):
         arcpy.env.overwriteOutput = True
         classifier_names = self.inventory.getClassifiers()
         fields = {
-            "age": self.inventory.getFieldNames()["rollback_age"],
-            "species": self.inventory.getFieldNames()["species"]
+            "age": self.inventory.getFieldNames()["rollback_age"]
+            # "species": self.inventory.getFieldNames()["species"]
         }
         for classifier_name in classifier_names:
             logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))

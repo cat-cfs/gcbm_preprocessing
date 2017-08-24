@@ -109,8 +109,6 @@ if __name__=="__main__":
     inventory_workspace = r"{}\01_spatial\02_inventory\PCM2015v4.gdb".format(external_data)
     # Layer name of the inventory in the gdb
     inventory_layer = "inventory_ON_2015"
-    # The age field name in the inventory layer
-    inventory_age_field = "age2015"
     # The starting year of the inventory
     inventory_year = 2015
     # A dictionary with the classifiers as keys and the associated field names (as
@@ -122,7 +120,7 @@ if __name__=="__main__":
         "SPCOMP":"SPCOMP"
     }
     inventory_field_names = {
-        "age": "age2015",
+        "age": "AGE2015",
         "species": "Species"
     }
 
@@ -137,7 +135,7 @@ if __name__=="__main__":
     NBAC_filter = "NBAC*.shp"
     NBAC_year_field = "EDATE"
     harvest_workspace = r"{}\01_spatial\03_disturbances\01_historic\02_harvest".format(external_data)
-    harvest_filter = "ONT_C2CHarvest1990_2011.shp"
+    harvest_filter = "Ontario_C2C_Harvest_1990_2011.shp"
     harvest_year_field = "HARV_YR"
 
     # directory path to the spatial reference directory containing the FMU and PSPU boundaries
@@ -212,9 +210,9 @@ if __name__=="__main__":
     # Different scenarios to be run by the tiler (before Disturbance Matrix distinctions)
     # The scenario 'Base' must be included
     # Format: {<Scenario>: [<Slashburn Percent Base>, <Slashburn Percent After Actv>, <Harvest Percent After Actv>]}
-    tiler_scenarios = {'Base':[sb_percent, 50, 100],'B':[sb_percent, 50, 96],'C':[sb_percent, 48,100]}
+    tiler_scenarios = {'Base':[sb_percent, 50, 100]}
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
-    GCBM_scenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
+    GCBM_scenarios = {'Base':'Base'}
 
     ## Recliner2GCBM
     recliner2gcbm_config_dir = r"{}\02a_recliner2GCBM_input".format(working_directory)
@@ -230,13 +228,13 @@ if __name__=="__main__":
     # path to the yield table (recommended to be in the recliner2gcbm config directory)
     yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
     # The classifiers as keys and the column as value
-    yieldTable_classifier_cols = {"SUBMU":0, "SFU":1, "SI":2, "SPCOMP":3}
+    yieldTable_classifier_cols = {"SUBMU":3, "SFU":4, "SI":5, "SPCOMP":7}
     # True if the first row of the yield table is a header
     yieldTable_header = True
     # year interval between age increments
     yieldTable_interval = 10
     # species column and increment range
-    yieldTable_cols = {"SpeciesCol":4,"IncrementRange":[5,31]}
+    yieldTable_cols = {"SpeciesCol":9,"IncrementRange":[11,47]}
 
     ## AIDB
     # path to aidb in external data where disturbance matrix is already configured
