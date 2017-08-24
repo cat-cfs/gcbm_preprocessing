@@ -89,6 +89,7 @@ if __name__=="__main__":
     # Tile resolution in degrees
     resolution = 0.1
 
+    # The percent of harvest area slashburned in the Base scenario
     sb_percent = 50
 
     # Set true to enable rollback
@@ -147,7 +148,7 @@ if __name__=="__main__":
     # change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "FMU_CODE",
-        "code": "177"
+        "code": "'177'"
     }
     # field names for the Admin and Eco attributes in the PSPU boundaries file
     spatial_boundaries_attr = {
