@@ -87,7 +87,7 @@ if __name__=="__main__":
     # directory path to the external data directory for relative paths
     external_data = r'G:\GCBM\17_BC_ON_1ha\05_working_ON\00_external_data'
     # Tile resolution in degrees
-    resolution = 0.001
+    resolution = 0.1
 
     sb_percent = 50
 
@@ -97,7 +97,7 @@ if __name__=="__main__":
     ## Year ranges
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
-    future_range = [2016,2070]
+    future_range = [2016,2016]
     # Activity start year must be after historic range
     activity_start_year = 2018
 
@@ -106,7 +106,7 @@ if __name__=="__main__":
 
     ## Inventory
     # Path the the inventory gdb workspace
-    inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
+    inventory_workspace = r"{}\01_spatial\02_inventory\PCM2015v4.gdb".format(external_data)
     # Layer name of the inventory in the gdb
     inventory_layer = "inventory_ON_2015"
     # The age field name in the inventory layer
@@ -143,14 +143,14 @@ if __name__=="__main__":
     # directory path to the spatial reference directory containing the FMU and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
     # file name or filter to find the FMU boundaries in the spatial reference directory
-    spatial_boundaries_fmu = "PSPUS_2016_FINAL_1_Reprojected.shp"
+    spatial_boundaries_fmu = "PSPUS_2017_Ontario.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
     spatial_boundaries_pspu = "PSPUS_2016.shp"
     # filter used to get the desired study area from the FMU boundaries.
     # change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "FMU_CODE",
-        "code": "'177'"
+        "code": "177"
     }
     # field names for the Admin and Eco attributes in the PSPU boundaries file
     spatial_boundaries_attr = {
