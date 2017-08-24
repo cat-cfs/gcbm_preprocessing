@@ -97,7 +97,7 @@ if __name__=="__main__":
     ## Year ranges
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
-    future_range = [2016,2016]
+    future_range = [2016,2015]
     # Activity start year must be after historic range
     activity_start_year = 2018
 
@@ -106,9 +106,9 @@ if __name__=="__main__":
 
     ## Inventory
     # Path the the inventory gdb workspace
-    inventory_workspace = r"{}\01_spatial\02_inventory\PCM2015v4.gdb".format(external_data)
+    inventory_workspace = r"{}\01_spatial\02_inventory\PCM2015v5.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "inventory_ON_2015"
+    inventory_layer = "invON2015_reproj"
     # The starting year of the inventory
     inventory_year = 2015
     # A dictionary with the classifiers as keys and the associated field names (as
@@ -120,8 +120,7 @@ if __name__=="__main__":
         "SPCOMP":"SPCOMP"
     }
     inventory_field_names = {
-        "age": "AGE2015",
-        "species": "Species"
+        "age": "AGE2015"
     }
 
     ## Disturbances
