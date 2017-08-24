@@ -334,9 +334,9 @@ class AIDB(object):
 		self._path = path
 
 class SpatialBoundaries(SpatialInputs):
-	def __init__(self, workspace, filter_tsa, filter_pspu, type, area_filter, attributes):
+	def __init__(self, workspace, filter_fmu, filter_pspu, type, area_filter, attributes):
 		self._workspace = workspace
-		self._path_tsa = os.path.join(workspace, filter_tsa)
+		self._path_fmu = os.path.join(workspace, filter_fmu)
 		self._path_pspu = os.path.join(workspace, filter_pspu)
 		self._type = type
 		self._attributes = attributes
@@ -350,15 +350,15 @@ class SpatialBoundaries(SpatialInputs):
 	def getFilter(self):
 		return "*.shp"
 
-	def getPathTSA(self):
-		return self._path_tsa
+	def getPathFMU(self):
+		return self._path_fmu
 
 	def getPathPSPU(self):
 		return self._path_pspu
 
-	def setPathTSA(self, path):
+	def setPathFMU(self, path):
 		self._workspace = os.path.dirname(path)
-		self._path_tsa = path
+		self._path_fmu = path
 
 	def setPathPSPU(self, path):
 		self._workspace = os.path.dirname(path)

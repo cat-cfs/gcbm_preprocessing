@@ -63,7 +63,7 @@ class IntersectDisturbancesInventory(object):
         self.disturbances = r"{}\MergedDisturbances".format(self.inv_workspace)
         self.temp_overlay = r"{}\temp_DisturbedInventory".format(self.inv_workspace)
         self.output = r"{}\DisturbedInventory".format(self.inv_workspace)
-        self.spatial_boundaries = self.spatialBoundaries.getPathTSA()
+        self.spatial_boundaries = self.spatialBoundaries.getPathFMU()
 
         tasks = [
             lambda:self.addFields(),

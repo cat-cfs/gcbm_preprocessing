@@ -78,9 +78,9 @@ if __name__=="__main__":
     logging.basicConfig(filename=debug_log, format='[%(asctime)s] %(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%b%d %H:%M:%S')
 
     #### Variables
-    # TSA number as a string
+    # FMU number as a string
     FMU_number = '177'
-    # TSA name, replace spaces in the name with underscores
+    # FMU name, replace spaces in the name with underscores
     FMU_name = 'Dog_River'
     # directory path to the working directory for relative paths
     working_directory = r'G:\GCBM\17_BC_ON_1ha\05_working_ON\FMU_{}_{}'.format(FMU_number,FMU_name)
@@ -99,7 +99,7 @@ if __name__=="__main__":
     rollback_range = [1990,2015]
     future_range = [2016,2070]
     # Activity start year must be after historic range
-    activity_start_year = 2016
+    activity_start_year = 2018
 
 
     #### Spatial Inputs
@@ -108,7 +108,7 @@ if __name__=="__main__":
     # Path the the inventory gdb workspace
     inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "new_inventory"
+    inventory_layer = "inventory_ON_2015"
     # The age field name in the inventory layer
     inventory_age_field = "age2015"
     # The starting year of the inventory
@@ -140,13 +140,13 @@ if __name__=="__main__":
     harvest_filter = "ONT_C2CHarvest1990_2011.shp"
     harvest_year_field = "HARV_YR"
 
-    # directory path to the spatial reference directory containing the TSA and PSPU boundaries
+    # directory path to the spatial reference directory containing the FMU and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
-    # file name or filter to find the TSA boundaries in the spatial reference directory
+    # file name or filter to find the FMU boundaries in the spatial reference directory
     spatial_boundaries_fmu = "PSPUS_2016_FINAL_1_Reprojected.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
     spatial_boundaries_pspu = "PSPUS_2016.shp"
-    # filter used to get the desired study area from the TSA boundaries.
+    # filter used to get the desired study area from the FMU boundaries.
     # change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "FMU_CODE",
@@ -195,13 +195,13 @@ if __name__=="__main__":
 
     FMU_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
 
-    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathTSA(), FMU_filter,
+    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathFMU(), FMU_filter,
         r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='fmu{}'.format(FMU_number))
 
     for spatial_input in reproject:
         spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
     for spatial_input in clip:
-        spatial_input.clip(spatial_input.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
+        spatial_input.clip(spatial_input.getWorkspace(), spatialBoundaries.getPathFMU(), FMU_filter,
             spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
     for spatial_input in copy:
         spatial_input.copy(spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
