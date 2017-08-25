@@ -48,6 +48,7 @@ def save_inputs():
         cPickle.dump(gcbm_configs_dir, open(r'inputs\gcbm_configs_dir.pkl', 'wb'))
         cPickle.dump(reportingIndicators, open(r'inputs\reportingIndicators.pkl', 'wb'))
         cPickle.dump(gcbm_exe, open(r'inputs\gcbm_exe.pkl', 'wb'))
+        cPickle.dump(area_majority_rule, open(r'inputs\area_majority_rule.pkl', 'wb'))
         print "Done\n---------------------"
     except:
         print "Failed to save inputs."
@@ -92,17 +93,22 @@ if __name__=="__main__":
     # Tile resolution in degrees
     resolution = 0.001
 
+    # The percent of harvest area slashburned in the Base scenario
     sb_percent = 50
 
     # Set true to enable rollback
     rollback_enabled = True
+
+    # Set true for an area majority rule to be used in creating the gridded inventory
+    # The area majority rule is more robust but requires more memory and computing time
+    area_majority_rule = True
 
     ## Year ranges
     historic_range = [1990,2015]
     rollback_range = [1990,2015]
     future_range = [2016,2070]
     # Activity start year must be after historic range
-    activity_start_year = 2016
+    activity_start_year = 2018
 
 
     #### Spatial Inputs
@@ -111,10 +117,8 @@ if __name__=="__main__":
     # Path the the inventory gdb workspace
     inventory_workspace = r"{}\01_spatial\02_inventory\Processed.gdb".format(external_data)
     # Layer name of the inventory in the gdb
-    inventory_layer = "inv_reprojected"
+    inventory_layer = "inventory"
     # The age field name in the inventory layer
-    inventory_age_field = "Age2015"
-    # The starting year of the inventory
     inventory_year = 2015
     # A dictionary with the classifiers as keys and the associated field names (as
     # they appear in the inventory) as values.

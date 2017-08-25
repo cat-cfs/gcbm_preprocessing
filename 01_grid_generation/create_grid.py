@@ -77,8 +77,7 @@ class Fishnet(object):
 			# "Y":"DOUBLE",
 			# "X_ID":"SHORT",
 			# "Y_ID":"SHORT",
-			# "CELL_ID":"TEXT",
-			"TileID":"LONG"
+			"CELL_ID":"TEXT"
 		}
 
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)

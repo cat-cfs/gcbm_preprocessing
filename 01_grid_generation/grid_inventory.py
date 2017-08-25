@@ -30,11 +30,12 @@ import logging
 from dbfread import DBF
 
 class GridInventory(object):
-    def __init__(self, inventory, outputDBF, ProgressPrinter):
+    def __init__(self, inventory, outputDBF, ProgressPrinter, area_majority_rule=True):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.output_dbf_dir = outputDBF
+        self.area_majority_rule = area_majority_rule
 
         self.inventory_layer = r"in_memory\inventory_layer"
         self.inventory_layer2 = r"in_memory\inventory_layer2"
@@ -51,7 +52,8 @@ class GridInventory(object):
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
             lambda:self.selectGreaterThanZeroAgeStands(),
-            lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap"),
+            (lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap") if self.area_majority_rule
+                else lambda:self.spatialJoinCentroid()),
             lambda:self.exportGriddedInvDBF()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
@@ -139,6 +141,18 @@ class GridInventory(object):
             arcpy.management.JoinField(out_fc, "JOIN_FID", join_features, arcpy.Describe(join_features).OIDFieldName, joinfields)
             pp2.finish()
         pp1.finish()
+
+    def spatialJoinCentroid(self, grid, inv, out):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        if arcpy.Exists("inv_gridded_temp"):
+            arcpy.Delete_management("inv_gridded_temp")
+        arcpy.SpatialJoin_analysis(grid, inv, "inv_gridded_temp", "JOIN_ONE_TO_ONE", "KEEP_ALL", "", "HAVE_THEIR_CENTER_IN", "", "")
+        if arcpy.Exists(out):
+            arcpy.Delete_management(out)
+        arcpy.Select_analysis("inv_gridded_temp", out, "{} > 0".format(self.inventory.getFieldNames()['age']))
+        arcpy.Delete_management("inv_gridded_temp")
+        pp.finish()
+
 
     def exportGriddedInvDBF(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
