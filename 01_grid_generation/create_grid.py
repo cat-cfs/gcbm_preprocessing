@@ -73,14 +73,10 @@ class Fishnet(object):
 
 	def _createFields(self):
 		field_name_types = {
-			# "X":"DOUBLE",
-			# "Y":"DOUBLE",
-			# "X_ID":"SHORT",
-			# "Y_ID":"SHORT",
-			# "TEST_E":"LONG",
-			# "TEST_E2":"LONG",
-			# "TEST_N":"LONG",
-			# "TEST_N2":"LONG",
+			"X":"DOUBLE",
+			"Y":"DOUBLE",
+			"X_ID":"SHORT",
+			"Y_ID":"SHORT",
 			"CELL_ID":"TEXT"
 		}
 
@@ -100,11 +96,15 @@ class Fishnet(object):
 		y_middle_coord = self.blc_y + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile y coordinate - 1
 
 		functions = [
-			# lambda:arcpy.CalculateField_management(self.XYgrid, "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
-			# lambda:arcpy.CalculateField_management(self.XYgrid, "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "CELL_ID",
-				"str(int(round((!SHAPE.CENTROID.X! - {})*1000, 0)))+'_'+str(int(round((!SHAPE.CENTROID.Y! - {})*1000, 0)))".format(
-					x_middle_coord, y_middle_coord), "PYTHON_9.3", "")
+			# lambda:arcpy.SelectLayerByAttribute_management(self.XYgrid, "NEW_SELECTION", "Shape_Area > 0"),
+			lambda:arcpy.CalculateField_management(self.XYgrid, "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management(self.XYgrid, "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management(self.XYgrid, "X_ID", "int(round((!X! - {})*1000, 0))".format(x_middle_coord), "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management(self.XYgrid, "Y_ID", "int(round((!Y! - {})*1000, 0))".format(y_middle_coord), "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management(self.XYgrid, "CELL_ID", "str(!X_ID!)+'_'+str(!Y_ID!)", "PYTHON_9.3")
+			# lambda:arcpy.CalculateField_management(self.XYgrid, "CELL_ID",
+			# 	"str(int(round((!SHAPE.CENTROID.X! - {})*1000, 0)))+'_'+str(int(round((!SHAPE.CENTROID.Y! - {})*1000, 0)))".format(
+			# 		x_middle_coord, y_middle_coord), "PYTHON_9.3", "")
 		]
 
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(functions), 1).start()

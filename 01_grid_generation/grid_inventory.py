@@ -30,11 +30,12 @@ import logging
 from dbfread import DBF
 
 class GridInventory(object):
-    def __init__(self, inventory, outputDBF, ProgressPrinter):
+    def __init__(self, inventory, outputDBF, ProgressPrinter, area_majority_rule=True):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.output_dbf_dir = outputDBF
+        self.area_majority_rule = area_majority_rule
 
         self.inventory_layer = r"in_memory\inventory_layer"
         self.inventory_layer2 = r"in_memory\inventory_layer2"
@@ -47,11 +48,16 @@ class GridInventory(object):
         arcpy.Delete_management("in_memory")
         self.invAge_fieldName = self.inventory.getFieldNames()['age']
 
+        if self.area_majority_rule==True:
+            spatial_join = lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap")
+        else:
+            spatial_join = lambda:self.spatialJoinCentroid(self.grid, self.inventory_layer2, self.gridded_inventory)
+
         tasks = [
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
             lambda:self.selectGreaterThanZeroAgeStands(),
-            lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap"),
+            spatial_join,
             lambda:self.exportGriddedInvDBF()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()

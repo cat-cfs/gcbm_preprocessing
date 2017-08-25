@@ -51,6 +51,7 @@ def save_inputs():
         cPickle.dump(gcbm_configs_dir, open(r'inputs\gcbm_configs_dir.pkl', 'wb'))
         cPickle.dump(reportingIndicators, open(r'inputs\reportingIndicators.pkl', 'wb'))
         cPickle.dump(gcbm_exe, open(r'inputs\gcbm_exe.pkl', 'wb'))
+        cPickle.dump(area_majority_rule, open(r'inputs\area_majority_rule.pkl', 'wb'))
         print "Done\n---------------------"
     except:
         print "Failed to save inputs."
@@ -87,6 +88,7 @@ def load_inputs():
     global gcbm_configs_dir
     global reportingIndicators
     global gcbm_exe
+    global area_majority_rule
     try:
         print "----------------------\nLoading inputs...",
         logging.info('Loading inputs from {}'.format(os.path.join(os.getcwd(),'inputs')))
@@ -119,6 +121,7 @@ def load_inputs():
         gcbm_configs_dir = cPickle.load(open(r'inputs\gcbm_configs_dir.pkl'))
         reportingIndicators = cPickle.load(open(r'inputs\reportingIndicators.pkl'))
         gcbm_exe = cPickle.load(open(r'inputs\gcbm_exe.pkl'))
+        area_majority_rule = cPickle.load(open(r'inputs\area_majority_rule.pkl'))
         logging.info('Loaded inputs.')
         print "Done\n----------------------"
     except:
@@ -166,7 +169,7 @@ if __name__=="__main__":
     ### Initialize function classes
     PP = preprocess_tools.progressprinter.ProgressPrinter()
     fishnet = gridGeneration.create_grid.Fishnet(inventory, resolution, PP)
-    inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, future_dist_input_dir, PP)
+    inventoryGridder = gridGeneration.grid_inventory.GridInventory(inventory, future_dist_input_dir, PP, area_majority_rule)
     mergeDist = rollback.merge_disturbances.MergeDisturbances(inventory, [historicFire1, historicFire2, historicHarvest], PP)
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, rollback_range, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)

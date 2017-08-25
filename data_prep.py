@@ -47,6 +47,7 @@ def save_inputs():
         cPickle.dump(gcbm_configs_dir, open(r'inputs\gcbm_configs_dir.pkl', 'wb'))
         cPickle.dump(reportingIndicators, open(r'inputs\reportingIndicators.pkl', 'wb'))
         cPickle.dump(gcbm_exe, open(r'inputs\gcbm_exe.pkl', 'wb'))
+        cPickle.dump(area_majority_rule, open(r'inputs\area_majority_rule.pkl', 'wb'))
         print "Done\n---------------------"
     except:
         print "Failed to save inputs."
@@ -94,6 +95,12 @@ if __name__=="__main__":
 
     # Set true to enable rollback
     rollback_enabled = True
+
+    # Set true for an area majority rule to be used in creating the gridded inventory
+    # Set false for a centroid rule to be used (take attributes from the polygon at the
+    # center of the grid cell)
+    # The area majority rule is more robust but requires more memory and computing time
+    area_majority_rule = True
 
     ## Year ranges
     historic_range = [1990,2015]
@@ -228,13 +235,13 @@ if __name__=="__main__":
     # path to the yield table (recommended to be in the recliner2gcbm config directory)
     yieldTable_path = r"{}\yield.csv".format(recliner2gcbm_config_dir)
     # The classifiers as keys and the column as value
-    yieldTable_classifier_cols = {"SUBMU":3, "SFU":4, "SI":5, "SPCOMP":7}
+    yieldTable_classifier_cols = {"SUBMU":1, "SFU":2, "SI":3, "SPCOMP":4}
     # True if the first row of the yield table is a header
     yieldTable_header = True
     # year interval between age increments
     yieldTable_interval = 10
     # species column and increment range
-    yieldTable_cols = {"SpeciesCol":9,"IncrementRange":[11,47]}
+    yieldTable_cols = {"SpeciesCol":5,"IncrementRange":[7,33]}
 
     ## AIDB
     # path to aidb in external data where disturbance matrix is already configured

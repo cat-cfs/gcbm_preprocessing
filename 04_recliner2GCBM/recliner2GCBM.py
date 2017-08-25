@@ -128,8 +128,13 @@ class Recliner2GCBM(object):
     def prepTransitionRules(self, transitionRules):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         out = os.path.join(self.config_dir, os.path.basename(transitionRules.getPath()))
-        with open(transitionRules.getPath(), "r") as transitionRules_in, open(out, "w") as transitionRules_out:
-            reader = csv.reader(transitionRules_in)
+
+        with open(out, "w") as transitionRules_out:
+            if os.path.exists(transitionRules.getPath()):
+                transitionRules_in = open(transitionRules.getPath(), "r")
+                reader = csv.reader(transitionRules_in)
+            else:
+                reader = iter([])
             writer = csv.writer(transitionRules_out, lineterminator="\n")
             all_rows = []
             if transitionRules.isHeader():
