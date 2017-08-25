@@ -51,11 +51,8 @@ class Tiler(object):
         logging.info("Bounding box will be stored in {}".format(os.path.join(output_dir, os.path.basename(self.inventory.getRasters()[0].getPath().split('.')[0]))))
         cwd = os.getcwd()
         os.chdir(output_dir)
-        console = sys.stdout
-        sys.stdout = open('TilerDebugLog.log', 'w')
         self.bbox = BoundingBox(RasterLayer(self.inventory.getRasters()[0].getPath()), pixel_size=self.resolution)
         self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
-        sys.stdout = console
         os.chdir(cwd)
         pp.finish()
 
@@ -257,7 +254,8 @@ class Tiler(object):
     def runTiler(self, output_dir, scenario, make_transition_rules):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         output_dir_scen = r'{}\SCEN_{}'.format(output_dir, scenario)
-        if not os.path.exists(output_dir_scen):
+        if os.path.exists(output_dir_scen):
+            os.remove(output_dir_scen)
             os.makedirs(output_dir_scen)
         cwd = os.getcwd()
         os.chdir(output_dir_scen)

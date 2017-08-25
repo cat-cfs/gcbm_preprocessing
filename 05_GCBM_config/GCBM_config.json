@@ -391,8 +391,8 @@
                    },
                    {
                        "enabled": true,
-                       "data_name": "Merch_Biomass",
-                       "pool_name": ["SoftwoodMerch", "HardwoodMerch"],
+                       "data_name": "CH4",
+                       "pool_name": ["CH4"],
                        "variable_data_type": "double",
                        "on_notification": "OutputStep",
                        "nodata_value": -1
@@ -402,6 +402,14 @@
                        "data_name": "Age",
                        "variable_name": "age",
                        "variable_data_type": "Int16",
+                       "on_notification": "OutputStep",
+                       "nodata_value": -1
+                   },
+                   {
+                       "enabled": false,
+                       "data_name": "Merch_Biomass",
+                       "pool_name": ["SoftwoodMerch", "HardwoodMerch"],
+                       "variable_data_type": "double",
                        "on_notification": "OutputStep",
                        "nodata_value": -1
                    }

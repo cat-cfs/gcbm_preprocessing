@@ -100,6 +100,8 @@ if __name__=="__main__":
     rollback_enabled = True
 
     # Set true for an area majority rule to be used in creating the gridded inventory
+    # Set false for a centroid rule to be used (take attributes from the polygon at the
+    # center of the grid cell)
     # The area majority rule is more robust but requires more memory and computing time
     area_majority_rule = True
 

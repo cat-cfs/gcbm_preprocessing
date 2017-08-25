@@ -48,12 +48,16 @@ class GridInventory(object):
         arcpy.Delete_management("in_memory")
         self.invAge_fieldName = self.inventory.getFieldNames()['age']
 
+        if self.area_majority_rule==True:
+            spatial_join = lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap")
+        else:
+            spatial_join = lambda:self.spatialJoinCentroid(self.grid, self.inventory_layer2, self.gridded_inventory)
+
         tasks = [
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
             lambda:self.selectGreaterThanZeroAgeStands(),
-            (lambda:self.SpatialJoinLargestOverlap(self.grid, self.inventory_layer2, self.gridded_inventory, False, "largest_overlap") if self.area_majority_rule
-                else lambda:self.spatialJoinCentroid()),
+            spatial_join,
             lambda:self.exportGriddedInvDBF()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
