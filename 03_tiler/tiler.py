@@ -259,6 +259,9 @@ class Tiler(object):
         output_dir_scen = r'{}\SCEN_{}'.format(output_dir, scenario)
         if not os.path.exists(output_dir_scen):
             os.makedirs(output_dir_scen)
+        else:
+            os.remove(output_dir_scen)
+            os.makedirs(output_dir_scen)
         cwd = os.getcwd()
         os.chdir(output_dir_scen)
         with cleanup():
