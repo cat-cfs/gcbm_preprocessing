@@ -58,7 +58,7 @@ class ProgressProcess(object):
 			self.type = "P"
 			self.value += 1
 			self.pp.printProgressP("[{0}] {1}>>Progress: {2}%".format(time.strftime('%a %H:%M:%S'),
-				self.level, round(self.value/float(self.total)*100,0)))
+				self.level, round(self.value/float(self.total)*100,1)))
 
 	def updateProgressV(self):
 		if self.type != "P":

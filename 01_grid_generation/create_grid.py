@@ -96,12 +96,14 @@ class Fishnet(object):
 		y_middle_coord = self.blc_y + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile y coordinate - 1
 
 		functions = [
-			# lambda:arcpy.SelectLayerByAttribute_management(self.XYgrid, "NEW_SELECTION", "Shape_Area > 0"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "X_ID", "int(round((!X! - {})*1000, 0))".format(x_middle_coord), "PYTHON_9.3"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "Y_ID", "int(round((!Y! - {})*1000, 0))".format(y_middle_coord), "PYTHON_9.3"),
-			lambda:arcpy.CalculateField_management(self.XYgrid, "CELL_ID", "str(!X_ID!)+'_'+str(!Y_ID!)", "PYTHON_9.3")
+			lambda:arcpy.MakeFeatureLayer_management(self.XYgrid, 'XYgrid_intersect'),
+			lambda:arcpy.SelectLayerByLocation_management('XYgrid_intersect', 'INTERSECT', self.inventory.getFilter(), "", "NEW_SELECTION", "NOT_INVERT"),
+			lambda:arcpy.CalculateField_management('XYgrid_intersect', "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management('XYgrid_intersect', "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management('XYgrid_intersect', "X_ID", "int(round((!X! - {})*1000, 0))".format(x_middle_coord), "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management('XYgrid_intersect', "Y_ID", "int(round((!Y! - {})*1000, 0))".format(y_middle_coord), "PYTHON_9.3"),
+			lambda:arcpy.CalculateField_management('XYgrid_intersect', "CELL_ID", "str(!X_ID!)+'_'+str(!Y_ID!)", "PYTHON_9.3"),
+			lambda:arcpy.SaveToLayerFile_management('XYgrid_intersect', self.XYgrid)
 			# lambda:arcpy.CalculateField_management(self.XYgrid, "CELL_ID",
 			# 	"str(int(round((!SHAPE.CENTROID.X! - {})*1000, 0)))+'_'+str(int(round((!SHAPE.CENTROID.Y! - {})*1000, 0)))".format(
 			# 		x_middle_coord, y_middle_coord), "PYTHON_9.3", "")
