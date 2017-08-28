@@ -217,9 +217,9 @@ if __name__=="__main__":
     # Different scenarios to be run by the tiler (before Disturbance Matrix distinctions)
     # The scenario 'Base' must be included
     # Format: {<Scenario>: [<Slashburn Percent Base>, <Slashburn Percent After Actv>, <Harvest Percent After Actv>]}
-    tiler_scenarios = {'Base':[sb_percent, 50, 100]}
+    tiler_scenarios = {'Base':[sb_percent, 50, 100],'B':[sb_percent, 50, 96],'C':[sb_percent, sb_percent/2.0,100]}
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
-    GCBM_scenarios = {'Base':'Base'}
+    GCBM_scenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
 
     ## Recliner2GCBM
     recliner2gcbm_config_dir = r"{}\02a_recliner2GCBM_input".format(working_directory)

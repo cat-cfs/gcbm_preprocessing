@@ -9,6 +9,7 @@ import time
 import inspect
 import sys
 import logging
+import shutil
 
 from projected_disturbances_placeholder import ProjectedDisturbancesPlaceholder
 
@@ -200,6 +201,8 @@ class Tiler(object):
         pp.finish()
 
     def processProjectedDisturbances(self, scenario, params):
+        if (self.future_range[1]-self.future_range[0])<0:
+            return
         pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3],scenario), 1).start()
         percent_sb = params[0]
         actv_percent_sb = params[1]
@@ -260,7 +263,7 @@ class Tiler(object):
         if not os.path.exists(output_dir_scen):
             os.makedirs(output_dir_scen)
         else:
-            os.remove(output_dir_scen)
+            shutil.rmtree(output_dir_scen)
             os.makedirs(output_dir_scen)
         cwd = os.getcwd()
         os.chdir(output_dir_scen)
