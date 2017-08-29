@@ -26,7 +26,7 @@ def save_inputs():
         cPickle.dump(historicFire1, open(r'inputs\historicFire1.pkl', 'wb'))
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
-        cPickle.dump(historicMPB, open(r'inputs\historicMPB.pkl', 'wb'))
+        cPickle.dump(historicInsect, open(r'inputs\historicInsect.pkl', 'wb'))
         cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
@@ -63,7 +63,7 @@ def load_inputs():
     global historicFire1
     global historicFire2
     global historicHarvest
-    global historicMPB
+    global historicInsect
     global projectedDistBase
     global rollbackDisturbances
     global NAmat
@@ -98,7 +98,7 @@ def load_inputs():
         historicFire1 = cPickle.load(open(r'inputs\historicFire1.pkl'))
         historicFire2 = cPickle.load(open(r'inputs\historicFire2.pkl'))
         historicHarvest = cPickle.load(open(r'inputs\historicHarvest.pkl'))
-        historicMPB = cPickle.load(open(r'inputs\historicMPB.pkl'))
+        historicInsect = cPickle.load(open(r'inputs\historicInsect.pkl'))
         projectedDistBase = cPickle.load(open(r'inputs\projectedDistBase.pkl'))
         rollbackDisturbances = cPickle.load(open(r'inputs\rollbackDisturbances.pkl'))
         NAmat = cPickle.load(open(r'inputs\NAmat.pkl'))
@@ -222,7 +222,7 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire1)
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest)
-    tiler.processHistoricInsectDisturbances(historicMPB)
+    tiler.processHistoricInsectDisturbances(historicInsect)
     for i, scenario in enumerate(tiler_scenarios):
         tiler.processProjectedDisturbances(scenario, tiler_scenarios[scenario])
         if i==0:

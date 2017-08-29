@@ -9,6 +9,7 @@ import sys
 import cPickle
 import shutil
 import logging
+import collections
 
 sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
 import preprocess_tools
@@ -22,7 +23,7 @@ def save_inputs():
         cPickle.dump(historicFire1, open(r'inputs\historicFire1.pkl', 'wb'))
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
-        cPickle.dump(historicMPB, open(r'inputs\historicMPB.pkl', 'wb'))
+        cPickle.dump(historicInsect, open(r'inputs\historicInsect.pkl', 'wb'))
         cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
@@ -62,7 +63,7 @@ def save_inputs():
 # Historic Fire Disturbances (NFDB, NBAC) [shapefiles where year is the last 4
 #    characters before file extention]
 # Historic Harvest Disturbances (BC Cutblocks) [shapefile]
-# Historic MPB Disturbances [shapefiles where year is the last 4 characters
+# Historic Insect Disturbances [shapefiles where year is the last 4 characters
 #    before file extention]
 # Spatial Boundaries (TSA and PSPU) [shapefiles]
 # NAmerica MAT (Mean Annual Temperature) [tiff]
@@ -147,8 +148,8 @@ if __name__=="__main__":
     harvest_workspace = r"{}\01_spatial\03_disturbances\01_historic\02_harvest".format(external_data)
     harvest_filter = "BC_cutblocks90_15.shp"
     harvest_year_field = "HARV_YR"
-    MPB_workspace = r"{}\01_spatial\03_disturbances\01_historic\03_insect".format(external_data)
-    MPB_filter = "mpb*.shp"
+    insect_workspace = r"{}\01_spatial\03_disturbances\01_historic\03_insect".format(external_data)
+    insect_filter = "mpb*.shp"
 
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
@@ -188,19 +189,19 @@ if __name__=="__main__":
     historicFire1 = preprocess_tools.inputs.HistoricDisturbance(NFDB_workspace, NFDB_filter, NFDB_year_field)
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
-    historicMPB = preprocess_tools.inputs.HistoricDisturbance(MPB_workspace, MPB_filter, None)
+    historicInsect = preprocess_tools.inputs.HistoricDisturbance(insect_workspace, insect_filter, None)
     spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
     rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
 
-    external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicMPB, NAmat, spatialBoundaries]
+    external_spatial_data = [historicFire1, historicFire2, historicHarvest, historicInsect, NAmat, spatialBoundaries]
     # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
     # to be reprojected
     reproject = [
-        # historicFire1, historicFire2, historicHarvest, historicMPB, projectedDistBase, NAmat, spatialBoundaries
+        # historicFire1, historicFire2, historicHarvest, historicInsect, projectedDistBase, NAmat, spatialBoundaries
     ]
-    clip = [historicFire1, historicFire2, historicHarvest, historicMPB]
+    clip = [historicFire1, historicFire2, historicHarvest, historicInsect]
     copy = [sp for sp in external_spatial_data if sp not in clip]
 
     TSA_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
