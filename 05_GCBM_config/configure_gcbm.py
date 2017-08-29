@@ -4,8 +4,16 @@ import inspect
 import json
 import sys
 import logging
+import shutil
+from distutils.dir_util import copy_tree
+import re
 
 class ConfigureGCBM(object):
+    '''
+    Configures the GCBM JSONs according to the layers tiled, classifers, reporting indicators,
+    start/end years, and activity start year. All moja directories fitting the expected
+    naming format within the tiled output layers will be added to the configuration.
+    '''
     def __init__(self, output_dir, gcbm_configs_dir, GCBM_scenarios, base_scenario, inventory, reportingIndicators,
                         resolution, rollback_range, actv_start_year, future_range, ProgressPrinter):
         logging.info("Initializing class {}".format(self.__class__.__name__))
@@ -30,6 +38,34 @@ class ConfigureGCBM(object):
             self.configureConfig(layer_config_names, disturbance_names, scen)
         pp.finish()
 
+    def replace_params(self, read_file, write_file, replace_d):
+    	'''
+    	Copies the file (read_file) to the destination (write_file)
+    	while replacing occurrences of the input dictionary's (replace_d)
+    	keys with the corresponding dictionary values.
+    	This allows for parameterization within the read file.
+    	Parameter key words can be included in the (text based) read file
+    	and added to the dictionary 'replace' defined below to be replaced
+    	by the value upon runtime.
+    	'''
+    	with open(read_file, 'r') as read_f:
+    		with open(write_file, 'w') as write_f:
+    			for line in read_f:
+    				pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
+    				write_f.write(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
+
+    def copyTilerOutput(self, moja_dir, tiler_scenario, scenario):
+        tiler_scen_out = os.path.dirname(moja_dir)
+        gcbm_scen_moja_dir = os.path.join(os.path.dirname(tiler_scen_out), 'SCEN_{}'.format(scenario), os.path.basename(moja_dir))
+        if os.path.exists(gcbm_scen_moja_dir):
+            shutil.rmtree(gcbm_scen_moja_dir)
+        copy_tree(moja_dir, gcbm_scen_moja_dir)
+        replace_d = {'{}{} CC'.format('' if tiler_scenario.lower()=='base' else 'CBM_', tiler_scenario): 'CBM_{} CC'.format(scenario)}
+        for json_file in glob.glob(r'{}\*.json'.format(moja_dir)):
+            self.replace_params(json_file, os.path.join(gcbm_scen_moja_dir, os.path.basename(json_file)), replace_d)
+        return gcbm_scen_moja_dir
+
+
     def getTiles(self):
         tiles_text = []
         for file in glob.glob(r'{}\*'.format(self.tiler_template_dir)):
@@ -43,150 +79,115 @@ class ConfigureGCBM(object):
         return tiles
 
 
+    def addLayerConfigNamesPreActivity(self, dirs, name):
+        for moja_dir in dirs:
+            if self.tiler_template_dir == None:
+                logging.info('Tiler template directory found.')
+                self.tiler_template_dir = moja_dir
+            basename = os.path.basename(moja_dir)
+            year = basename.split('_moja')[0][-4:]
+            name = basename.split('_moja')[0][:-5].split('_')[-1]
+            name_year = '{}_{}'.format(name,year)
+            if int(year) < self.activity_start_year:
+                self.provider_layers.append({
+                    "name": name_year,
+                    "layer_path": moja_dir,
+                    "layer_prefix": basename
+                })
+                self.layer_config_names.update({name_year:name_year})
+
+    def addLayerConfigNamesPostActivity(self, dirs, name, tiler_scenario, scenario):
+        for moja_dir in dirs:
+            if self.tiler_template_dir == None:
+                logging.info('Tiler template directory found.')
+                self.tiler_template_dir = moja_dir
+            basename = os.path.basename(moja_dir)
+            year = basename.split('_moja')[0][-4:]
+            name = basename.split('_moja')[0][:-5].split('_')[-1]
+            name_year = '{}_{}'.format(name,year)
+            if int(year) >= self.activity_start_year:
+                if scenario != tiler_scenario:
+                    moja_dir = self.copyTilerOutput(moja_dir, tiler_scenario, scenario)
+                self.provider_layers.append({
+                    "name": name_year,
+                    "layer_path": moja_dir,
+                    "layer_prefix": basename
+                })
+                self.layer_config_names.update({name_year:name_year})
+
     def configureProvider(self, input_db, general_lyrs, tiler_output, scenario):
         resolution = self.resolution
 
-        provider_layers = []
-        layer_config_names = {}
+        self.provider_layers = []
+        self.layer_config_names = {}
         # harvest layers
-        for moja_dir in (glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, self.base_scenario))
+        harvest = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\harvest_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja'.format(tiler_output, self.base_scenario))):
-            if self.tiler_template_dir == None:
-                logging.info('Tiler template directory found.')
-                self.tiler_template_dir = moja_dir
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            if int(year) < self.activity_start_year:
-                provider_layers.append({
-                    "name": name_year,
-                    "layer_path": moja_dir,
-                    "layer_prefix": basename
-                })
-                layer_config_names.update({name_year:name_year})
-        for moja_dir in glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            if int(year) >= self.activity_start_year:
-                provider_layers.append({
-                    "name": name_year,
-                    "layer_path": moja_dir,
-                    "layer_prefix": basename
-                })
-                layer_config_names.update({name_year:name_year})
+            +glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja'.format(tiler_output, self.base_scenario))),
+            'harvest')
+        proj_harvest = self.addLayerConfigNamesPostActivity(
+            glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            'proj_harvest', self.GCBM_scenarios[scenario], scenario)
 
         # slashburn layers
-        for moja_dir in (glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja'.format(tiler_output, self.base_scenario))
+        slashburn = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\slashburn_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.base_scenario))):
-            if self.tiler_template_dir == None:
-                logging.info('Tiler template directory found.')
-                self.tiler_template_dir = moja_dir
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            if int(year) < self.activity_start_year:
-                provider_layers.append({
-                    "name": name_year,
-                    "layer_path": moja_dir,
-                    "layer_prefix": basename
-                })
-                layer_config_names.update({name_year:name_year})
-        for moja_dir in glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            if int(year) >= self.activity_start_year:
-                provider_layers.append({
-                    "name": name_year,
-                    "layer_path": moja_dir,
-                    "layer_prefix": basename
-                })
-                layer_config_names.update({name_year:name_year})
+            +glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.base_scenario))),
+            'slashburn')
+        proj_slashburn = self.addLayerConfigNamesPostActivity(
+            glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            'proj_slashburn', self.GCBM_scenarios[scenario], scenario)
 
         # fire layers
-        for moja_dir in (glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.base_scenario))
+        fire = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.base_scenario))):
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            if int(year) < self.activity_start_year:
-                provider_layers.append({
-                    "name": name_year,
-                    "layer_path": moja_dir,
-                    "layer_prefix": basename
-                })
-                layer_config_names.update({name_year:name_year})
-        for moja_dir in glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])):
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            if int(year) >= self.activity_start_year:
-                provider_layers.append({
-                    "name": name_year,
-                    "layer_path": moja_dir,
-                    "layer_prefix": basename
-                })
-                layer_config_names.update({name_year:name_year})
+            +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.base_scenario))),
+            'fire')
+        proj_fire = self.addLayerConfigNamesPostActivity(
+            glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            'proj_fire', self.GCBM_scenarios[scenario], scenario)
 
         # insect layers
-        for moja_dir in glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, self.base_scenario)):
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
-            name_year = '{}_{}'.format(name,year)
-            provider_layers.append({
-                "name": name_year,
-                "layer_path": moja_dir,
-                "layer_prefix": basename
-            })
-            layer_config_names.update({name_year:name_year})
+        insect = self.addLayerConfigNamesPreActivity(
+            glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, self.base_scenario)),
+            'insect')
 
-        disturbance_names = [dn for dn in layer_config_names]
+        disturbance_names = [dn for dn in self.layer_config_names]
 
         # reporting indicators
         reporting_ind = self.reporting_indicators.getIndicators()
         for ri in reporting_ind:
             if reporting_ind[ri]!=None:
-                provider_layers.append({
+                self.provider_layers.append({
                     "name": ri,
                     "layer_path": reporting_ind[ri],
                     "layer_prefix": os.path.basename(reporting_ind[ri])
                 })
-                layer_config_names.update({ri:ri})
+                self.layer_config_names.update({ri:ri})
 
         # general layers
         for name in general_lyrs:
             moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, self.base_scenario, name)
-            provider_layers.append({
+            self.provider_layers.append({
                 "name": name,
                 "layer_path": moja_dir,
                 "layer_prefix": os.path.basename(moja_dir)
             })
             if name == 'age':
-                layer_config_names.update({'initial_age':name})
+                self.layer_config_names.update({'initial_age':name})
             elif name == 'NAmerica_MAT_1971_2000':
-                layer_config_names.update({'mean_annual_temperature':name})
+                self.layer_config_names.update({'mean_annual_temperature':name})
             elif name == "Eco":
-                layer_config_names.update({'eco_boundary':name})
+                self.layer_config_names.update({'eco_boundary':name})
             else:
-                layer_config_names.update({name:name})
+                self.layer_config_names.update({name:name})
 
         with open(r'{}\05_GCBM_config\GCBM_config_provider.json'.format(sys.path[0]), 'rb') as provider_file:
             config_provider = json.load(provider_file)
         config_provider["Providers"]["SQLite"]["path"] = input_db
         config_provider["Providers"]["RasterTiled"]["cellLatSize"] = self.resolution
         config_provider["Providers"]["RasterTiled"]["cellLonSize"] = self.resolution
-        config_provider["Providers"]["RasterTiled"]["layers"] = provider_layers
+        config_provider["Providers"]["RasterTiled"]["layers"] = self.provider_layers
         output_path = r'{}\SCEN_{}\GCBM_config_provider.json'.format(self.gcbm_configs_dir, scenario)
         if not os.path.exists(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
@@ -194,7 +195,7 @@ class ConfigureGCBM(object):
             json.dump(config_provider, provider_file, sort_keys=True, indent=4)
         logging.info('GCBM config provider generated for scenario {} at {}'.format(scenario, output_path))
 
-        return layer_config_names, disturbance_names
+        return self.layer_config_names, disturbance_names
 
     def configureConfig(self, layer_config_names, disturbance_names, scenario):
         with open(r'{}\05_GCBM_config\GCBM_config.json'.format(sys.path[0]), 'rb') as config_file:
