@@ -55,6 +55,11 @@ class ConfigureGCBM(object):
     				write_f.write(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
 
     def copyTilerOutput(self, moja_dir, tiler_scenario, scenario):
+        '''
+        Copies the tiled layer moja_dir from the tiler scenario to the GCBM scenario
+        while replacing any occurences of the tiler scenario clearcut to the GCBM
+        scenario clearcut disturbance.
+        '''
         tiler_scen_out = os.path.dirname(moja_dir)
         gcbm_scen_moja_dir = os.path.join(os.path.dirname(tiler_scen_out), 'SCEN_{}'.format(scenario), os.path.basename(moja_dir))
         if os.path.exists(gcbm_scen_moja_dir):
@@ -67,6 +72,12 @@ class ConfigureGCBM(object):
 
 
     def getTiles(self):
+        '''
+        Explores all blk files in the tiler_template_dir and extracts the tile
+        x, y from the file name and adds to the list of tiles.
+        Assumes a consistent file name format and that the tiler_template_dir
+        is not None (at least one tiled disturbance layer was found).
+        '''
         tiles_text = []
         for file in glob.glob(r'{}\*'.format(self.tiler_template_dir)):
             if os.path.basename(file).split('.')[-1]=='blk':
@@ -80,6 +91,13 @@ class ConfigureGCBM(object):
 
 
     def addLayerConfigNamesPreActivity(self, dirs, name):
+        '''
+        For each directory in dirs (List), adds the disturbance to the provider layers
+        for insertion to the config provider JSON and adds the name to the layer
+        config names for insertion to the config JSON.
+        Only selects disturbances that occur before the activity start year.
+        '''
+        logging.info('Adding tiled layers for {}'.format(name))
         for moja_dir in dirs:
             if self.tiler_template_dir == None:
                 logging.info('Tiler template directory found.')
@@ -97,6 +115,15 @@ class ConfigureGCBM(object):
                 self.layer_config_names.update({name_year:name_year})
 
     def addLayerConfigNamesPostActivity(self, dirs, name, tiler_scenario, scenario):
+        '''
+        For each directory in dirs (List), adds the disturbance to the provider layers
+        for insertion to the config provider JSON and adds the name to the layer
+        config names for insertion to the config JSON.
+        Only selects disturbances that occur at or after the activity start year.
+        If the scenario is different from the tiler scenario, the moja_dir will
+        be copied and the CC disturbances replaced with the correct scenario.
+        '''
+        logging.info('Adding tiled layers for {}'.format(name))
         for moja_dir in dirs:
             if self.tiler_template_dir == None:
                 logging.info('Tiler template directory found.')
@@ -116,6 +143,13 @@ class ConfigureGCBM(object):
                 self.layer_config_names.update({name_year:name_year})
 
     def configureProvider(self, input_db, general_lyrs, tiler_output, scenario):
+        '''
+        Configures the config provider JSON according to the layers tiled in the
+        tiler. Adds all existing layers matching the expected disturbance names
+        in the tiler output directory. Writes to the config provider JSON (which
+        is stored in the gcbm_configs_dir) each of the provider layers and passes
+        the names off for the configureConfig.
+        '''
         resolution = self.resolution
 
         self.provider_layers = []
@@ -198,6 +232,12 @@ class ConfigureGCBM(object):
         return self.layer_config_names, disturbance_names
 
     def configureConfig(self, layer_config_names, disturbance_names, scenario):
+        '''
+        Configures the config JSON according to the layers configured in the
+        config provider. Sets other variables such as the start year, end year,
+        output paths, and reporting indicators. Writes to the config JSON which
+        is stored in the gcbm_configs_dir.
+        '''
         with open(r'{}\05_GCBM_config\GCBM_config.json'.format(sys.path[0]), 'rb') as config_file:
             gcbm_config = json.load(config_file)
 

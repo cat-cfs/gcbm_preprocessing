@@ -150,18 +150,6 @@ if __name__=="__main__":
     MPB_workspace = r"{}\01_spatial\03_disturbances\01_historic\03_insect".format(external_data)
     MPB_filter = "mpb*.shp"
 
-    # projScenBase_workspace = r"{}\01_spatial\03_disturbances\02_future\projDist_BASE".format(external_data)
-    # projScenBase_filter = "TS_*.shp"
-    # projScenBase_lookuptable = {
-    #     11: "Base CC",
-    #     7: "Wild Fires",
-    #     13: "SlashBurning",
-    #     10: "Partial Cut",
-    #     6: "Base Salvage",
-    #     2: "Wild Fire",
-    #     1: "Clearcut harvesting with salvage"
-    # }
-
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
     # file name or filter to find the TSA boundaries in the spatial reference directory
@@ -201,8 +189,6 @@ if __name__=="__main__":
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
     historicMPB = preprocess_tools.inputs.HistoricDisturbance(MPB_workspace, MPB_filter, None)
-    # projectedDistBase = preprocess_tools.inputs.ProjectedDisturbance(projScenBase_workspace, projScenBase_filter, "Base", projScenBase_lookuptable)
-    projectedDistBase = None
     spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
@@ -236,7 +222,7 @@ if __name__=="__main__":
     # Different scenarios to be run by the tiler (before Disturbance Matrix distinctions)
     # The scenario 'Base' must be included
     # Format: {<Scenario>: [<Slashburn Percent Base>, <Slashburn Percent After Actv>, <Harvest Percent After Actv>]}
-    tiler_scenarios = {'Base':[sb_percent, 50, 100],'B':[sb_percent, 50, 96],'C':[sb_percent, sb_percent/2.0,100]}
+    tiler_scenarios = {'Base':[sb_percent, sb_percent, 100],'B':[sb_percent, sb_percent, 98],'C':[sb_percent, sb_percent/2.0,100]}
     # GCBM scenarios (after Disturbance Matrix distinctions) with the associated tiler scenario as the key
     GCBM_scenarios = {'Base':'Base', 'A':'Base', 'B':'B', 'C':'C', 'D':'C'}
 
