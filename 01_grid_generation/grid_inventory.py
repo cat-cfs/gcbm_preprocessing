@@ -146,6 +146,18 @@ class GridInventory(object):
             pp2.finish()
         pp1.finish()
 
+    def spatialJoinCentroid(self, grid, inv, out):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        if arcpy.Exists("inv_gridded_temp"):
+            arcpy.Delete_management("inv_gridded_temp")
+        arcpy.SpatialJoin_analysis(grid, inv, "inv_gridded_temp", "JOIN_ONE_TO_ONE", "KEEP_ALL", "", "HAVE_THEIR_CENTER_IN", "", "")
+        if arcpy.Exists(out):
+            arcpy.Delete_management(out)
+        arcpy.Select_analysis("inv_gridded_temp", out, "{} > 0".format(self.inventory.getFieldNames()['age']))
+        arcpy.Delete_management("inv_gridded_temp")
+        pp.finish()
+
+
     def exportGriddedInvDBF(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         self.inventory.setLayerName(self.gridded_inventory)
@@ -161,7 +173,7 @@ class GridInventory(object):
         arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
         # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
         #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
-        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!TileID!", "PYTHON_9.3", "")
+        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "", "PYTHON_9.3", "")
         arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
         for i, classifier in enumerate(self.inventory.getClassifiers()):
             if i>1: i+=1
