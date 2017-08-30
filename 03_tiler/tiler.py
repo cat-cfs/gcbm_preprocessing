@@ -52,11 +52,8 @@ class Tiler(object):
         logging.info("Bounding box will be stored in {}".format(os.path.join(output_dir, os.path.basename(self.inventory.getRasters()[0].getPath().split('.')[0]))))
         cwd = os.getcwd()
         os.chdir(output_dir)
-        console = sys.stdout
-        sys.stdout = open('TilerDebugLog.log', 'w')
         self.bbox = BoundingBox(RasterLayer(self.inventory.getRasters()[0].getPath()), pixel_size=self.resolution)
         self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
-        sys.stdout = console
         os.chdir(cwd)
         pp.finish()
 
