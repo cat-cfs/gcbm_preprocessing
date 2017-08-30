@@ -223,12 +223,12 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest)
     tiler.processHistoricInsectDisturbances(historicInsect)
-    for i, scenario in enumerate(tiler_scenarios):
-        tiler.processProjectedDisturbances(scenario, tiler_scenarios[scenario])
-        if i==0:
-            transitionRules = tiler.runTiler(tiler_output_dir, scenario, True) # ***
-        else:
-            tiler.runTiler(tiler_output_dir, scenario, False) # ***
+    for base_scenario in [scen for scen in tiler_scenarios if scen.lower()=='base']: # ***
+        tiler.processProjectedDisturbances(base_scenario, tiler_scenarios[base_scenario])
+        transitionRules = tiler.runTiler(tiler_output_dir, base_scenario, True) # ***
+    for miti_scenario in [scen for scen in tiler_scenarios if scen.lower()!='base']:
+        tiler.processProjectedDisturbances(miti_scenario, tiler_scenarios[miti_scenario])
+        tiler.runTiler(tiler_output_dir, miti_scenario, False)
 
     # -- Prep and run recliner2GCBM
     r2GCBM.prepTransitionRules(transitionRules) # ***
