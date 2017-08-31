@@ -27,7 +27,6 @@ def save_inputs():
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
         cPickle.dump(historicInsect, open(r'inputs\historicInsect.pkl', 'wb'))
-        cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
         cPickle.dump(NAmat, open(r'inputs\NAmat.pkl', 'wb'))
@@ -64,7 +63,6 @@ def load_inputs():
     global historicFire2
     global historicHarvest
     global historicInsect
-    global projectedDistBase
     global rollbackDisturbances
     global NAmat
     global spatialBoundaries
@@ -99,7 +97,6 @@ def load_inputs():
         historicFire2 = cPickle.load(open(r'inputs\historicFire2.pkl'))
         historicHarvest = cPickle.load(open(r'inputs\historicHarvest.pkl'))
         historicInsect = cPickle.load(open(r'inputs\historicInsect.pkl'))
-        projectedDistBase = cPickle.load(open(r'inputs\projectedDistBase.pkl'))
         rollbackDisturbances = cPickle.load(open(r'inputs\rollbackDisturbances.pkl'))
         NAmat = cPickle.load(open(r'inputs\NAmat.pkl'))
         spatialBoundaries = cPickle.load(open(r'inputs\spatialBoundaries.pkl'))

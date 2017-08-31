@@ -24,7 +24,6 @@ def save_inputs():
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
         cPickle.dump(historicInsect, open(r'inputs\historicInsect.pkl', 'wb'))
-        cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
         cPickle.dump(NAmat, open(r'inputs\NAmat.pkl', 'wb'))
@@ -199,7 +198,7 @@ if __name__=="__main__":
     # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
     # to be reprojected
     reproject = [
-        # historicFire1, historicFire2, historicHarvest, historicInsect, projectedDistBase, NAmat, spatialBoundaries
+        # historicFire1, historicFire2, historicHarvest, historicInsect, NAmat, spatialBoundaries
     ]
     clip = [historicFire1, historicFire2, historicHarvest, historicInsect]
     copy = [sp for sp in external_spatial_data if sp not in clip]
