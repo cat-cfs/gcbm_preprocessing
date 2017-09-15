@@ -66,7 +66,8 @@ class GDBLayer(Layer):
                        attribute=self._id_attribute,
                        noData=self._nodata_value,
                        creationOptions=["COMPRESS=DEFLATE"],
-                       outputBounds=bounds)
+                       outputBounds=bounds,
+                       where="{} <> {}".format(self._id_attribute, self._nodata_value))
 
         raster_path = os.path.join(tmp_dir, self._make_name(".tiff"))
         output_type = data_type or self.best_fit_data_type(self._get_min_max(tmp_raster_path))
