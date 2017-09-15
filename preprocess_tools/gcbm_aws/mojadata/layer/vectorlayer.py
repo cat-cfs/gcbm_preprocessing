@@ -56,7 +56,7 @@ class VectorLayer(Layer):
         gdal.VectorTranslate(reproj_path, self._path, dstSRS=srs, reproject=True)
 
         if not self._raw:
-            self._build_attribute_table(reproj_path, self._nodata_value)
+            self._build_attribute_table(reproj_path)
 
         tmp_raster_path = os.path.join(tmp_dir, self._make_name(".tmp.tiff"))
         gdal.Rasterize(tmp_raster_path, reproj_path,
@@ -90,7 +90,7 @@ class VectorLayer(Layer):
     def _make_name(self, ext=""):
         return "{}{}".format(self._name, ext)
 
-    def _build_attribute_table(self, path, nodata_value):
+    def _build_attribute_table(self, path):
         if not os.path.exists(path):
             raise IOError("File not found: {}".format(path))
 
@@ -104,7 +104,7 @@ class VectorLayer(Layer):
                                      else None
                                      for attr in self._attributes)
 
-            value_id = nodata_value
+            value_id = None
             if None not in attribute_values:
                 existing_key = [item[0] for item in self._attribute_table.items()
                                 if item[1] == attribute_values]
@@ -115,7 +115,9 @@ class VectorLayer(Layer):
                     self._attribute_table[value_id] = attribute_values
                     next_value_id += 1
 
-            feature[self._id_attribute] = value_id
+            if value_id is not None:
+                feature[self._id_attribute] = value_id
+            
             layer.SetFeature(feature)
 
     def _get_features(self, layer):
