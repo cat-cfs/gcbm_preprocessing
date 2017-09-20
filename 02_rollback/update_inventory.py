@@ -213,13 +213,14 @@ class RollbackDistributor(object):
 
 
 class updateInvRollback(object):
-    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, ProgressPrinter):
+    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, sb_percent, ProgressPrinter):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.rollbackDisturbanceOutput = rollbackDisturbances
         self.rasterOutput = rollbackInvOut
         self.resolution = resolution
+        self.sb_percent = sb_percent
 
         #data
         self.gridded_inventory = "inventory_gridded"
@@ -298,7 +299,7 @@ class updateInvRollback(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
         # print "Start of slashburn processing..."
         arcpy.CheckOutExtension("GeoStats")
-        PercSBofCC = 50
+        PercSBofCC = self.sb_percent
         arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
         expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
         logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
