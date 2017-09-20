@@ -22,7 +22,6 @@ def save_inputs():
         cPickle.dump(historicFire1, open(r'inputs\historicFire1.pkl', 'wb'))
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
-        cPickle.dump(projectedDistBase, open(r'inputs\projectedDistBase.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
         cPickle.dump(NAmat, open(r'inputs\NAmat.pkl', 'wb'))
@@ -183,7 +182,6 @@ if __name__=="__main__":
     historicFire1 = preprocess_tools.inputs.HistoricDisturbance(NFDB_workspace, NFDB_filter, NFDB_year_field)
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
-    projectedDistBase = None
     spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_fmu, spatial_boundaries_pspu,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
@@ -193,7 +191,7 @@ if __name__=="__main__":
     # Warning: All spatial inputs that are not in WGS 1984 coordinate system need
     # to be reprojected
     reproject = [
-        # historicFire1, historicFire2, historicHarvest, projectedDistBase, NAmat, spatialBoundaries
+        # historicFire1, historicFire2, historicHarvest, NAmat, spatialBoundaries
     ]
     clip = [historicFire1, historicFire2, historicHarvest]
     copy = [sp for sp in external_spatial_data if sp not in clip]
