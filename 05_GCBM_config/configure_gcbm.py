@@ -112,7 +112,7 @@ class ConfigureGCBM(object):
                     "layer_path": moja_dir,
                     "layer_prefix": basename
                 })
-                self.layer_config_names.update({name_year:name_year})
+                self.layer_config_names.append([name_year,name_year])
 
     def addLayerConfigNamesPostActivity(self, dirs, name, tiler_scenario, scenario):
         '''
@@ -140,7 +140,7 @@ class ConfigureGCBM(object):
                     "layer_path": moja_dir,
                     "layer_prefix": basename
                 })
-                self.layer_config_names.update({name_year:name_year})
+                self.layer_config_names.append([name_year,name_year])
 
     def configureProvider(self, input_db, general_lyrs, tiler_output, scenario):
         '''
@@ -153,7 +153,24 @@ class ConfigureGCBM(object):
         resolution = self.resolution
 
         self.provider_layers = []
-        self.layer_config_names = {}
+        self.layer_config_names = []
+
+        # Order: Fire, Insect, Harvest, Slashburn
+
+        # fire layers
+        fire = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.base_scenario))),
+            'fire')
+        proj_fire = self.addLayerConfigNamesPostActivity(
+            glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            'proj_fire', self.GCBM_scenarios[scenario], scenario)
+
+        # insect layers
+        insect = self.addLayerConfigNamesPreActivity(
+            glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, self.base_scenario)),
+            'insect')
+
         # harvest layers
         harvest = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\harvest_*_moja'.format(tiler_output, self.base_scenario))
@@ -172,21 +189,7 @@ class ConfigureGCBM(object):
             glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_slashburn', self.GCBM_scenarios[scenario], scenario)
 
-        # fire layers
-        fire = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.base_scenario))),
-            'fire')
-        proj_fire = self.addLayerConfigNamesPostActivity(
-            glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
-            'proj_fire', self.GCBM_scenarios[scenario], scenario)
-
-        # insect layers
-        insect = self.addLayerConfigNamesPreActivity(
-            glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, self.base_scenario)),
-            'insect')
-
-        disturbance_names = [dn for dn in self.layer_config_names]
+        disturbance_names = [dn[0] for dn in self.layer_config_names]
 
         # reporting indicators
         reporting_ind = self.reporting_indicators.getIndicators()
@@ -197,7 +200,7 @@ class ConfigureGCBM(object):
                     "layer_path": reporting_ind[ri],
                     "layer_prefix": os.path.basename(reporting_ind[ri])
                 })
-                self.layer_config_names.update({ri:ri})
+                self.layer_config_names.append([ri,ri])
 
         # general layers
         for name in general_lyrs:
@@ -208,13 +211,13 @@ class ConfigureGCBM(object):
                 "layer_prefix": os.path.basename(moja_dir)
             })
             if name == 'age':
-                self.layer_config_names.update({'initial_age':name})
+                self.layer_config_names.append(['initial_age',name])
             elif name == 'NAmerica_MAT_1971_2000':
-                self.layer_config_names.update({'mean_annual_temperature':name})
+                self.layer_config_names.append(['mean_annual_temperature',name])
             elif name == "Eco":
-                self.layer_config_names.update({'eco_boundary':name})
+                self.layer_config_names.append(['eco_boundary',name])
             else:
-                self.layer_config_names.update({name:name})
+                self.layer_config_names.append([name,name])
 
         with open(r'{}\05_GCBM_config\GCBM_config_provider.json'.format(sys.path[0]), 'rb') as provider_file:
             config_provider = json.load(provider_file)
@@ -246,8 +249,9 @@ class ConfigureGCBM(object):
 
         gcbm_config["LocalDomain"]["landscape"]["tiles"] = self.getTiles()
 
-        for name in layer_config_names:
-            data_id = layer_config_names[name]
+        for cn in layer_config_names:
+            name = cn[0]
+            data_id = cn[1]
             gcbm_config["Variables"].update({
                 name: {
                     "transform": {
@@ -261,7 +265,7 @@ class ConfigureGCBM(object):
 
         classifiers = []
         for classifier in self.inventory.getClassifiers():
-            if classifier in [name for name in layer_config_names]:
+            if classifier in [name[0] for name in layer_config_names]:
                 classifiers.append(classifier)
             else:
                 logging.warning("Classifier '{}' not added to GCBM config".format(classifier))
