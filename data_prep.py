@@ -246,7 +246,7 @@ if __name__=="__main__":
     # year interval between age increments
     yieldTable_interval = 10
     # species column and increment range
-    yieldTable_cols = {"SpeciesCol":1,"IncrementRange":[2,37]}
+    yieldTable_cols = {"SpeciesCol":2,"IncrementRange":[3,38]}
 
     ## AIDB
     # path to aidb in external data where disturbance matrix is already configured
