@@ -163,34 +163,62 @@ class GridInventory(object):
         self.inventory.setLayerName(self.gridded_inventory)
         arcpy.env.workspace = self.inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
-        fmd = {}
-        for i in range(len(self.inventory.getClassifiers())+4):
-            fmd.update({i:arcpy.FieldMap()})
-        fmd[0].addInputField(self.gridded_inventory, self.inventory.getFieldNames()['age'])
-
-        logging.info('Adding and calculating theme fields...')
-        arcpy.AddField_management(self.gridded_inventory, "THEME1", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
-        #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
-        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "", "PYTHON_9.3", "")
-        arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
-        for i, classifier in enumerate(self.inventory.getClassifiers()):
-            if i>1: i+=1
-            arcpy.AddField_management(self.gridded_inventory, "THEME{}".format(i+2), "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-            arcpy.CalculateField_management(self.gridded_inventory, "THEME{}".format(i+2), "!{}!".format(self.inventory.getClassifierAttr(classifier)), "PYTHON_9.3", "")
-
-        fmd[1].addInputField("inventory_gridded", 'THEME1')
-        for i, classifier in enumerate(self.inventory.getClassifiers()):
-            fmd[i+2].addInputField(self.gridded_inventory, 'THEME{}'.format(i+2))
-
-        fmd[len(fmd)-2].addInputField("inventory_gridded", 'THEME4')
-        fmd[len(fmd)-1].addInputField(self.gridded_inventory, 'Shape_Area')
 
         fms = arcpy.FieldMappings()
-        for fm in fmd.values():
+        output_fields = ['age','THEME1','THEME2','THEME3','THEME4','Shape_Area']
+        arcpy.AddField_management(self.gridded_inventory, "NULL_FIELD", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        for i, output_field in enumerate(output_fields):
+            fm = arcpy.FieldMap()
+            if output_field == 'THEME4':
+                input_field = 'CELL_ID'
+            else:
+                try:
+                    input_field = self.inventory.getFieldNames()[output_field]
+                except KeyError:
+                    inv_fields = [field.name for field in arcpy.ListFields(self.gridded_inventory)]
+                    if output_field in inv_fields:
+                        input_field = output_field
+                    else:
+                        input_field = None
+            if input_field != None:
+                fm.addInputField(self.gridded_inventory, input_field)
+            else:
+                fm.addInputField(self.gridded_inventory, "NULL_FIELD")
+            logging.info('\t\t{} -> {}'.format(input_field, output_field))
+
+            outf = fm.outputField
+            outf.name = output_field
+            fm.outputField = outf
+
             fms.addFieldMap(fm)
         arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
+        arcpy.DeleteField_management(self.gridded_inventory, "NULL_FIELD")
+
+        # fmd[0].addInputField(self.gridded_inventory, self.inventory.getFieldNames()['age'])
+        #
+        # logging.info('Adding and calculating theme fields...')
+        # arcpy.AddField_management(self.gridded_inventory, "THEME1", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        # # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
+        # #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
+        # # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "", "PYTHON_9.3", "")
+		# arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        # arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
+        # for i, classifier in enumerate(self.inventory.getClassifiers()):
+        #     if i>1: i+=1
+        #     arcpy.AddField_management(self.gridded_inventory, "THEME{}".format(i+2), "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        #     arcpy.CalculateField_management(self.gridded_inventory, "THEME{}".format(i+2), "!{}!".format(self.inventory.getClassifierAttr(classifier)), "PYTHON_9.3", "")
+        #
+        # fmd[1].addInputField(self.gridded_inventory, 'THEME1')
+        # for i, classifier in enumerate(self.inventory.getClassifiers()):
+        #     fmd[i+2].addInputField(self.gridded_inventory, 'THEME{}'.format(i+2))
+        #
+        # fmd[len(fmd)-2].addInputField(self.gridded_inventory, 'THEME4')
+        # fmd[len(fmd)-1].addInputField(self.gridded_inventory, 'Shape_Area')
+        #
+        # fms = arcpy.FieldMappings()
+        # for fm in fmd:
+        #     fms.addFieldMap(fm)
+        # arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
         pp.finish()
 
     def exportInventory(self, inventory_raster_out, resolution):
