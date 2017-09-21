@@ -131,7 +131,10 @@ if __name__=="__main__":
     inventory_field_names = {
         "age": "Age2015",
         "species": "LdSpp",
-        "THLB": "THLB"
+        "THLB": "THLB",
+        "THEME1":None,
+        "THEME2":"AU",
+        "THEME3":"LdSpp"
     }
 
     ## Disturbances
