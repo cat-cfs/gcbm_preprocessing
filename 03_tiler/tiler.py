@@ -144,7 +144,7 @@ class Tiler(object):
             # Assume filenames are like "Wildfire_1990.shp", "Wildfire_NBAC_1991.shp"
             # i.e. the last 4 characters before the extension are the year.
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-            year = file_name_no_ext[-4:]
+            year = int(file_name_no_ext[-4:])
             if year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
