@@ -137,6 +137,9 @@
         "current_land_class": "FL",
         "unfccc_land_class": "UNFCCC_FL_R_FL",
         "regen_delay": 0,
+        "age_class": 0,
+        "age_class_range": 20,
+        "age_maximum": 300,
         "initial_age": {
             "transform": {
                 "library": "internal.flint",
@@ -355,13 +358,18 @@
             },
             "enabled": true
         },
+        "CBMAgeIndicators": {
+            "enabled": true,
+            "library": "moja.modules.cbm",
+            "order": 8
+        },
         "TransactionManagerAfterSubmitModule": {
             "library": "internal.flint",
-            "order": 8
+            "order": 9
         },
         "CBMAggregatorLandUnitData": {
             "library": "moja.modules.cbm",
-            "order": 9,
+            "order": 10,
             "enabled": true,
             "settings": {
                 "reporting_classifier_set": "reporting_classifiers"}
@@ -369,50 +377,50 @@
         "CBMAggregatorSQLiteWriter": {
             "library": "moja.modules.cbm",
             "enabled": true,
-            "order": 10,
+            "order": 11,
             "settings": {
                 "databasename": "$output_db"
             }
         },
         "WriteVariableGrid": {
             "library": "internal.flint",
-            "order": 11,
+            "order": 12,
             "enabled": true,
             "settings": {
                 "output_path": "$output_dir",
                 "items": [
-                  {
-                      "enabled": true,
-                      "data_name": "AG_Biomass",
-                      "pool_name": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "HardwoodMerch", "HardwoodFoliage", "HardwoodOther"],
-                      "variable_data_type": "double",
-                      "on_notification": "OutputStep",
-                      "nodata_value": -1
-                  },
-                  {
-                      "enabled": true,
-                      "data_name": "CH4",
-                      "pool_name": ["CH4"],
-                      "variable_data_type": "double",
-                      "on_notification": "OutputStep",
-                      "nodata_value": -1
-                  },
-                  {
-                      "enabled": true,
-                      "data_name": "Age",
-                      "variable_name": "age",
-                      "variable_data_type": "Int16",
-                      "on_notification": "OutputStep",
-                      "nodata_value": -1
-                  },
-                  {
-                      "enabled": false,
-                      "data_name": "Merch_Biomass",
-                      "pool_name": ["SoftwoodMerch", "HardwoodMerch"],
-                      "variable_data_type": "double",
-                      "on_notification": "OutputStep",
-                      "nodata_value": -1
-                  }
+                   {
+                       "enabled": true,
+                       "data_name": "AG_Biomass",
+                       "pool_name": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "HardwoodMerch", "HardwoodFoliage", "HardwoodOther"],
+                       "variable_data_type": "double",
+                       "on_notification": "OutputStep",
+                       "nodata_value": -1
+                   },
+                   {
+                       "enabled": true,
+                       "data_name": "CH4",
+                       "pool_name": ["CH4"],
+                       "variable_data_type": "double",
+                       "on_notification": "OutputStep",
+                       "nodata_value": -1
+                   },
+                   {
+                       "enabled": true,
+                       "data_name": "Age",
+                       "variable_name": "age",
+                       "variable_data_type": "Int16",
+                       "on_notification": "OutputStep",
+                       "nodata_value": -1
+                   },
+                   {
+                       "enabled": false,
+                       "data_name": "Merch_Biomass",
+                       "pool_name": ["SoftwoodMerch", "HardwoodMerch"],
+                       "variable_data_type": "double",
+                       "on_notification": "OutputStep",
+                       "nodata_value": -1
+                   }
                ]
             }
         }
