@@ -137,6 +137,9 @@
         "current_land_class": "FL",
         "unfccc_land_class": "UNFCCC_FL_R_FL",
         "regen_delay": 0,
+        "age_class": 0,
+        "age_class_range": 20,
+        "age_maximum": 300,
         "initial_age": {
             "transform": {
                 "library": "internal.flint",
@@ -355,13 +358,18 @@
             },
             "enabled": true
         },
+        "CBMAgeIndicators": {
+            "enabled": true,
+            "library": "moja.modules.cbm",
+            "order": 8
+        },
         "TransactionManagerAfterSubmitModule": {
             "library": "internal.flint",
-            "order": 8
+            "order": 9
         },
         "CBMAggregatorLandUnitData": {
             "library": "moja.modules.cbm",
-            "order": 9,
+            "order": 10,
             "enabled": true,
             "settings": {
                 "reporting_classifier_set": "reporting_classifiers"}
@@ -369,14 +377,14 @@
         "CBMAggregatorSQLiteWriter": {
             "library": "moja.modules.cbm",
             "enabled": true,
-            "order": 10,
+            "order": 11,
             "settings": {
                 "databasename": "$output_db"
             }
         },
         "WriteVariableGrid": {
             "library": "internal.flint",
-            "order": 11,
+            "order": 12,
             "enabled": true,
             "settings": {
                 "output_path": "$output_dir",
