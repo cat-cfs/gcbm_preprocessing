@@ -57,8 +57,8 @@ class GridInventory(object):
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
             lambda:self.selectGreaterThanZeroAgeStands(),
-            spatial_join,
-            lambda:self.exportGriddedInvDBF()
+            spatial_join
+            # lambda:self.exportGriddedInvDBF()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
         for t in tasks:
@@ -165,8 +165,11 @@ class GridInventory(object):
         arcpy.env.overwriteOutput = True
 
         fms = arcpy.FieldMappings()
-        output_fields = ['age','THEME1','THEME2','THEME3','THEME4','Shape_Area']
-        arcpy.AddField_management(self.gridded_inventory, "NULL_FIELD", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        output_fields = ['age','X','Y','THEME1','THEME2','THEME3','THEME4','Shape_Area']
+        inv_fields = [field.name for field in arcpy.ListFields(self.gridded_inventory)]
+        if "NULL_FIELD" not in inv_fields:
+            arcpy.AddField_management(self.gridded_inventory, "NULL_FIELD", "TEXT", "", "", "10", "", "NULLABLE", "NON_REQUIRED", "")
+
         for i, output_field in enumerate(output_fields):
             fm = arcpy.FieldMap()
             if output_field == 'THEME4':
@@ -175,7 +178,6 @@ class GridInventory(object):
                 try:
                     input_field = self.inventory.getFieldNames()[output_field]
                 except KeyError:
-                    inv_fields = [field.name for field in arcpy.ListFields(self.gridded_inventory)]
                     if output_field in inv_fields:
                         input_field = output_field
                     else:
@@ -191,6 +193,7 @@ class GridInventory(object):
             fm.outputField = outf
 
             fms.addFieldMap(fm)
+        print "Converting table.."
         arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
         arcpy.DeleteField_management(self.gridded_inventory, "NULL_FIELD")
 
