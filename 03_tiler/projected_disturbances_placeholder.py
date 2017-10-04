@@ -90,7 +90,7 @@ class ProjectedDisturbancesPlaceholder(object):
         outShp = os.path.join(outShpDir, "{}.shp".format(projected_disturbances))
         if os.path.exists(outShp):
             arcpy.Delete_management(outShp)
-        arcpy.FeatureClassToShapefile_conversion(projected_disturbances, outShpDir)
+        arcpy.CopyFeatures_management(projected_disturbances, outShp)
         logging.info('Projected disturbances generated for scenario {} at {}'.format(scenario, outShpDir))
         arcpy.CheckInExtension("GeoStats")
         pp.finish()
@@ -108,7 +108,7 @@ class ProjectedDisturbancesPlaceholder(object):
         # add the layer to the working gdb
         if arcpy.Exists(os.path.join(self.outLocation, "rollbackDist")):
             arcpy.Delete_management("rollbackDist")
-        arcpy.FeatureClassToGeodatabase_conversion(rollback_dist,self.outLocation)
+        arcpy.FeatureClassToFeatureClass_conversion(rollback_dist,self.outLocation,"rollbackDist")
 
         # # how many pixels is this? inventory is gridded, so areas should be compatible
         # # bring in the inventory and select pixels
