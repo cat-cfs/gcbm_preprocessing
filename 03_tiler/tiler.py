@@ -157,13 +157,13 @@ class Tiler(object):
                             age_after=0)))
         pp.finish()
 
-    def processHistoricHarvestDisturbances(self, dist):
+    def processHistoricHarvestDisturbances(self, dist, sb_percent):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
         year_range = range(self.rollback_range[1]+1, self.historic_range[1]+1)
 
         sb = GenerateSlashburn(self.ProgressPrinter)
-        sb_shp = sb.generateSlashburn(self.inventory, cutblock_shp, "HARV_YR", year_range, 50)
+        sb_shp = sb.generateSlashburn(self.inventory, cutblock_shp, "HARV_YR", year_range, sb_percent)
 
         for year in year_range:
             self.layers.append(DisturbanceLayer(
