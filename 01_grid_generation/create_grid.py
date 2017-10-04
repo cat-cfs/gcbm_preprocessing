@@ -85,7 +85,7 @@ class Fishnet(object):
 
 		for field_name in field_name_types:
 			field_type = field_name_types[field_name]
-			field_length = "25" if field_type.upper()=="TEXT" else ""
+			field_length = "10" if field_type.upper()=="TEXT" else ""
 			arcpy.AddField_management(self.XYgrid, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", "")
 			pp.updateProgressP()
 
@@ -97,6 +97,7 @@ class Fishnet(object):
 
 		functions = [
 			lambda:arcpy.MakeFeatureLayer_management(self.XYgrid, 'XYgrid_intersect'),
+			# Only calculates grid cells that are intersecting with inventory
 			lambda:arcpy.SelectLayerByLocation_management('XYgrid_intersect', 'INTERSECT', self.inventory.getFilter(), "", "NEW_SELECTION", "NOT_INVERT"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
