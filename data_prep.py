@@ -9,7 +9,6 @@ import sys
 import cPickle
 import shutil
 import logging
-import collections
 
 sys.path.insert(0, '../../../03_tools/gcbm_preprocessing')
 import preprocess_tools
