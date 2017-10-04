@@ -142,7 +142,7 @@ if __name__=="__main__":
     NFDB_workspace = r"{}\01_spatial\03_disturbances\01_historic\01_fire\shapefiles".format(external_data)
     # filter to get all layers within the directory/geodatabase, following glob syntax
     NFDB_filter = "NFDB*.shp"
-    # the field from which the year can be extracted
+    # the field from which the year can be extracted. These must have different names for each disturbance
     NFDB_year_field = "YEAR_"
     NBAC_workspace = r"{}\01_spatial\03_disturbances\01_historic\01_fire\shapefiles".format(external_data)
     NBAC_filter = "NBAC*.shp"

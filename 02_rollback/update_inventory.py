@@ -252,7 +252,7 @@ class updateInvRollback(object):
             lambda:self.remergeDistPolyInv(),
             lambda:self.makeLayers2(),
             lambda:self.rollbackAgeNonDistStands(),
-            lambda:self.makeSlashburn(),
+            lambda:self.generateSlashburn(),
             lambda:self.exportRollbackDisturbances(),
             lambda:self.exportRollbackInventory()
         ]
@@ -294,7 +294,7 @@ class updateInvRollback(object):
             cur.updateRow(row)
         pp.finish()
 
-    def makeSlashburn(self):
+    def generateSlashburn(self):
         year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
         # print "Start of slashburn processing..."
