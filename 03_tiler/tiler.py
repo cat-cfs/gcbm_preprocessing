@@ -12,6 +12,7 @@ import logging
 import shutil
 
 from projected_disturbances_placeholder import ProjectedDisturbancesPlaceholder
+from generate_historic_slashburn import GenerateSlashburn
 
 from mojadata.boundingbox import BoundingBox
 from mojadata.tiler2d import Tiler2D
@@ -159,12 +160,25 @@ class Tiler(object):
     def processHistoricHarvestDisturbances(self, dist):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
-        for year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
+        year_range = range(self.rollback_range[1]+1, self.historic_range[1]+1)
+
+        sb = GenerateSlashburn(self.ProgressPrinter)
+        sb_shp = sb.generateSlashburn(self.inventory, cutblock_shp, "HARV_YR", year_range, 50)
+
+        for year in year_range:
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
                 VectorLayer("harvest_{}".format(year), cutblock_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
                 year=year,
                 disturbance_type="Clearcut harvesting with salvage",
+                transition=TransitionRule(
+                    regen_delay=0,
+                    age_after=0)))
+            self.layers.append(DisturbanceLayer(
+                self.rule_manager,
+                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v != yr)),
+                year=year,
+                disturbance_type="SlashBurning",
                 transition=TransitionRule(
                     regen_delay=0,
                     age_after=0)))
@@ -186,7 +200,7 @@ class Tiler(object):
         for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
             year = int(file_name_no_ext[-4:])
-            if year in range(self.historic_range[0], self.historic_range[1]+1):
+            if year in range(self.historic_range[0], self.future_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
                     VectorLayer("insect_{}".format(year), file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
