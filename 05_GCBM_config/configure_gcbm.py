@@ -33,6 +33,7 @@ class ConfigureGCBM(object):
 
     def configureGCBM(self, input_db, general_lyrs, tiler_output_dir):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+        self.tiler_output = tiler_output_dir
         for scen in self.GCBM_scenarios:
             layer_config_names, disturbance_names = self.configureProvider(input_db, general_lyrs, tiler_output_dir, scen)
             self.configureConfig(layer_config_names, disturbance_names, scen)
@@ -109,7 +110,7 @@ class ConfigureGCBM(object):
             if int(year) < self.activity_start_year:
                 self.provider_layers.append({
                     "name": name_year,
-                    "layer_path": moja_dir,
+                    "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
                     "layer_prefix": basename
                 })
                 self.layer_config_names.append([name_year,name_year])
@@ -137,7 +138,7 @@ class ConfigureGCBM(object):
                     moja_dir = self.copyTilerOutput(moja_dir, tiler_scenario, scenario)
                 self.provider_layers.append({
                     "name": name_year,
-                    "layer_path": moja_dir,
+                    "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
                     "layer_prefix": basename
                 })
                 self.layer_config_names.append([name_year,name_year])
@@ -197,7 +198,7 @@ class ConfigureGCBM(object):
             if reporting_ind[ri]!=None:
                 self.provider_layers.append({
                     "name": ri,
-                    "layer_path": reporting_ind[ri],
+                    "layer_path": os.path.join('$dir',os.path.relpath(reporting_ind[ri],self.tiler_output)),
                     "layer_prefix": os.path.basename(reporting_ind[ri])
                 })
                 self.layer_config_names.append([ri,ri])
@@ -207,7 +208,7 @@ class ConfigureGCBM(object):
             moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, self.base_scenario, name)
             self.provider_layers.append({
                 "name": name,
-                "layer_path": moja_dir,
+                "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
                 "layer_prefix": os.path.basename(moja_dir)
             })
             if name == 'age':
@@ -221,7 +222,7 @@ class ConfigureGCBM(object):
 
         with open(r'{}\05_GCBM_config\GCBM_config_provider.json'.format(sys.path[0]), 'rb') as provider_file:
             config_provider = json.load(provider_file)
-        config_provider["Providers"]["SQLite"]["path"] = input_db
+        config_provider["Providers"]["SQLite"]["path"] = '$input_db'
         config_provider["Providers"]["RasterTiled"]["cellLatSize"] = self.resolution
         config_provider["Providers"]["RasterTiled"]["cellLonSize"] = self.resolution
         config_provider["Providers"]["RasterTiled"]["layers"] = self.provider_layers
@@ -244,8 +245,9 @@ class ConfigureGCBM(object):
         with open(r'{}\05_GCBM_config\GCBM_config.json'.format(sys.path[0]), 'rb') as config_file:
             gcbm_config = json.load(config_file)
 
-        gcbm_config["LocalDomain"]["start_date"] = r'{}/01/01'.format(self.start_year-1)
-        gcbm_config["LocalDomain"]["end_date"] = r'{}/01/01'.format(self.end_year+1)
+        # parameterize for master batch
+        gcbm_config["LocalDomain"]["start_date"] = r'{}/01/01'.format('$start_year') # self.start_year-1)
+        gcbm_config["LocalDomain"]["end_date"] = r'{}/01/01'.format('$end_year') # self.end_year+1)
 
         gcbm_config["LocalDomain"]["landscape"]["tiles"] = self.getTiles()
 
