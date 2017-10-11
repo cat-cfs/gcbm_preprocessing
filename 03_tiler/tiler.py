@@ -161,9 +161,9 @@ class Tiler(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         harvest_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
         year_range = range(self.rollback_range[1]+1, self.historic_range[1]+1)
-
-        sb = GenerateSlashburn(self.ProgressPrinter)
-        sb_shp = sb.generateSlashburn(self.inventory, harvest_shp, "HARV_YR", year_range, sb_percent)
+        if len(year_range)>0:
+            sb = GenerateSlashburn(self.ProgressPrinter)
+            sb_shp = sb.generateSlashburn(self.inventory, harvest_shp, "HARV_YR", year_range, sb_percent)
 
         for year in year_range:
             self.layers.append(DisturbanceLayer(

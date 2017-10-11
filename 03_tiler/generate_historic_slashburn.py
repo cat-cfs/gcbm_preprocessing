@@ -25,6 +25,8 @@ class GenerateSlashburn(object):
         arcpy.FeatureClassToFeatureClass_conversion(os.path.join(inventory.getWorkspace(),"MergedDisturbances"),
             arcpy.env.workspace, "MergedDisturbances")
         arcpy.MakeFeatureLayer_management("MergedDisturbances", "temp_harvest")
+        if "DistType" not in [f.name for f in arcpy.ListFields("temp_harvest")]:
+            arcpy.AddField_management("temp_harvest", "DistType", "SHORT")
         arcpy.CreateFeatureclass_management(arcpy.env.workspace, "slashburn", "POLYGON", "temp_harvest", "SAME_AS_TEMPLATE", "SAME_AS_TEMPLATE", "temp_harvest")
         logging.info('Making slashburn for the range {}-{}'.format(year_range[0],year_range[-1]))
         logging.info('Selecting {}% of the harvest area in each year as slashburn...'.format(PercSBofCC))
