@@ -133,9 +133,9 @@ class ProjectedDisturbancesPlaceholder(object):
         arcpy.Select_analysis("rollbackDist", "harv", harvest_where)
         fire_where = '{} = {}'.format(arcpy.AddFieldDelimiters(rollback_stats, self.distType_field), self.rollback_fire_code)
         arcpy.Select_analysis("rollbackDist", "fire", fire_where)
-        total_harv_records = int(arcpy.GetCount_management("harv").getOutput(0))
+        total_harv_records = float(arcpy.GetCount_management("harv").getOutput(0))
         yearly_harv_records = total_harv_records/(self.rollback_range[1]-self.rollback_range[0]+1)
-        total_fire_records = int(arcpy.GetCount_management("fire").getOutput(0))
+        total_fire_records = float(arcpy.GetCount_management("fire").getOutput(0))
         yearly_fire_records = total_fire_records/(self.rollback_range[1]-self.rollback_range[0]+1)
 
         logging.info("Fire annual area is:{}".format(yearly_fire_records))
@@ -148,34 +148,23 @@ class ProjectedDisturbancesPlaceholder(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(self.year_range), 2).start()
         # process fire-----------------------
         logging.info("Start of projected fire processing...")
+        fire_areaValue = round(fire_areaValue)
         if fire_areaValue>0:
             fire_proj_dist_temp = "fire_proj_dist_temp"
+            fire_proj_dist_temp1 = "fire_proj_dist_temp1"
             for year in self.year_range:
-            	arcpy.SubsetFeatures_ga(in_features="inventory_gridded_1990", out_training_feature_class=r"{}\fire_proj_dist_temp".format(self.outLocation), out_test_feature_class="", size_of_training_dataset=fire_areaValue, subset_size_units="ABSOLUTE_VALUE")
-            	arcpy.Append_management(fire_proj_dist_temp, projected_disturbances)
+            	arcpy.SubsetFeatures_ga(in_features="inventory_gridded_1990", out_training_feature_class=r"{}\{}".format(self.outLocation,fire_proj_dist_temp1), out_test_feature_class="", size_of_training_dataset=fire_areaValue, subset_size_units="ABSOLUTE_VALUE")
+                arcpy.AddField_management(fire_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
+                arcpy.CalculateField_management(fire_proj_dist_temp1, field=self.distYr_field, expression=year, expression_type="PYTHON", code_block="")
+                arcpy.Append_management(fire_proj_dist_temp1, fire_proj_dist_temp)
                 pp.updateProgressP()
 
             # update the dist type and regen delay
-            arcpy.CalculateField_management(projected_disturbances, field=self.distType_field, expression=self.fire_code, expression_type="PYTHON", code_block="")
-            arcpy.CalculateField_management(projected_disturbances, field=self.regen_delay_field, expression="0", expression_type="PYTHON", code_block="")
+            arcpy.CalculateField_management(fire_proj_dist_temp, field=self.distType_field, expression=self.fire_code, expression_type="PYTHON", code_block="")
+            arcpy.CalculateField_management(fire_proj_dist_temp, field=self.regen_delay_field, expression="0", expression_type="PYTHON", code_block="")
 
-            # add dist year
-            arcpy.AddField_management(projected_disturbances, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
-
-            #Populate disturbance year
-            count = int(arcpy.GetCount_management(projected_disturbances).getOutput(0))
-            events_per_year = count / len(self.year_range)
-            cursor = arcpy.UpdateCursor(projected_disturbances)
-            year = self.future_range[0]
-            i = 1
-            for row in cursor:
-            	row.setValue(self.distYr_field, year)
-            	cursor.updateRow(row)
-            	i = i + 1
-            	if i > events_per_year:
-            		i = 1
-            		year = year + 1
-            arcpy.Delete_management(fire_proj_dist_temp)
+            arcpy.Append_management(fire_proj_dist_temp, projected_disturbances)
+            arcpy.Delete_management(fire_proj_dist_temp1)
         else:
             logging.info("No projected fire was generated because no historic fire was found.")
         pp.finish()
@@ -186,45 +175,32 @@ class ProjectedDisturbancesPlaceholder(object):
         logging.info("Start of projected harvest processing...")
         logging.info("Generating projected harvest with a {}% reduction after the activity start year of {}".format((100-actv_harvest_percent),self.activity_start_year))
         if harvest_areaValue>0:
-            # update the dist type and regen delay
             harvest_proj_dist_temp = "harvest_proj_dist_temp"
             harvest_proj_dist_temp1 = "harvest_proj_dist_temp1"
             arcpy.CreateFeatureclass_management(self.outLocation, harvest_proj_dist_temp, "", "inventory_gridded_1990","","","inventory_gridded_1990")
             for year in self.year_range:
                 if year>=self.activity_start_year:
-                    harvest_records = harvest_areaValue * (actv_harvest_percent/100.0)
+                    harvest_records = round(harvest_areaValue * (actv_harvest_percent/100.0))
                 else:
-                    harvest_records = harvest_areaValue
-            	arcpy.SubsetFeatures_ga(in_features="inventory_gridded_1990", out_training_feature_class="{}/{}".format(self.outLocation,harvest_proj_dist_temp1), out_test_feature_class="", size_of_training_dataset=harvest_records, subset_size_units="ABSOLUTE_VALUE")
-            	arcpy.Append_management(harvest_proj_dist_temp1, harvest_proj_dist_temp)
-                pp1.updateProgressP()
+                    harvest_records = round(harvest_areaValue)
+                if harvest_records>=1:
+                	arcpy.SubsetFeatures_ga(in_features="inventory_gridded_1990", out_training_feature_class="{}/{}".format(self.outLocation,harvest_proj_dist_temp1), out_test_feature_class="", size_of_training_dataset=harvest_records, subset_size_units="ABSOLUTE_VALUE")
+                	arcpy.AddField_management(harvest_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
+                	arcpy.CalculateField_management(harvest_proj_dist_temp1, field=self.distYr_field, expression=year, expression_type="PYTHON", code_block="")
+                	arcpy.Append_management(harvest_proj_dist_temp1, harvest_proj_dist_temp)
+                	pp1.updateProgressP()
 
+            # update the dist type and regen delay
             arcpy.CalculateField_management(harvest_proj_dist_temp, field=self.distType_field, expression=self.BASE_salvage_code, expression_type="PYTHON", code_block="")
             arcpy.CalculateField_management(harvest_proj_dist_temp, field=self.regen_delay_field, expression="0", expression_type="PYTHON", code_block="")
-
-            # add dist year
-            arcpy.AddField_management(harvest_proj_dist_temp, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
-
-            #Populate disturbance year
-            count = int(arcpy.GetCount_management(harvest_proj_dist_temp).getOutput(0))
-            events_per_year = count / len(self.year_range)
-
-            cursor = arcpy.UpdateCursor(harvest_proj_dist_temp)
-            year = self.future_range[0]
-            i = 1
-            for row in cursor:
-            	row.setValue(self.distYr_field, year)
-            	cursor.updateRow(row)
-            	i = i + 1
-            	if i > events_per_year:
-            		i = 1
-            		year = year + 1
 
             #append disturbances
             arcpy.Append_management(harvest_proj_dist_temp, projected_disturbances)
             arcpy.Delete_management(harvest_proj_dist_temp1)
+            
         else:
             logging.info("No projected harvest was generated because no historic harvest was found.")
+
         pp1.finish()
 
 
