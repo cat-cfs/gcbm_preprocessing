@@ -176,7 +176,7 @@ if __name__=="__main__":
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, rollback_range, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
     calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, rollback_range, historicHarvest.getYearField(), PP)
-    updateInv = rollback.update_inventory.updateInvRollback(inventory, inventory_raster_out, rollbackDisturbances, rollback_range, resolution, sb_base_percent, PP)
+    updateInv = rollback.update_inventory.updateInvRollback(inventory, inventory_raster_out, rollbackDisturbances, rollback_range, resolution, sb_base_percent, reportingIndicators, PP)
     tiler = tiler_imp.tiler.Tiler(
         spatialBoundaries=spatialBoundaries,
         inventory=inventory,
@@ -203,7 +203,7 @@ if __name__=="__main__":
     inventoryGridder.gridInventory()
 
     if not rollback_enabled: # ***
-        inventoryGridder.exportInventory(inventory_raster_out, resolution) # ***
+        inventoryGridder.exportInventory(inventory_raster_out, resolution, reportingIndicators) # ***
 
     else: # ***
         # -- Start of rollback
@@ -221,7 +221,8 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire1)
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest, sb_base_percent)
-    tiler.processHistoricInsectDisturbances(historicInsect)
+    if historicInsect.getWorkspace() != None:
+        tiler.processHistoricInsectDisturbances(historicInsect)
     for base_scenario in [scen for scen in tiler_scenarios if scen.lower()=='base']: # ***
         tiler.processProjectedDisturbances(base_scenario, tiler_scenarios[base_scenario])
         transitionRules = tiler.runTiler(tiler_output_dir, base_scenario, True) # ***

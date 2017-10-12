@@ -113,6 +113,7 @@ if __name__=="__main__":
 
 
     #### Spatial Inputs
+    province = "British Columbia"
 
     ## Inventory
     # Path the the inventory gdb workspace
@@ -129,11 +130,7 @@ if __name__=="__main__":
     }
     inventory_field_names = {
         "age": "Age2015",
-        "species": "LdSpp",
-        "THLB": "THLB",
-        "THEME1":None,
-        "THEME2":"AU",
-        "THEME3":"LdSpp"
+        "species": "LdSpp"
     }
 
     ## Disturbances
@@ -155,16 +152,17 @@ if __name__=="__main__":
     # directory path to the spatial reference directory containing the TSA and PSPU boundaries
     spatial_reference = r"{}\01_spatial\01_spatial_reference".format(external_data)
     # file name or filter to find the TSA boundaries in the spatial reference directory
-    spatial_boundaries_tsa = "PSPUS_2016_FINAL_1_Reprojected.shp"
+    spatial_boundaries = "PSPUS_2016_FINAL_1_Reprojected.shp"
     # file name or filter to find the PSPU boundaries in the spatial reference directory
-    spatial_boundaries_pspu = "PSPUS_2016.shp"
+    # the spatial_boundaries_ri should contain the reporting indicators eco boundary and admin boundary
+    spatial_boundaries_ri = "PSPUS_2016.shp"
     # filter used to get the desired study area from the TSA boundaries.
     # change only the associated values for "field" and "code"
     study_area_filter = {
         "field": "TSA_NUMBER",
         "code": "'100 Mile House TSA'"
     }
-    # field names for the Admin and Eco attributes in the PSPU boundaries file
+    # field names for the Admin and Eco attributes in the spatial_boundaries_ri file
     spatial_boundaries_attr = {
         "Admin": "AdminBou_1",
         "Eco": "EcoBound_1"
@@ -186,12 +184,12 @@ if __name__=="__main__":
 
     ### Initialize Spatial Inputs
     inventory = preprocess_tools.inputs.Inventory(workspace=inventory_workspace, filter=inventory_layer,
-        year=inventory_year, classifiers_attr=inventory_classifier_attr, field_names=inventory_field_names)
+        year=inventory_year, classifiers_attr=inventory_classifier_attr, field_names=inventory_field_names, province=province)
     historicFire1 = preprocess_tools.inputs.HistoricDisturbance(NFDB_workspace, NFDB_filter, NFDB_year_field)
     historicFire2 = preprocess_tools.inputs.HistoricDisturbance(NBAC_workspace, NBAC_filter, NBAC_year_field)
     historicHarvest = preprocess_tools.inputs.HistoricDisturbance(harvest_workspace, harvest_filter, harvest_year_field)
     historicInsect = preprocess_tools.inputs.HistoricDisturbance(insect_workspace, insect_filter, None)
-    spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries_tsa, spatial_boundaries_pspu,
+    spatialBoundaries = preprocess_tools.inputs.SpatialBoundaries(spatial_reference, spatial_boundaries, spatial_boundaries_ri,
         "shp", study_area_filter, spatial_boundaries_attr)
     NAmat = preprocess_tools.inputs.NAmericaMAT(os.path.dirname(NAmat_path), os.path.basename(NAmat_path))
     rollbackDisturbances = preprocess_tools.inputs.RollbackDisturbances(rollback_dist_out)
@@ -207,13 +205,13 @@ if __name__=="__main__":
 
     TSA_filter = '"{}" = {}'.format(study_area_filter["field"], study_area_filter["code"])
 
-    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
+    inventory.clipCutPolys(inventory.getWorkspace(), spatialBoundaries.getPath(), TSA_filter,
         r'{}\01a_pretiled_layers\00_Workspace.gdb'.format(working_directory), name='tsa{}'.format(TSA_number))
 
     for spatial_input in reproject:
         spatial_input.reproject(spatial_input.getWorkspace().replace(reprojected_redirection[0], reprojected_redirection[1]))
     for spatial_input in clip:
-        spatial_input.clip(spatial_input.getWorkspace(), spatialBoundaries.getPathTSA(), TSA_filter,
+        spatial_input.clip(spatial_input.getWorkspace(), spatialBoundaries.getPath(), TSA_filter,
             spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))
     for spatial_input in copy:
         spatial_input.copy(spatial_input.getWorkspace().replace(clipped_redirection[0], clipped_redirection[1]))

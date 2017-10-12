@@ -148,7 +148,7 @@
                 "data_id": "forest_age"
             }
         },
-        "admin_boundary": "British Columbia",
+        "admin_boundary": "$province",
         "initial_classifier_set": {
             "transform": {
                 "library": "internal.flint",

@@ -197,45 +197,21 @@ class GridInventory(object):
         arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
         arcpy.DeleteField_management(self.gridded_inventory, "NULL_FIELD")
 
-        # fmd[0].addInputField(self.gridded_inventory, self.inventory.getFieldNames()['age'])
-        #
-        # logging.info('Adding and calculating theme fields...')
-        # arcpy.AddField_management(self.gridded_inventory, "THEME1", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        # # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
-        # #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
-        # # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "", "PYTHON_9.3", "")
-		# arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        # arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
-        # for i, classifier in enumerate(self.inventory.getClassifiers()):
-        #     if i>1: i+=1
-        #     arcpy.AddField_management(self.gridded_inventory, "THEME{}".format(i+2), "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        #     arcpy.CalculateField_management(self.gridded_inventory, "THEME{}".format(i+2), "!{}!".format(self.inventory.getClassifierAttr(classifier)), "PYTHON_9.3", "")
-        #
-        # fmd[1].addInputField(self.gridded_inventory, 'THEME1')
-        # for i, classifier in enumerate(self.inventory.getClassifiers()):
-        #     fmd[i+2].addInputField(self.gridded_inventory, 'THEME{}'.format(i+2))
-        #
-        # fmd[len(fmd)-2].addInputField(self.gridded_inventory, 'THEME4')
-        # fmd[len(fmd)-1].addInputField(self.gridded_inventory, 'Shape_Area')
-        #
-        # fms = arcpy.FieldMappings()
-        # for fm in fmd:
-        #     fms.addFieldMap(fm)
-        # arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
         pp.finish()
 
-    def exportInventory(self, inventory_raster_out, resolution):
+    def exportInventory(self, inventory_raster_out, resolution, reportingIndicators):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         print "\tExporting inventory to raster..."
         arcpy.env.overwriteOutput = True
+        reporting_indicators = reportingIndicators.getIndicators()
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": self.inventory.getFieldNames()["age"],
-            "species": self.inventory.getFieldNames()["species"],
-            # "ownership": self.inventory.getFieldNames()["ownership"],
-            # "FMLB": self.inventory.getFieldNames()["FMLB"],
-            "THLB": self.inventory.getFieldNames()["THLB"]
+            "species": self.inventory.getFieldNames()["species"]
         }
+        for ri in reporting_indicators:
+            if reporting_indicators[ri]==None:
+                fields.update({ri:ri})
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)
             file_path = os.path.join(inventory_raster_out, "{}.tif".format(classifier_name))
