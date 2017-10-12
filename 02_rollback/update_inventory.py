@@ -213,7 +213,7 @@ class RollbackDistributor(object):
 
 
 class updateInvRollback(object):
-    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, sb_percent, ProgressPrinter):
+    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, sb_percent, reportingIndicators, ProgressPrinter):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
@@ -221,6 +221,7 @@ class updateInvRollback(object):
         self.rasterOutput = rollbackInvOut
         self.resolution = resolution
         self.sb_percent = sb_percent
+        self.reporting_indicators = reportingIndicators.getIndicators()
 
         #data
         self.gridded_inventory = "inventory_gridded"
@@ -341,9 +342,12 @@ class updateInvRollback(object):
         arcpy.env.overwriteOutput = True
         classifier_names = self.inventory.getClassifiers()
         fields = {
-            "age": self.inventory.getFieldNames()["rollback_age"]
-            # "species": self.inventory.getFieldNames()["species"]
+            "age": self.inventory.getFieldNames()["rollback_age"],
+            "species": self.inventory.getFieldNames()["species"]
         }
+        for ri in self.reporting_indicators:
+            if self.reporting_indicators[ri]==None:
+                fields.update({ri:ri})
         for classifier_name in classifier_names:
             logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))
             field_name = self.inventory.getClassifierAttr(classifier_name)

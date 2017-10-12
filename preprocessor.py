@@ -26,6 +26,7 @@ def save_inputs():
         cPickle.dump(historicFire1, open(r'inputs\historicFire1.pkl', 'wb'))
         cPickle.dump(historicFire2, open(r'inputs\historicFire2.pkl', 'wb'))
         cPickle.dump(historicHarvest, open(r'inputs\historicHarvest.pkl', 'wb'))
+        cPickle.dump(historicInsect, open(r'inputs\historicInsect.pkl', 'wb'))
         cPickle.dump(rollbackDisturbances, open(r'inputs\rollbackDisturbances.pkl', 'wb'))
         cPickle.dump(spatialBoundaries, open(r'inputs\spatialBoundaries.pkl', 'wb'))
         cPickle.dump(NAmat, open(r'inputs\NAmat.pkl', 'wb'))
@@ -61,6 +62,7 @@ def load_inputs():
     global historicFire1
     global historicFire2
     global historicHarvest
+    global historicInsect
     global rollbackDisturbances
     global NAmat
     global spatialBoundaries
@@ -94,6 +96,7 @@ def load_inputs():
         historicFire1 = cPickle.load(open(r'inputs\historicFire1.pkl'))
         historicFire2 = cPickle.load(open(r'inputs\historicFire2.pkl'))
         historicHarvest = cPickle.load(open(r'inputs\historicHarvest.pkl'))
+        historicInsect = cPickle.load(open(r'inputs\historicInsect.pkl'))
         rollbackDisturbances = cPickle.load(open(r'inputs\rollbackDisturbances.pkl'))
         NAmat = cPickle.load(open(r'inputs\NAmat.pkl'))
         spatialBoundaries = cPickle.load(open(r'inputs\spatialBoundaries.pkl'))
@@ -173,7 +176,7 @@ if __name__=="__main__":
     intersect = rollback.intersect_disturbances_inventory.IntersectDisturbancesInventory(inventory, spatialBoundaries, rollback_range, PP)
     calcDistDEdiff = rollback.update_inventory.CalculateDistDEdifference(inventory, PP)
     calcNewDistYr = rollback.update_inventory.CalculateNewDistYr(inventory, rollback_range, historicHarvest.getYearField(), PP)
-    updateInv = rollback.update_inventory.updateInvRollback(inventory, inventory_raster_out, rollbackDisturbances, rollback_range, resolution, sb_base_percent, PP)
+    updateInv = rollback.update_inventory.updateInvRollback(inventory, inventory_raster_out, rollbackDisturbances, rollback_range, resolution, sb_base_percent, reportingIndicators, PP)
     tiler = tiler_imp.tiler.Tiler(
         spatialBoundaries=spatialBoundaries,
         inventory=inventory,
@@ -200,7 +203,7 @@ if __name__=="__main__":
     inventoryGridder.gridInventory()
 
     if not rollback_enabled: # ***
-        inventoryGridder.exportInventory(inventory_raster_out, resolution) # ***
+        inventoryGridder.exportInventory(inventory_raster_out, resolution, reportingIndicators) # ***
 
     else: # ***
         # -- Start of rollback
@@ -218,6 +221,8 @@ if __name__=="__main__":
     tiler.processHistoricFireDisturbances(historicFire1)
     tiler.processHistoricFireDisturbances(historicFire2)
     tiler.processHistoricHarvestDisturbances(historicHarvest, sb_base_percent)
+    if historicInsect.getWorkspace() != None:
+        tiler.processHistoricInsectDisturbances(historicInsect)
     for base_scenario in [scen for scen in tiler_scenarios if scen.lower()=='base']: # ***
         tiler.processProjectedDisturbances(base_scenario, tiler_scenarios[base_scenario])
         transitionRules = tiler.runTiler(tiler_output_dir, base_scenario, True) # ***

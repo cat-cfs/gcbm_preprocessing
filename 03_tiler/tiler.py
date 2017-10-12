@@ -74,7 +74,7 @@ class Tiler(object):
 
         for attr in self.spatial_boundaries.getAttributes():
             attr_field = self.spatial_boundaries.getAttrField(attr)
-            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathPSPU(),
+            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathRI(),
                 Attribute(attr_field)))
             general_lyrs.append(attr)
 

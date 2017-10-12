@@ -133,7 +133,7 @@ class SpatialInputs(object):
 		return sorted(glob.glob(os.path.join(self.getWorkspace(), '{}*'.format(name))), key=os.path.basename)
 
 class Inventory(SpatialInputs):
-	def __init__(self, workspace, filter, year, classifiers_attr, field_names=None, reporting_classifiers=None):
+	def __init__(self, workspace, filter, year, classifiers_attr, province, field_names=None, reporting_classifiers=None):
 		arcpy.env.workspace = workspace
 		self._workspace = workspace
 		self._filter = filter
@@ -143,6 +143,7 @@ class Inventory(SpatialInputs):
 		self._reporting_classifiers = reporting_classifiers
 		self._classifiers_attr = classifiers_attr
 		self._rasters = []
+		self._province = province
 
 	def setWorkspace(self, path):
 		self._workspace = path
@@ -155,6 +156,9 @@ class Inventory(SpatialInputs):
 
 	def getYear(self):
 		return self._year
+
+	def getProvince(self):
+		return self._province
 
 	def reproject(self, new_workspace, name=None):
 		super(Inventory, self).reproject(new_workspace, name=name)
@@ -334,10 +338,10 @@ class AIDB(object):
 		self._path = path
 
 class SpatialBoundaries(SpatialInputs):
-	def __init__(self, workspace, filter_fmu, filter_pspu, type, area_filter, attributes):
+	def __init__(self, workspace, filter, filter_ri, type, area_filter, attributes):
 		self._workspace = workspace
-		self._path_fmu = os.path.join(workspace, filter_fmu)
-		self._path_pspu = os.path.join(workspace, filter_pspu)
+		self._path = os.path.join(workspace, filter)
+		self._path_ri = os.path.join(workspace, filter_ri)
 		self._type = type
 		self._attributes = attributes
 		if "field" and "code" in area_filter:
@@ -350,19 +354,19 @@ class SpatialBoundaries(SpatialInputs):
 	def getFilter(self):
 		return "*.shp"
 
-	def getPathFMU(self):
-		return self._path_fmu
+	def getPath(self):
+		return self._path
 
-	def getPathPSPU(self):
-		return self._path_pspu
+	def getPathRI(self):
+		return self._path_ri
 
-	def setPathFMU(self, path):
+	def setPath(self, path):
 		self._workspace = os.path.dirname(path)
-		self._path_fmu = path
+		self._path = path
 
-	def setPathPSPU(self, path):
+	def setPathRI(self, path):
 		self._workspace = os.path.dirname(path)
-		self._path_pspu = path
+		self._path_ri = path
 
 	def getType(self):
 		return self._type

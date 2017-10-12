@@ -276,6 +276,7 @@ class ConfigureGCBM(object):
         gcbm_config["Variables"]["initial_classifier_set"]["transform"]["vars"] = classifiers
         gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] = (
             gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] + reporting_ind_names)
+        gcbm_config["Variables"]["admin_boundary"] = self.inventory.getProvince()
         gcbm_config["Modules"]["CBMDisturbanceEventModule"]["settings"]["vars"] = disturbance_names
         output_directory = self.output_dir
         if not output_directory[0]=='$':

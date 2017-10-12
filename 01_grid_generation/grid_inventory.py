@@ -196,18 +196,22 @@ class GridInventory(object):
         print "Converting table.."
         arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
         arcpy.DeleteField_management(self.gridded_inventory, "NULL_FIELD")
-		
+
         pp.finish()
 
-    def exportInventory(self, inventory_raster_out, resolution):
+    def exportInventory(self, inventory_raster_out, resolution, reportingIndicators):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         print "\tExporting inventory to raster..."
         arcpy.env.overwriteOutput = True
+        reporting_indicators = reportingIndicators.getIndicators()
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": self.inventory.getFieldNames()["age"],
             "species": self.inventory.getFieldNames()["species"]
         }
+        for ri in reporting_indicators:
+            if reporting_indicators[ri]==None:
+                fields.update({ri:ri})
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)
             file_path = os.path.join(inventory_raster_out, "{}.tif".format(classifier_name))

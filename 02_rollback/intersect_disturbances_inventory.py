@@ -38,7 +38,7 @@ class IntersectDisturbancesInventory(object):
         self.disturbances_layer = r"in_memory\disturbances_layer"
         self.disturbances_layer2 = r"in_memory\disturbances_layer2"
         self.inventory_layer3 = r"in_memory\inventory_layer3"
-        self.TSABoundary_layer = r"in_memory\TSABoundary_layer"
+        self.SpBoundary_layer = r"in_memory\SpBoundary_layer"
 
     def runIntersectDisturbancesInventory(self):
         self.StudyArea = self.spatialBoundaries.getAreaFilter()["code"]
@@ -63,7 +63,6 @@ class IntersectDisturbancesInventory(object):
         self.disturbances = r"{}\MergedDisturbances".format(self.inv_workspace)
         self.temp_overlay = r"{}\temp_DisturbedInventory".format(self.inv_workspace)
         self.output = r"{}\DisturbedInventory".format(self.inv_workspace)
-        self.spatial_boundaries = self.spatialBoundaries.getPathFMU()
 
         tasks = [
             lambda:self.addFields(),
@@ -108,7 +107,7 @@ class IntersectDisturbancesInventory(object):
         StudyArea_whereClause = '{} {} {}'.format(arcpy.AddFieldDelimiters(self.spatial_boundaries, self.studyArea_fieldName),
             self.studyAreaOperator, self.StudyArea)
         # Selecting Study area..."
-        arcpy.Select_analysis(self.spatial_boundaries, self.TSABoundary_layer, StudyArea_whereClause)
+        arcpy.Select_analysis(self.spatial_boundaries, self.SpBoundary_layer, StudyArea_whereClause)
         # Clipping merged disturbance to study area...
         arcpy.MakeFeatureLayer_management(self.disturbances, self.disturbances_layer)
         pp.finish()
