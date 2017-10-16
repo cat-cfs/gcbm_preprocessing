@@ -152,6 +152,7 @@ class ProjectedDisturbancesPlaceholder(object):
         if fire_areaValue>0:
             fire_proj_dist_temp = "fire_proj_dist_temp"
             fire_proj_dist_temp1 = "fire_proj_dist_temp1"
+            arcpy.CreateFeatureclass_management(self.outLocation, fire_proj_dist_temp, "", "inventory_gridded_1990","","","inventory_gridded_1990")
             for year in self.year_range:
             	arcpy.SubsetFeatures_ga(in_features="inventory_gridded_1990", out_training_feature_class=r"{}\{}".format(self.outLocation,fire_proj_dist_temp1), out_test_feature_class="", size_of_training_dataset=fire_areaValue, subset_size_units="ABSOLUTE_VALUE")
                 arcpy.AddField_management(fire_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
@@ -197,7 +198,7 @@ class ProjectedDisturbancesPlaceholder(object):
             #append disturbances
             arcpy.Append_management(harvest_proj_dist_temp, projected_disturbances)
             arcpy.Delete_management(harvest_proj_dist_temp1)
-            
+
         else:
             logging.info("No projected harvest was generated because no historic harvest was found.")
 
