@@ -10,11 +10,12 @@ from exceptions import IOError
 
 class VectorLayer(Layer):
 
-    def __init__(self, name, path, attributes, raw=False, nodata_value=-1, data_type=None):
+    def __init__(self, name, path, attributes, raw=False, nodata_value=-1, data_type=None, layer=None):
         self._data_type = data_type
         self._nodata_value = nodata_value
         self._name = name
         self._path = path
+        self._layer = layer
         self._raw = raw
         self._id_attribute = "value_id" if not raw else attributes.name
         self._attribute_table = {}
@@ -53,7 +54,8 @@ class VectorLayer(Layer):
             os.makedirs(tmp_dir)
 
         reproj_path = os.path.join(tmp_dir, self._make_name(".shp"))
-        gdal.VectorTranslate(reproj_path, self._path, dstSRS=srs, reproject=True)
+        gdal.VectorTranslate(reproj_path, self._path, dstSRS=srs, reproject=True,
+							 layers=[self._layer] if self._layer else None)
 
         if not self._raw:
             self._build_attribute_table(reproj_path, self._nodata_value)
@@ -63,7 +65,7 @@ class VectorLayer(Layer):
                        xRes=min_pixel_size, yRes=min_pixel_size,
                        attribute=self._id_attribute,
                        noData=self._nodata_value,
-                       creationOptions=["COMPRESS=DEFLATE"],
+                       creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"],
                        outputBounds=bounds,
                        where="{} <> {}".format(self._id_attribute, self._nodata_value))
 
@@ -77,7 +79,7 @@ class VectorLayer(Layer):
             else self.best_fit_data_type(self._get_min_max(tmp_raster_path))
 
         gdal.Translate(raster_path, tmp_raster_path, outputType=output_type,
-                       creationOptions=["COMPRESS=DEFLATE"])
+                       creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
 
         return RasterLayer(raster_path, self.attributes, self._attribute_table)
 
