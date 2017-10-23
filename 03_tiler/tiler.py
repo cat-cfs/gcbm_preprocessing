@@ -12,6 +12,7 @@ import logging
 import shutil
 
 from projected_disturbances_placeholder import ProjectedDisturbancesPlaceholder
+from generate_historic_slashburn import GenerateSlashburn
 
 from mojadata.boundingbox import BoundingBox
 from mojadata.tiler2d import Tiler2D
@@ -73,7 +74,7 @@ class Tiler(object):
 
         for attr in self.spatial_boundaries.getAttributes():
             attr_field = self.spatial_boundaries.getAttrField(attr)
-            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathPSPU(),
+            self.layers.append(VectorLayer(attr, self.spatial_boundaries.getPathRI(),
                 Attribute(attr_field)))
             general_lyrs.append(attr)
 
@@ -144,7 +145,7 @@ class Tiler(object):
             # Assume filenames are like "Wildfire_1990.shp", "Wildfire_NBAC_1991.shp"
             # i.e. the last 4 characters before the extension are the year.
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-            year = file_name_no_ext[-4:]
+            year = int(file_name_no_ext[-4:])
             if year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
@@ -156,15 +157,29 @@ class Tiler(object):
                             age_after=0)))
         pp.finish()
 
-    def processHistoricHarvestDisturbances(self, dist):
+    def processHistoricHarvestDisturbances(self, dist, sb_percent):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        cutblock_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
-        for year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
+        harvest_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
+        year_range = range(self.rollback_range[1]+1, self.historic_range[1]+1)
+        if len(year_range)>0:
+            sb = GenerateSlashburn(self.ProgressPrinter)
+            sb_shp = sb.generateSlashburn(self.inventory, harvest_shp, "HARV_YR", year_range, sb_percent)
+
+        for year in year_range:
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("harvest_{}".format(year), cutblock_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
+                VectorLayer("harvest_{}".format(year), harvest_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
                 year=year,
                 disturbance_type="Clearcut harvesting with salvage",
+                transition=TransitionRule(
+                    regen_delay=0,
+                    age_after=0)))
+            self.layers.append(DisturbanceLayer(
+                self.rule_manager,
+                # Not sure why v != yr works instead of v == yr ..
+                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v != yr)),
+                year=year,
+                disturbance_type="SlashBurning",
                 transition=TransitionRule(
                     regen_delay=0,
                     age_after=0)))
@@ -186,7 +201,7 @@ class Tiler(object):
         for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
             year = int(file_name_no_ext[-4:])
-            if year in range(self.historic_range[0], self.historic_range[1]+1):
+            if year in range(self.historic_range[0], self.future_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
                     VectorLayer("insect_{}".format(year), file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),

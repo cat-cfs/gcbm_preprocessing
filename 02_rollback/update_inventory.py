@@ -213,13 +213,15 @@ class RollbackDistributor(object):
 
 
 class updateInvRollback(object):
-    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, ProgressPrinter):
+    def __init__(self, inventory, rollbackInvOut, rollbackDisturbances, rollback_range, resolution, sb_percent, reportingIndicators, ProgressPrinter):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
         self.rollbackDisturbanceOutput = rollbackDisturbances
         self.rasterOutput = rollbackInvOut
         self.resolution = resolution
+        self.sb_percent = sb_percent
+        self.reporting_indicators = reportingIndicators.getIndicators()
 
         #data
         self.gridded_inventory = "inventory_gridded"
@@ -251,7 +253,7 @@ class updateInvRollback(object):
             lambda:self.remergeDistPolyInv(),
             lambda:self.makeLayers2(),
             lambda:self.rollbackAgeNonDistStands(),
-            lambda:self.makeSlashburn(),
+            lambda:self.generateSlashburn(),
             lambda:self.exportRollbackDisturbances(),
             lambda:self.exportRollbackInventory()
         ]
@@ -293,12 +295,12 @@ class updateInvRollback(object):
             cur.updateRow(row)
         pp.finish()
 
-    def makeSlashburn(self):
+    def generateSlashburn(self):
         year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
         # print "Start of slashburn processing..."
         arcpy.CheckOutExtension("GeoStats")
-        PercSBofCC = 50
+        PercSBofCC = self.sb_percent
         arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
         expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
         logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
@@ -341,9 +343,11 @@ class updateInvRollback(object):
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": self.inventory.getFieldNames()["rollback_age"],
-            "species": self.inventory.getFieldNames()["species"],
-            "THLB": self.inventory.getFieldNames()["THLB"]
+            "species": self.inventory.getFieldNames()["species"]
         }
+        for ri in self.reporting_indicators:
+            if self.reporting_indicators[ri]==None:
+                fields.update({ri:ri})
         for classifier_name in classifier_names:
             logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory.getWorkspace(),self.RolledBackInventory)))
             field_name = self.inventory.getClassifierAttr(classifier_name)

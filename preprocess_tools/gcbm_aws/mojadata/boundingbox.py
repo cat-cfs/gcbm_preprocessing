@@ -62,7 +62,7 @@ class BoundingBox(object):
                                 math.floor(bounds["lowerRight"][1]),
                                 math.ceil(bounds["lowerRight"][0]),
                                 math.ceil(bounds["upperLeft"][1])),
-                  creationOptions=["COMPRESS=DEFLATE"])
+                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
 
     def _warp(self, in_path, out_path, pixel_size):
         gdal.Warp(out_path, in_path,
@@ -74,4 +74,4 @@ class BoundingBox(object):
                                 self._info["cornerCoordinates"]["lowerRight"][0],
                                 self._info["cornerCoordinates"]["upperLeft"][1]),
                   targetAlignedPixels=True,
-                  creationOptions=["COMPRESS=DEFLATE"])
+                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])

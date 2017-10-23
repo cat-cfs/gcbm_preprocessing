@@ -57,8 +57,8 @@ class GridInventory(object):
             lambda:self.spatialJoin(),
             lambda:self.makeFeatureLayer(),
             lambda:self.selectGreaterThanZeroAgeStands(),
-            spatial_join,
-            lambda:self.exportGriddedInvDBF()
+            spatial_join
+            # lambda:self.exportGriddedInvDBF()
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(tasks)).start()
         for t in tasks:
@@ -163,48 +163,55 @@ class GridInventory(object):
         self.inventory.setLayerName(self.gridded_inventory)
         arcpy.env.workspace = self.inventory.getWorkspace()
         arcpy.env.overwriteOutput = True
-        fmd = {}
-        for i in range(len(self.inventory.getClassifiers())+4):
-            fmd.update({i:arcpy.FieldMap()})
-        fmd[0].addInputField(self.gridded_inventory, self.inventory.getFieldNames()['age'])
-
-        logging.info('Adding and calculating theme fields...')
-        arcpy.AddField_management(self.gridded_inventory, "THEME1", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        arcpy.AddField_management(self.gridded_inventory, "THEME4", "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "!{0}! + \"_\" + str(!{1}!).upper() + \"_\" + str(!{2}!).upper()".format(
-        #     self.inventory.getFieldNames()['ownership'],self.inventory.getFieldNames()['THLB'],self.inventory.getFieldNames()['FMLB']), "PYTHON_9.3", "")
-        # arcpy.CalculateField_management(self.gridded_inventory, "THEME1", "", "PYTHON_9.3", "")
-        arcpy.CalculateField_management(self.gridded_inventory, "THEME4", "!CELL_ID!", "PYTHON_9.3", "")
-        for i, classifier in enumerate(self.inventory.getClassifiers()):
-            if i>1: i+=1
-            arcpy.AddField_management(self.gridded_inventory, "THEME{}".format(i+2), "TEXT", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
-            arcpy.CalculateField_management(self.gridded_inventory, "THEME{}".format(i+2), "!{}!".format(self.inventory.getClassifierAttr(classifier)), "PYTHON_9.3", "")
-
-        fmd[1].addInputField("inventory_gridded", 'THEME1')
-        for i, classifier in enumerate(self.inventory.getClassifiers()):
-            fmd[i+2].addInputField(self.gridded_inventory, 'THEME{}'.format(i+2))
-
-        fmd[len(fmd)-2].addInputField("inventory_gridded", 'THEME4')
-        fmd[len(fmd)-1].addInputField(self.gridded_inventory, 'Shape_Area')
 
         fms = arcpy.FieldMappings()
-        for fm in fmd.values():
+        output_fields = ['age','X','Y','THEME1','THEME2','THEME3','THEME4','Shape_Area']
+        inv_fields = [field.name for field in arcpy.ListFields(self.gridded_inventory)]
+        if "NULL_FIELD" not in inv_fields:
+            arcpy.AddField_management(self.gridded_inventory, "NULL_FIELD", "TEXT", "", "", "10", "", "NULLABLE", "NON_REQUIRED", "")
+
+        for i, output_field in enumerate(output_fields):
+            fm = arcpy.FieldMap()
+            if output_field == 'THEME4':
+                input_field = 'CELL_ID'
+            else:
+                try:
+                    input_field = self.inventory.getFieldNames()[output_field]
+                except KeyError:
+                    if output_field in inv_fields:
+                        input_field = output_field
+                    else:
+                        input_field = None
+            if input_field != None:
+                fm.addInputField(self.gridded_inventory, input_field)
+            else:
+                fm.addInputField(self.gridded_inventory, "NULL_FIELD")
+            logging.info('\t\t{} -> {}'.format(input_field, output_field))
+
+            outf = fm.outputField
+            outf.name = output_field
+            fm.outputField = outf
+
             fms.addFieldMap(fm)
+        print "Converting table.."
         arcpy.TableToTable_conversion(self.gridded_inventory, self.output_dbf_dir, "inventory.dbf", "", fms)
+        arcpy.DeleteField_management(self.gridded_inventory, "NULL_FIELD")
+
         pp.finish()
 
-    def exportInventory(self, inventory_raster_out, resolution):
+    def exportInventory(self, inventory_raster_out, resolution, reportingIndicators):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         print "\tExporting inventory to raster..."
         arcpy.env.overwriteOutput = True
+        reporting_indicators = reportingIndicators.getIndicators()
         classifier_names = self.inventory.getClassifiers()
         fields = {
             "age": self.inventory.getFieldNames()["age"],
-            "species": self.inventory.getFieldNames()["species"],
-            # "ownership": self.inventory.getFieldNames()["ownership"],
-            # "FMLB": self.inventory.getFieldNames()["FMLB"],
-            "THLB": self.inventory.getFieldNames()["THLB"]
+            "species": self.inventory.getFieldNames()["species"]
         }
+        for ri in reporting_indicators:
+            if reporting_indicators[ri]==None:
+                fields.update({ri:ri})
         for classifier_name in classifier_names:
             field_name = self.inventory.getClassifierAttr(classifier_name)
             file_path = os.path.join(inventory_raster_out, "{}.tif".format(classifier_name))

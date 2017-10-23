@@ -69,7 +69,7 @@ class VectorLayer(Layer):
                        xRes=min_pixel_size, yRes=min_pixel_size,
                        attribute=self._id_attribute,
                        noData=self._nodata_value,
-                       creationOptions=["COMPRESS=DEFLATE"],
+                       creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"],
                        outputBounds=bounds,
                        where=nodata_filter)
 
@@ -83,7 +83,7 @@ class VectorLayer(Layer):
             else self.best_fit_data_type(self._get_min_max(tmp_raster_path))
 
         gdal.Translate(raster_path, tmp_raster_path, outputType=output_type,
-                       creationOptions=["COMPRESS=DEFLATE"])
+                       creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
 
         return RasterLayer(raster_path, self.attributes, self._attribute_table)
 

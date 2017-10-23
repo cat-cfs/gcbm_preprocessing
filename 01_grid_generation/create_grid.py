@@ -48,7 +48,7 @@ class Fishnet(object):
 		logging.info('Creating fishnet grid with {0}x{0} degree cell size in box bounded by ({1},{2})({3},{4})'.format(
 			self.resolution_degrees, self.blc_x, self.blc_y, self.trc_x, self.trc_y))
 		tasks = [
-			lambda:arcpy.CreateFishnet_management(self.XYgrid, self.origin_coord, self.y_axis_coord, self.resolution_degrees, self.resolution_degrees,
+			lambda:arcpy.CreateFishnet_management(self.XYgrid_temp, self.origin_coord, self.y_axis_coord, self.resolution_degrees, self.resolution_degrees,
 				"", "", self.corner_coord, "NO_LABELS", self.inventory_template, "POLYGON"),
 			lambda:self._createFields(),
 			lambda:self._calculateFields()
@@ -77,7 +77,8 @@ class Fishnet(object):
 			"Y":"DOUBLE",
 			"X_ID":"SHORT",
 			"Y_ID":"SHORT",
-			"CELL_ID":"TEXT"
+			"CELL_ID":"TEXT",
+			"Shape_Area_Ha":"DOUBLE"
 		}
 
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)
@@ -85,8 +86,8 @@ class Fishnet(object):
 
 		for field_name in field_name_types:
 			field_type = field_name_types[field_name]
-			field_length = "25" if field_type.upper()=="TEXT" else ""
-			arcpy.AddField_management(self.XYgrid, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", "")
+			field_length = "10" if field_type.upper()=="TEXT" else ""
+			arcpy.AddField_management(self.XYgrid_temp, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", "")
 			pp.updateProgressP()
 
 		pp.finish()
@@ -96,17 +97,16 @@ class Fishnet(object):
 		y_middle_coord = self.blc_y + (self.resolution_degrees/2) -0.00001 #Center of bottom left tile y coordinate - 1
 
 		functions = [
-			lambda:arcpy.MakeFeatureLayer_management(self.XYgrid, 'XYgrid_intersect'),
+			lambda:arcpy.MakeFeatureLayer_management(self.XYgrid_temp, 'XYgrid_intersect'),
+			# Only calculates grid cells that are intersecting with inventory
 			lambda:arcpy.SelectLayerByLocation_management('XYgrid_intersect', 'INTERSECT', self.inventory.getFilter(), "", "NEW_SELECTION", "NOT_INVERT"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "X", "!SHAPE.CENTROID.X!", "PYTHON_9.3"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "Y", "!SHAPE.CENTROID.Y!", "PYTHON_9.3"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "X_ID", "int(round((!X! - {})*1000, 0))".format(x_middle_coord), "PYTHON_9.3"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "Y_ID", "int(round((!Y! - {})*1000, 0))".format(y_middle_coord), "PYTHON_9.3"),
 			lambda:arcpy.CalculateField_management('XYgrid_intersect', "CELL_ID", "str(!X_ID!)+'_'+str(!Y_ID!)", "PYTHON_9.3"),
-			lambda:arcpy.SaveToLayerFile_management('XYgrid_intersect', self.XYgrid)
-			# lambda:arcpy.CalculateField_management(self.XYgrid, "CELL_ID",
-			# 	"str(int(round((!SHAPE.CENTROID.X! - {})*1000, 0)))+'_'+str(int(round((!SHAPE.CENTROID.Y! - {})*1000, 0)))".format(
-			# 		x_middle_coord, y_middle_coord), "PYTHON_9.3", "")
+			lambda:arcpy.CalculateField_management('XYgrid_intersect', "Shape_Area_Ha", "!shape.area@hectares!", "PYTHON_9.3"),
+			lambda:arcpy.CopyFeatures_management('XYgrid_intersect', self.XYgrid)
 		]
 
 		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(functions), 1).start()

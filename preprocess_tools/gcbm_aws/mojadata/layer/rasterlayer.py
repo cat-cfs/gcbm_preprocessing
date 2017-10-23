@@ -76,7 +76,7 @@ class RasterLayer(Layer):
                   xRes=pixel_size, yRes=pixel_size,
                   outputType=output_type,
                   dstNodata=self._nodata_value,
-                  creationOptions=["COMPRESS=DEFLATE"])
+                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
 
         return RasterLayer(output_path, self._attributes, self._attribute_table)
 

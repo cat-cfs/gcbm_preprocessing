@@ -15,7 +15,7 @@ def cleanup():
                 os.unlink(file)
 
             file_dir = os.path.abspath(os.path.dirname(file))
-            if not os.listdir(file_dir):
+            if os.path.isdir(file_dir) and not os.listdir(file_dir):
                 os.rmdir(file_dir)
 
         for dir in _temp_dirs:
