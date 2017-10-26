@@ -19,6 +19,10 @@ class CompressingTiler2D(object):
     def tile(self, layers):
         for layer in layers:
             print "Processing layer: {}".format(layer.name)
+            if layer.is_empty():
+                print "  Layer is empty - skipping."
+                continue
+
             layer = self._bounding_box.normalize(
                 layer,
                 self._block_extent,

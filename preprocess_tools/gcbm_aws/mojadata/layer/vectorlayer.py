@@ -87,6 +87,12 @@ class VectorLayer(Layer):
 
         return RasterLayer(raster_path, self.attributes, self._attribute_table)
 
+    def is_empty(self):
+        shapefile = ogr.Open(self._path, 1)
+        layer = shapefile.GetLayer(0)
+        
+        return layer.GetNextFeature() is None
+
     def _get_min_max(self, raster_path):
         info = gdal.Info(raster_path, format="json", computeMinMax=True)
         if not "computedMin" in info["bands"][0]:

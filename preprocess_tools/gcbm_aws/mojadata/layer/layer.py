@@ -52,6 +52,9 @@ class Layer(object):
         else:
             return int(value)
 
+    def is_empty(self):
+        return False
+
     '''
     Rasterizes a layer with specified settings.
 

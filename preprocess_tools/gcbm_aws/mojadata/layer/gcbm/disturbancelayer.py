@@ -61,6 +61,9 @@ class DisturbanceLayer(Layer):
 
         return attr_table
 
+    def is_empty(self):
+        return self._layer.is_empty()
+
     def as_raster_layer(self, srs, min_pixel_size, block_extent,
                         requested_pixel_size=None, data_type=None,
                         bounds=None):
