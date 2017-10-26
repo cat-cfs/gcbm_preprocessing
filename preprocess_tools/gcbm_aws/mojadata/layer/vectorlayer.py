@@ -89,7 +89,7 @@ class VectorLayer(Layer):
 
     def is_empty(self):
         shapefile = ogr.Open(self._path, 1)
-        layer = shapefile.GetLayer(0)
+        layer = shapefile.GetLayer(self._layer or 0)
         
         return layer.GetNextFeature() is None
 
