@@ -8,17 +8,17 @@ class GenerateSlashburn(object):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
 
-    def generateSlashburn(self, inventory, harvest_shp, year_field, year_range, sb_percent):
+    def generateSlashburn(self, inventory, harvest_poly_shp, year_field, year_range, sb_percent):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
         arcpy.CheckOutExtension("GeoStats")
         PercSBofCC = sb_percent
 
         logging.info('Prepping temporary workspace')
-        temp_gdb = os.path.join(os.path.dirname(harvest_shp),"slashburn_temp.gdb")
+        temp_gdb = os.path.join(os.path.dirname(harvest_poly_shp),"slashburn_temp.gdb")
         if os.path.exists(temp_gdb):
             arcpy.Delete_management(temp_gdb)
-        arcpy.CreateFileGDB_management(os.path.dirname(harvest_shp), "slashburn_temp.gdb")
-        arcpy.env.workspace = os.path.join(os.path.dirname(harvest_shp),"slashburn_temp.gdb")
+        arcpy.CreateFileGDB_management(os.path.dirname(harvest_poly_shp), "slashburn_temp.gdb")
+        arcpy.env.workspace = os.path.join(os.path.dirname(harvest_poly_shp),"slashburn_temp.gdb")
         arcpy.env.overwriteOutput = True
 
         logging.info('Copying MergedDisturbances from inventory workspace')
@@ -47,7 +47,7 @@ class GenerateSlashburn(object):
             arcpy.SelectLayerByAttribute_management("temp_harvest", "CLEAR_SELECTION")
             pp.updateProgressP()
 
-        sb_shp = os.path.join(os.path.dirname(harvest_shp), "slashburn.shp")
+        sb_shp = os.path.join(os.path.dirname(harvest_poly_shp), "slashburn.shp")
         if arcpy.Exists(sb_shp):
             arcpy.Delete_management(sb_shp)
         logging.info('Saving slashburn to {}'.format(sb_shp))

@@ -55,6 +55,8 @@ class SpatialInputs(object):
 		arcpy.env.workspace = workspace
 		arcpy.env.overwriteOutput = True
 		arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
+		if int(arcpy.GetCount_management('clip_to').getOutput(0)) < 1:
+			raise Exception('Invalid clip feature. No selection from filter')
 		for layer in self.scan_for_layers():
 			arcpy.MakeFeatureLayer_management(layer, 'clip')
 			arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")

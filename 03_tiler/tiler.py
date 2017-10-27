@@ -15,7 +15,7 @@ from projected_disturbances_placeholder import ProjectedDisturbancesPlaceholder
 from generate_historic_slashburn import GenerateSlashburn
 
 from mojadata.boundingbox import BoundingBox
-from mojadata.tiler2d import Tiler2D
+from mojadata.compressingtiler2d import CompressingTiler2D
 from mojadata.layer.vectorlayer import VectorLayer
 from mojadata.layer.rasterlayer import RasterLayer
 from mojadata.layer.gcbm.disturbancelayer import DisturbanceLayer
@@ -54,7 +54,7 @@ class Tiler(object):
         cwd = os.getcwd()
         os.chdir(output_dir)
         self.bbox = BoundingBox(RasterLayer(self.inventory.getRasters()[0].getPath()), pixel_size=self.resolution)
-        self.tiler = Tiler2D(self.bbox, use_bounding_box_resolution=True)
+        self.tiler = CompressingTiler2D(self.bbox, use_bounding_box_resolution=True)
         os.chdir(cwd)
         pp.finish()
 
@@ -86,29 +86,20 @@ class Tiler(object):
         return general_lyrs
 
 
-    def processRollbackDisturbances(self):
-        rollback_dist_lookup = {
-            1: "Wild Fires",
-            2: "Clearcut harvesting with salvage",
-            13: "SlashBurning"
-        }
-        rollback_name_lookup = {
-            1: "fire",
-            2: "harvest",
-            13: "slashburn"
-        }
+    def processRollbackDisturbances(self, dist_lookup, name_lookup):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+
         for year in range(self.rollback_range[0], self.rollback_range[1]+1):
-            for dist_code in rollback_dist_lookup:
-                label = rollback_dist_lookup[dist_code]
-                name = rollback_name_lookup[dist_code]
+            for dist_code in dist_lookup:
+                label = dist_lookup[dist_code]
+                name = name_lookup[dist_code]
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
                     VectorLayer("rollback_{}_{}".format(name, year),
                                 self.rollback_disturbances.getPath(),
                                 [
                                     Attribute("DistYEAR_n", filter=lambda v, yr=year: v == yr),
-                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=rollback_dist_lookup),
+                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=dist_lookup),
                                     Attribute("RegenDelay")
                                 ]),
                     year=year,
@@ -139,64 +130,54 @@ class Tiler(object):
     #                 regen_delay=0,
     #                 age_after=0)))
 
-    def processHistoricFireDisturbances(self, dist):
+    def processHistoricFireDisturbances(self, dist, dt):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
-            # Assume filenames are like "Wildfire_1990.shp", "Wildfire_NBAC_1991.shp"
-            # i.e. the last 4 characters before the extension are the year.
-            file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
-            year = int(file_name_no_ext[-4:])
-            if year in range(self.rollback_range[1]+1, self.historic_range[1]+1):
-                self.layers.append(DisturbanceLayer(
-                    self.rule_manager,
-                    VectorLayer("fire_{}".format(year), file_name, Attribute("Shape_Leng")),
-                    year=year,
-                        disturbance_type="Wild Fires",
-                        transition=TransitionRule(
-                            regen_delay=0,
-                            age_after=0)))
+
+        _, rollback_end_year = self.rollback_range
+        _, historic_end_year = self.historic_range
+        workspace = self.inventory.getWorkspace()
+        for year in range(rollback_end_year+1, historic_end_year+1):
+            self.layers.append(DisturbanceLayer(
+                self.rule_manager,
+                # The [:4] is specifically to deal with the case of NBAC where the year is followed by the date and time
+                VectorLayer("fire_{}".format(year), workspace, Attribute(dist.getYearField(), filter=lambda v, yr=year: str(v)[:4] == str(yr)), layer='MergedDisturbances'),
+                year=year,
+                disturbance_type=dt,
+                transition=TransitionRule(
+                    regen_delay=0,
+                    age_after=0)))
         pp.finish()
 
-    def processHistoricHarvestDisturbances(self, dist, sb_percent):
+    def processHistoricHarvestDisturbances(self, dist, sb_percent, cc_dt, sb_dt):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        harvest_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
+        harvest_poly_shp = self.scan_for_layers(dist.getWorkspace(), dist.getFilter())[0]
         year_range = range(self.rollback_range[1]+1, self.historic_range[1]+1)
+        workspace = self.inventory.getWorkspace()
         if len(year_range)>0:
             sb = GenerateSlashburn(self.ProgressPrinter)
-            sb_shp = sb.generateSlashburn(self.inventory, harvest_shp, "HARV_YR", year_range, sb_percent)
+            sb_shp = sb.generateSlashburn(self.inventory, harvest_poly_shp, dist.getYearField(), year_range, sb_percent)
 
         for year in year_range:
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("harvest_{}".format(year), harvest_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v == yr)),
+                VectorLayer("harvest_{}".format(year), workspace, Attribute(dist.getYearField(), filter=lambda v, yr=year: str(v) == str(yr)), layer='MergedDisturbances'),
                 year=year,
-                disturbance_type="Clearcut harvesting with salvage",
+                disturbance_type=cc_dt,
                 transition=TransitionRule(
                     regen_delay=0,
                     age_after=0)))
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                # Not sure why v != yr works instead of v == yr ..
-                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute("HARV_YR", filter=lambda v, yr=year: v != yr)),
+                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute(dist.getYearField(), filter=lambda v, yr=year: str(v) == str(yr))),
                 year=year,
-                disturbance_type="SlashBurning",
+                disturbance_type=sb_dt,
                 transition=TransitionRule(
                     regen_delay=0,
                     age_after=0)))
         pp.finish()
 
-    def processHistoricInsectDisturbances(self, dist):
+    def processHistoricInsectDisturbances(self, dist, attr, dist_type_lookup):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
-        mpb_shp_severity_to_dist_type_lookup = {
-            "V": "Mountain Pine Beetle - Very Severe Impact",
-            "S": "Mountain Pine Beetle - Severe Impact",
-            "M": "Mountain Pine Beetle - Moderate Impact",
-            "L": "Mountain Pine Beetle - Low Impact",
-            "4": "Mountain Pine Beetle - Very Severe Impact",
-            "3": "Mountain Pine Beetle - Severe Impact",
-            "2": "Mountain Pine Beetle - Moderate Impact",
-            "1": "Mountain Pine Beetle - Low Impact"
-        }
 
         for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
             file_name_no_ext = os.path.basename(os.path.splitext(file_name)[0])
@@ -204,9 +185,9 @@ class Tiler(object):
             if year in range(self.historic_range[0], self.future_range[1]+1):
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    VectorLayer("insect_{}".format(year), file_name, Attribute("Severity", substitutions=mpb_shp_severity_to_dist_type_lookup)),
+                    VectorLayer("insect_{}".format(year), file_name, Attribute(attr, substitutions=dist_type_lookup)),
                     year=year,
-                    disturbance_type=Attribute("Severity"),
+                    disturbance_type=Attribute(attr),
                     transition=TransitionRule(
                         regen_delay=0,
                         age_after=-1)))
