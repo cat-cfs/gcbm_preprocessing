@@ -2,6 +2,7 @@
 import gdal
 import osr
 import math
+from gcbm_aws.mojadata.config import *
 from gdalconst import *
 from gcbm_aws.mojadata import cleanup
 import tempfile
@@ -51,7 +52,7 @@ class BoundingBox(object):
     def _processBoundingBox(self, epsg, pixel_size):
         dest_srs = osr.SpatialReference()
         dest_srs.ImportFromEPSG(epsg)
-        self._layer = self._layer.as_raster_layer(dest_srs, pixel_size, 1.0)
+        self._layer = self._layer.as_raster_layer(dest_srs, pixel_size, 0.1)
 
     def _pad(self, in_path, out_path, pixel_size):
         bounds = gdal.Info(in_path, format="json")["cornerCoordinates"]
@@ -62,7 +63,9 @@ class BoundingBox(object):
                                 math.floor(bounds["lowerRight"][1]),
                                 math.ceil(bounds["lowerRight"][0]),
                                 math.ceil(bounds["upperLeft"][1])),
-                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
+                  warpMemoryLimit=1024 * 1024 * 512,
+                  options=["NUM_THREADS=ALL_CPUS"],
+                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES", "NUM_THREADS=ALL_CPUS"])
 
     def _warp(self, in_path, out_path, pixel_size):
         gdal.Warp(out_path, in_path,
@@ -74,4 +77,6 @@ class BoundingBox(object):
                                 self._info["cornerCoordinates"]["lowerRight"][0],
                                 self._info["cornerCoordinates"]["upperLeft"][1]),
                   targetAlignedPixels=True,
-                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
+                  warpMemoryLimit=1024 * 1024 * 512,
+                  options=["NUM_THREADS=ALL_CPUS"],
+                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES", "NUM_THREADS=ALL_CPUS"])

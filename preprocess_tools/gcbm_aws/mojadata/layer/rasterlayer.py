@@ -1,5 +1,6 @@
 ﻿import os
 import gdal
+from gcbm_aws.mojadata.config import *
 from gdalconst import *
 from layer import Layer
 from gcbm_aws.mojadata import cleanup
@@ -47,9 +48,15 @@ class RasterLayer(Layer):
             os.makedirs(tmp_dir)
 
         warp_path = os.path.join(tmp_dir, "warp_{}".format(self._name))
-        gdal.Warp(warp_path, self._path, dstSRS=srs,
-                  xRes=requested_pixel_size, yRes=requested_pixel_size,
-                  creationOptions=["COMPRESS=DEFLATE"], outputBounds=bounds)
+        gdal.Warp(warp_path, self._path,
+                  multithread=True,
+                  dstSRS=srs,
+                  xRes=requested_pixel_size or min_pixel_size,
+                  yRes=requested_pixel_size or min_pixel_size,
+                  warpMemoryLimit=1024 * 1024 * 512,
+                  options=GDAL_OPTIONS,
+                  creationOptions=GDAL_CREATION_OPTIONS,
+                  outputBounds=bounds)
 
         output_path = os.path.join(tmp_dir, self._name)
         is_float = "Float" in self.data_type
@@ -76,7 +83,9 @@ class RasterLayer(Layer):
                   xRes=pixel_size, yRes=pixel_size,
                   outputType=output_type,
                   dstNodata=self._nodata_value,
-                  creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
+                  warpMemoryLimit=1024 * 1024 * 512,
+                  options=GDAL_OPTIONS,
+                  creationOptions=GDAL_CREATION_OPTIONS)
 
         return RasterLayer(output_path, self._attributes, self._attribute_table)
 
@@ -86,7 +95,7 @@ class RasterLayer(Layer):
 
     def _get_nearest_divisible_resolution(self, min_pixel_size, requested_pixel_size, block_extent):
         nearest_block_divisible_size = \
-            block_extent / round(block_extent / requested_pixel_size) \
+            min_pixel_size * round(min_pixel_size / requested_pixel_size) \
             if requested_pixel_size > min_pixel_size \
             else min_pixel_size
 

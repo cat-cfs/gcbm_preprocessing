@@ -1,6 +1,7 @@
 ﻿import os
 import ogr
 import gdal
+from gcbm_aws.mojadata.config import *
 from layer import Layer
 from attribute import Attribute
 from rasterlayer import RasterLayer
@@ -69,7 +70,8 @@ class VectorLayer(Layer):
                        xRes=min_pixel_size, yRes=min_pixel_size,
                        attribute=self._id_attribute,
                        noData=self._nodata_value,
-                       creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"],
+                       creationOptions=GDAL_CREATION_OPTIONS,
+                       options=GDAL_OPTIONS,
                        outputBounds=bounds,
                        where=nodata_filter)
 
@@ -82,8 +84,10 @@ class VectorLayer(Layer):
             else gdal.GDT_Float32 if is_float \
             else self.best_fit_data_type(self._get_min_max(tmp_raster_path))
 
-        gdal.Translate(raster_path, tmp_raster_path, outputType=output_type,
-                       creationOptions=["COMPRESS=DEFLATE", "BIGTIFF=YES"])
+        gdal.Translate(raster_path, tmp_raster_path,
+                       outputType=output_type,
+                       options=GDAL_OPTIONS,
+                       creationOptions=GDAL_CREATION_OPTIONS)
 
         return RasterLayer(raster_path, self.attributes, self._attribute_table)
 
