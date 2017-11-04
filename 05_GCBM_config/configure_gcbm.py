@@ -7,6 +7,7 @@ import logging
 import shutil
 from distutils.dir_util import copy_tree
 import re
+import zipfile
 
 class ConfigureGCBM(object):
     '''
@@ -55,6 +56,22 @@ class ConfigureGCBM(object):
     				pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
     				write_f.write(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
 
+    def replace_params_zip(self, read_file, replace_d):
+    	'''
+    	Copies the file (read_file) to the destination (write_file)
+    	while replacing occurrences of the input dictionary's (replace_d)
+    	keys with the corresponding dictionary values.
+    	This allows for parameterization within the read file.
+    	Parameter key words can be included in the (text based) read file
+    	and added to the dictionary 'replace' defined below to be replaced
+    	by the value upon runtime.
+    	'''
+        write_f = []
+        for line in read_file.split('\n'):
+			pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
+			write_f.append(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
+        return '\n'.join(write_f)
+
     def copyTilerOutput(self, moja_dir, tiler_scenario, scenario):
         '''
         Copies the tiled layer moja_dir from the tiler scenario to the GCBM scenario
@@ -64,25 +81,35 @@ class ConfigureGCBM(object):
         tiler_scen_out = os.path.dirname(moja_dir)
         gcbm_scen_moja_dir = os.path.join(os.path.dirname(tiler_scen_out), 'SCEN_{}'.format(scenario), os.path.basename(moja_dir))
         if os.path.exists(gcbm_scen_moja_dir):
-            shutil.rmtree(gcbm_scen_moja_dir)
-        copy_tree(moja_dir, gcbm_scen_moja_dir)
+            os.remove(gcbm_scen_moja_dir)
+        zin = zipfile.ZipFile (moja_dir, 'r')
+        zout = zipfile.ZipFile (gcbm_scen_moja_dir, 'w')
         replace_d = {'{}{} CC'.format('' if tiler_scenario.lower()=='base' else 'CBM_', tiler_scenario): 'CBM_{} CC'.format(scenario)}
-        for json_file in glob.glob(r'{}\*.json'.format(moja_dir)):
-            self.replace_params(json_file, os.path.join(gcbm_scen_moja_dir, os.path.basename(json_file)), replace_d)
+        for item in zin.infolist():
+            buffer = zin.read(item.filename)
+            if (item.filename[-5:] == '.json'):
+                buffer = self.replace_params_zip(buffer, replace_d)
+            zout.writestr(item, buffer)
+        zout.close()
+        zin.close()
+
         return gcbm_scen_moja_dir
 
 
     def getTiles(self):
         '''
-        Explores all blk files in the tiler_template_dir and extracts the tile
+        Explores all directories in the tiler_template_dir and extracts the tile
         x, y from the file name and adds to the list of tiles.
         Assumes a consistent file name format and that the tiler_template_dir
         is not None (at least one tiled disturbance layer was found).
         '''
         tiles_text = []
-        for file in glob.glob(r'{}\*'.format(self.tiler_template_dir)):
-            if os.path.basename(file).split('.')[-1]=='blk':
-                tiles_text.append(os.path.basename(file).split('.')[0].split('_moja_')[-1])
+        z = zipfile.ZipFile(self.tiler_template_dir)
+        dirs = set([os.path.dirname(file) for file in z.namelist()])
+
+        for d in dirs:
+            if d != '':
+                tiles_text.append(os.path.basename(d).split('_moja_')[-1])
         tiles = []
         for tile_text in tiles_text:
             x, y = tile_text.split('_')
@@ -104,8 +131,8 @@ class ConfigureGCBM(object):
                 logging.info('Tiler template directory found.')
                 self.tiler_template_dir = moja_dir
             basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
+            year = basename.split('_moja.zip')[0][-4:]
+            name = basename.split('_moja.zip')[0][:-5].split('_')[-1]
             name_year = '{}_{}'.format(name,year)
             if int(year) < self.activity_start_year:
                 self.provider_layers.append({
@@ -130,8 +157,8 @@ class ConfigureGCBM(object):
                 logging.info('Tiler template directory found.')
                 self.tiler_template_dir = moja_dir
             basename = os.path.basename(moja_dir)
-            year = basename.split('_moja')[0][-4:]
-            name = basename.split('_moja')[0][:-5].split('_')[-1]
+            year = basename.split('_moja.zip')[0][-4:]
+            name = basename.split('_moja.zip')[0][:-5].split('_')[-1]
             name_year = '{}_{}'.format(name,year)
             if int(year) >= self.activity_start_year:
                 if scenario != tiler_scenario:
@@ -159,35 +186,35 @@ class ConfigureGCBM(object):
         # Order: Fire, Insect, Harvest, Slashburn
 
         # fire layers
-        fire = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\fire_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.base_scenario))),
+        fire = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja.zip'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\fire_*_moja.zip'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja.zip'.format(tiler_output, self.base_scenario))),
             'fire')
         proj_fire = self.addLayerConfigNamesPostActivity(
-            glob.glob(r'{}\SCEN_{}\projected_fire_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            glob.glob(r'{}\SCEN_{}\projected_fire_*_moja.zip'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_fire', self.GCBM_scenarios[scenario], scenario)
 
         # insect layers
         insect = self.addLayerConfigNamesPreActivity(
-            glob.glob(r'{}\SCEN_{}\insect_*_moja'.format(tiler_output, self.base_scenario)),
+            glob.glob(r'{}\SCEN_{}\insect_*_moja.zip'.format(tiler_output, self.base_scenario)),
             'insect')
 
         # harvest layers
-        harvest = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\harvest_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja'.format(tiler_output, self.base_scenario))),
+        harvest = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja.zip'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\harvest_*_moja.zip'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja.zip'.format(tiler_output, self.base_scenario))),
             'harvest')
         proj_harvest = self.addLayerConfigNamesPostActivity(
-            glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja.zip'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_harvest', self.GCBM_scenarios[scenario], scenario)
 
         # slashburn layers
-        slashburn = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\slashburn_*_moja'.format(tiler_output, self.base_scenario))
-            +glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.base_scenario))),
+        slashburn = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))
+            +glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))),
             'slashburn')
         proj_slashburn = self.addLayerConfigNamesPostActivity(
-            glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja'.format(tiler_output, self.GCBM_scenarios[scenario])),
+            glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja.zip'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_slashburn', self.GCBM_scenarios[scenario], scenario)
 
         disturbance_names = [dn[0] for dn in self.layer_config_names]
@@ -205,7 +232,7 @@ class ConfigureGCBM(object):
 
         # general layers
         for name in general_lyrs:
-            moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, self.base_scenario, name)
+            moja_dir = r'{}\SCEN_{}\{}_moja.zip'.format(tiler_output, self.base_scenario, name)
             self.provider_layers.append({
                 "name": name,
                 "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
