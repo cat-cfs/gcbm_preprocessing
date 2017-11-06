@@ -82,7 +82,7 @@ class ConfigureGCBM(object):
         gcbm_scen_moja_dir = os.path.join(os.path.dirname(tiler_scen_out), 'SCEN_{}'.format(scenario), os.path.basename(moja_dir))
         if os.path.exists(gcbm_scen_moja_dir):
             os.remove(gcbm_scen_moja_dir)
-        zin = zipfile.ZipFile (moja_dir, 'r')
+        zin = zipfile.ZipFile(moja_dir, 'r')
         zout = zipfile.ZipFile (gcbm_scen_moja_dir, 'w')
         replace_d = {'{}{} CC'.format('' if tiler_scenario.lower()=='base' else 'CBM_', tiler_scenario): 'CBM_{} CC'.format(scenario)}
         for item in zin.infolist():
@@ -130,14 +130,14 @@ class ConfigureGCBM(object):
             if self.tiler_template_dir == None:
                 logging.info('Tiler template directory found.')
                 self.tiler_template_dir = moja_dir
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja.zip')[0][-4:]
-            name = basename.split('_moja.zip')[0][:-5].split('_')[-1]
+            basename = os.path.basename(moja_dir).split('.')[0]
+            year = basename.split('_moja')[0][-4:]
+            name = basename.split('_moja')[0][:-5].split('_')[-1]
             name_year = '{}_{}'.format(name,year)
             if int(year) < self.activity_start_year:
                 self.provider_layers.append({
                     "name": name_year,
-                    "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
+                    "layer_path": os.path.join('$dir',os.path.relpath(moja_dir.split('.')[0],self.tiler_output)),
                     "layer_prefix": basename
                 })
                 self.layer_config_names.append([name_year,name_year])
@@ -156,16 +156,16 @@ class ConfigureGCBM(object):
             if self.tiler_template_dir == None:
                 logging.info('Tiler template directory found.')
                 self.tiler_template_dir = moja_dir
-            basename = os.path.basename(moja_dir)
-            year = basename.split('_moja.zip')[0][-4:]
-            name = basename.split('_moja.zip')[0][:-5].split('_')[-1]
+            basename = os.path.basename(moja_dir).split('.')[0]
+            year = basename.split('_moja')[0][-4:]
+            name = basename.split('_moja')[0][:-5].split('_')[-1]
             name_year = '{}_{}'.format(name,year)
             if int(year) >= self.activity_start_year:
                 if scenario != tiler_scenario:
                     moja_dir = self.copyTilerOutput(moja_dir, tiler_scenario, scenario)
                 self.provider_layers.append({
                     "name": name_year,
-                    "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
+                    "layer_path": os.path.join('$dir',os.path.relpath(moja_dir.split('.')[0],self.tiler_output)),
                     "layer_prefix": basename
                 })
                 self.layer_config_names.append([name_year,name_year])
@@ -232,7 +232,7 @@ class ConfigureGCBM(object):
 
         # general layers
         for name in general_lyrs:
-            moja_dir = r'{}\SCEN_{}\{}_moja.zip'.format(tiler_output, self.base_scenario, name)
+            moja_dir = r'{}\SCEN_{}\{}_moja'.format(tiler_output, self.base_scenario, name)
             self.provider_layers.append({
                 "name": name,
                 "layer_path": os.path.join('$dir',os.path.relpath(moja_dir,self.tiler_output)),
