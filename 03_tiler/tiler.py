@@ -164,7 +164,7 @@ class Tiler(object):
         for year in year_range:
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("harvest_{}".format(year), workspace, Attribute(dist.getYearField(), filter=ValueFilter(year)), layer='MergedDisturbances'),
+                VectorLayer("harvest_{}".format(year), workspace, Attribute(dist.getYearField(), filter=ValueFilter(year, True)), layer='MergedDisturbances'),
                 year=year,
                 disturbance_type=cc_dt,
                 transition=TransitionRule(
@@ -172,7 +172,7 @@ class Tiler(object):
                     age_after=0)))
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute(dist.getYearField(), filter=ValueFilter(year))),
+                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute(dist.getYearField(), filter=ValueFilter(year, True))),
                 year=year,
                 disturbance_type=sb_dt,
                 transition=TransitionRule(
