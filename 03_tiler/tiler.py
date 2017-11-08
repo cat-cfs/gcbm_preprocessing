@@ -21,8 +21,10 @@ from mojadata.layer.rasterlayer import RasterLayer
 from mojadata.layer.gcbm.disturbancelayer import DisturbanceLayer
 from mojadata.cleanup import cleanup
 from mojadata.layer.attribute import Attribute
+from mojadata.layer.filter.valuefilter import ValueFilter
+from mojadata.layer.filter.slicevaluefilter import SliceValueFilter
 from mojadata.layer.gcbm.transitionrule import TransitionRule
-from mojadata.layer.gcbm.transitionrulemanager import TransitionRuleManager
+from mojadata.layer.gcbm.transitionrulemanager import SharedTransitionRuleManager
 from preprocess_tools.inputs import TransitionRules
 
 class Tiler(object):
@@ -39,7 +41,9 @@ class Tiler(object):
         self.historic_range = historic_range
         self.future_range = future_range
         self.resolution = resolution
-        self.rule_manager = TransitionRuleManager("transition_rules.csv")
+        self.mgr = SharedTransitionRuleManager()
+        self.mgr.start()
+        self.rule_manager = self.mgr.TransitionRuleManager("transition_rules.csv")
         self.layers = []
         self.tiler = None
 
@@ -98,8 +102,8 @@ class Tiler(object):
                     VectorLayer("rollback_{}_{}".format(name, year),
                                 self.rollback_disturbances.getPath(),
                                 [
-                                    Attribute("DistYEAR_n", filter=lambda v, yr=year: v == yr),
-                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=dist_lookup),
+                                    Attribute("DistYEAR_n", filter=ValueFilter(year)),
+                                    Attribute("DistType", filter=ValueFilter(dist_code), substitutions=dist_lookup),
                                     Attribute("RegenDelay")
                                 ]),
                     year=year,
@@ -140,7 +144,7 @@ class Tiler(object):
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
                 # The [:4] is specifically to deal with the case of NBAC where the year is followed by the date and time
-                VectorLayer("fire_{}".format(year), workspace, Attribute(dist.getYearField(), filter=lambda v, yr=year: str(v)[:4] == str(yr)), layer='MergedDisturbances'),
+                VectorLayer("fire_{}".format(year), workspace, Attribute(dist.getYearField(), filter=SliceValueFilter(year, slice_len=4)), layer='MergedDisturbances'),
                 year=year,
                 disturbance_type=dt,
                 transition=TransitionRule(
@@ -160,7 +164,7 @@ class Tiler(object):
         for year in year_range:
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("harvest_{}".format(year), workspace, Attribute(dist.getYearField(), filter=lambda v, yr=year: str(v) == str(yr)), layer='MergedDisturbances'),
+                VectorLayer("harvest_{}".format(year), workspace, Attribute(dist.getYearField(), filter=ValueFilter(year)), layer='MergedDisturbances'),
                 year=year,
                 disturbance_type=cc_dt,
                 transition=TransitionRule(
@@ -168,7 +172,7 @@ class Tiler(object):
                     age_after=0)))
             self.layers.append(DisturbanceLayer(
                 self.rule_manager,
-                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute(dist.getYearField(), filter=lambda v, yr=year: str(v) == str(yr))),
+                VectorLayer("slashburn_{}".format(year), sb_shp, Attribute(dist.getYearField(), filter=ValueFilter(year))),
                 year=year,
                 disturbance_type=sb_dt,
                 transition=TransitionRule(
@@ -223,8 +227,8 @@ class Tiler(object):
                     VectorLayer("projected_{}_{}".format(name, year),
                                 projectedDisturbances,
                                 [
-                                    Attribute("DistYEAR_n", filter=lambda v, yr=year: v == yr),
-                                    Attribute("DistType", filter=lambda v, dt=dist_code: v == dt, substitutions=projected_dist_lookup),
+                                    Attribute("DistYEAR_n", filter=ValueFilter(year)),
+                                    Attribute("DistType", filter=ValueFilter(dist_code), substitutions=projected_dist_lookup),
                                     Attribute("RegenDelay")
                                 ]),
                     year=year,
@@ -263,9 +267,9 @@ class Tiler(object):
         with cleanup():
             logging.info('Tiling layers: {}'.format([l.name for l in self.layers]))
             self.tiler.tile(self.layers)
-            self.rule_manager.write_rules()
             transitionRules = None
             if make_transition_rules == True:
+                self.rule_manager.write_rules()
                 ccol = {}
                 for classifier in self.inventory.getClassifiers():
                     ccol.update({classifier:None})
