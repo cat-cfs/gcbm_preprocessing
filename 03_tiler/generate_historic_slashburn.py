@@ -38,7 +38,7 @@ class GenerateSlashburn(object):
             # Select only records that intersect with the inventory and are harvest disturbances
             # Note assumption: Harvest disturbance if the harvest year field value = disturbance year field value
             # This assumption is used in the rollback update_inventory as well
-            filter = "CELL_ID IS NOT NULL AND {} = {}".format(year_field, inventory.getFieldNames()['disturbance_yr'])
+            filter = "CELL_ID > 0 AND {} = {}".format(year_field, inventory.getFieldNames()['disturbance_yr'])
             arcpy.SelectLayerByAttribute_management("temp_harvest", "SUBSET_SELECTION", filter)
             if int(arcpy.GetCount_management("temp_harvest").getOutput(0)) > 0:
                 arcpy.SubsetFeatures_ga(in_features="temp_harvest", out_training_feature_class="temp_SB", out_test_feature_class="", size_of_training_dataset=PercSBofCC, subset_size_units="PERCENTAGE_OF_INPUT")
