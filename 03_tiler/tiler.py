@@ -234,12 +234,13 @@ class Tiler(object):
 
     def runTiler(self, output_dir, scenario, make_transition_rules):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+
         output_dir_scen = r"{}\SCEN_{}".format(output_dir, scenario)
-        if not os.path.exists(output_dir_scen):
-            os.makedirs(output_dir_scen)
-        else:
+        if os.path.exists(output_dir_scen):
             shutil.rmtree(output_dir_scen)
-            os.makedirs(output_dir_scen)
+        
+        logging.info("Tiler output directory: {}".format(output_dir_scen))
+        os.makedirs(output_dir_scen)
             
         cwd = os.getcwd()
         os.chdir(output_dir_scen)
@@ -252,7 +253,7 @@ class Tiler(object):
                 ccol = {}
                 for classifier in self.inventory.getClassifiers():
                     ccol.update({classifier: None})
-                transitionRules = TransitionRules(path=r"{}\transition_rules.csv".format(output_dir_scen),
+                transitionRules = TransitionRules(path=r"transition_rules.csv".format(output_dir_scen),
                     classifier_cols=ccol, header=True, cols={"NameCol": 0, "AgeCol": 2, "DelayCol": 1})
         
         os.chdir(cwd)
