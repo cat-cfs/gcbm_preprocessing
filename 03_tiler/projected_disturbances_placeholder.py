@@ -9,6 +9,8 @@ import logging
 import numpy as np
 import random
 from itertools import count, groupby, izip_longest
+from preprocess_tools.licensemanager import GEOSTATS
+from preprocess_tools.licensemanager import arc_license
 
 class ProjectedDisturbancesPlaceholder(object):
     def __init__(self, inventory, rollbackDisturbances, future_range, rollback_range, activity_start_year, ProgressPrinter, output_dir=None):
@@ -44,55 +46,54 @@ class ProjectedDisturbancesPlaceholder(object):
 
     def generateProjectedDisturbances(self, scenario, slashburn_percent, actv_slashburn_percent, actv_harvest_percent):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        arcpy.CheckOutExtension("GeoStats")
+        with arc_license(GEOSTATS):
+            self.outLocation = os.path.abspath(r'{}\..\01a_pretiled_layers\03_disturbances\02_future\outputs\projectedDist.gdb'.format(os.getcwd()))
+            if not os.path.exists(self.outLocation):
+                arcpy.CreateFileGDB_management(os.path.dirname(self.outLocation), os.path.basename(self.outLocation))
+            arcpy.env.workspace = self.outLocation
+            arcpy.env.overwriteOutput=True
 
-        self.outLocation = os.path.abspath(r'{}\..\01a_pretiled_layers\03_disturbances\02_future\outputs\projectedDist.gdb'.format(os.getcwd()))
-        if not os.path.exists(self.outLocation):
-            arcpy.CreateFileGDB_management(os.path.dirname(self.outLocation), os.path.basename(self.outLocation))
-        arcpy.env.workspace = self.outLocation
-        arcpy.env.overwriteOutput=True
+            #editable variables - dist types of future variables
+            # projScenBase_lookuptable = {
+            #     11: "Base CC",
+            #     7: "Wild Fires",
+            #     13: "SlashBurning",
+            #     10: "Partial Cut",
+            #     6: "Base Salvage",
+            #     2: "Wild Fire",
+            #     1: "Clearcut harvesting with salvage"
 
-        #editable variables - dist types of future variables
-        # projScenBase_lookuptable = {
-        #     11: "Base CC",
-        #     7: "Wild Fires",
-        #     13: "SlashBurning",
-        #     10: "Partial Cut",
-        #     6: "Base Salvage",
-        #     2: "Wild Fire",
-        #     1: "Clearcut harvesting with salvage"
+            self.fire_code = 7
+            self.SB_code = 13
+            self.BASE_salvage_code = 6
+            self.distYr_field = self.inventory.getFieldNames()["new_disturbance_yr"]
+            self.distType_field = self.inventory.getFieldNames()["dist_type"]
+            self.regen_delay_field = self.inventory.getFieldNames()["regen_delay"]
+            self.year_range = range(self.future_range[0],self.future_range[1]+1)
 
-        self.fire_code = 7
-        self.SB_code = 13
-        self.BASE_salvage_code = 6
-        self.distYr_field = self.inventory.getFieldNames()["new_disturbance_yr"]
-        self.distType_field = self.inventory.getFieldNames()["dist_type"]
-        self.regen_delay_field = self.inventory.getFieldNames()["regen_delay"]
-        self.year_range = range(self.future_range[0],self.future_range[1]+1)
+            fire_areaValue, harvest_areaValue = self.calculateFireAndHarvestArea(actv_harvest_percent)
 
-        fire_areaValue, harvest_areaValue = self.calculateFireAndHarvestArea(actv_harvest_percent)
+            projected_disturbances = "proj_dist"
+            if arcpy.Exists(os.path.join(self.outLocation, projected_disturbances)):
+                arcpy.Delete_management(projected_disturbances)
+            arcpy.CreateFeatureclass_management(self.outLocation, projected_disturbances, "", "inventory_gridded_1990","","","inventory_gridded_1990")
 
-        projected_disturbances = "proj_dist"
-        if arcpy.Exists(os.path.join(self.outLocation, projected_disturbances)):
-            arcpy.Delete_management(projected_disturbances)
-        arcpy.CreateFeatureclass_management(self.outLocation, projected_disturbances, "", "inventory_gridded_1990","","","inventory_gridded_1990")
+            self.generateFire(fire_areaValue, projected_disturbances)
+            self.generateHarvest(harvest_areaValue, projected_disturbances, actv_harvest_percent)
+            self.generateSlashburn(harvest_areaValue, projected_disturbances, slashburn_percent, actv_slashburn_percent)
 
-        self.generateFire(fire_areaValue, projected_disturbances)
-        self.generateHarvest(harvest_areaValue, projected_disturbances, actv_harvest_percent)
-        self.generateSlashburn(harvest_areaValue, projected_disturbances, slashburn_percent, actv_slashburn_percent)
+            if arcpy.Exists(os.path.join(os.path.dirname(self.outLocation), "{}.shp".format(projected_disturbances))):
+                arcpy.Delete_management(os.path.join(os.path.dirname(self.outLocation), "{}.shp".format(projected_disturbances)))
 
-        if arcpy.Exists(os.path.join(os.path.dirname(self.outLocation), "{}.shp".format(projected_disturbances))):
-            arcpy.Delete_management(os.path.join(os.path.dirname(self.outLocation), "{}.shp".format(projected_disturbances)))
+            outShpDir = os.path.join(os.path.dirname(self.outLocation),'SCEN_{}'.format(scenario))
+            if not os.path.exists(outShpDir):
+                os.makedirs(outShpDir)
+            outShp = os.path.join(outShpDir, "{}.shp".format(projected_disturbances))
+            if os.path.exists(outShp):
+                arcpy.Delete_management(outShp)
+            arcpy.CopyFeatures_management(projected_disturbances, outShp)
+            logging.info('Projected disturbances generated for scenario {} at {}'.format(scenario, outShpDir))
 
-        outShpDir = os.path.join(os.path.dirname(self.outLocation),'SCEN_{}'.format(scenario))
-        if not os.path.exists(outShpDir):
-            os.makedirs(outShpDir)
-        outShp = os.path.join(outShpDir, "{}.shp".format(projected_disturbances))
-        if os.path.exists(outShp):
-            arcpy.Delete_management(outShp)
-        arcpy.CopyFeatures_management(projected_disturbances, outShp)
-        logging.info('Projected disturbances generated for scenario {} at {}'.format(scenario, outShpDir))
-        arcpy.CheckInExtension("GeoStats")
         pp.finish()
         return outShp
 

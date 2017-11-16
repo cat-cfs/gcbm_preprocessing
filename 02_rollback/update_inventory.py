@@ -8,6 +8,8 @@ import sys
 import inspect
 import logging
 from dbfread import DBF
+from preprocess_tools.licensemanager import GEOSTATS
+from preprocess_tools.licensemanager import arc_license
 
 class CalculateDistDEdifference(object):
     def __init__(self, inventory, ProgressPrinter):
@@ -295,25 +297,24 @@ class updateInvRollback(object):
         year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
         # print "Start of slashburn processing..."
-        arcpy.CheckOutExtension("GeoStats")
-        PercSBofCC = self.sb_percent
-        arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
-        expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
-        logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
-        logging.info('Selecting {}% of the harvest area in each year as slashburn and adding it to the rollback disturbances...'.format(PercSBofCC))
-        # Create SB records for each timestep
-        for year in range(self.rollback_range[0], self.rollback_range[1]+1):
-            expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.new_disturbance_field), year)
-            arcpy.SelectLayerByAttribute_management("temp_rollback", "NEW_SELECTION", expression2)
-            arcpy.SelectLayerByAttribute_management("temp_rollback", "SUBSET_SELECTION", expression1)
-            if int(arcpy.GetCount_management("temp_rollback").getOutput(0)) > 0:
-                arcpy.SubsetFeatures_ga(in_features="temp_rollback", out_training_feature_class="temp_SB", out_test_feature_class="", size_of_training_dataset=PercSBofCC, subset_size_units="PERCENTAGE_OF_INPUT")
-                arcpy.CalculateField_management("temp_SB", "DistType", 13, "PYTHON", "")
-                arcpy.Append_management("temp_SB", self.RolledBackInventory_layer)
-            arcpy.SelectLayerByAttribute_management("temp_rollback", "CLEAR_SELECTION")
-            pp.updateProgressP()
+        with arc_license(GEOSTATS):
+            PercSBofCC = self.sb_percent
+            arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
+            expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
+            logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
+            logging.info('Selecting {}% of the harvest area in each year as slashburn and adding it to the rollback disturbances...'.format(PercSBofCC))
+            # Create SB records for each timestep
+            for year in range(self.rollback_range[0], self.rollback_range[1]+1):
+                expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.new_disturbance_field), year)
+                arcpy.SelectLayerByAttribute_management("temp_rollback", "NEW_SELECTION", expression2)
+                arcpy.SelectLayerByAttribute_management("temp_rollback", "SUBSET_SELECTION", expression1)
+                if int(arcpy.GetCount_management("temp_rollback").getOutput(0)) > 0:
+                    arcpy.SubsetFeatures_ga(in_features="temp_rollback", out_training_feature_class="temp_SB", out_test_feature_class="", size_of_training_dataset=PercSBofCC, subset_size_units="PERCENTAGE_OF_INPUT")
+                    arcpy.CalculateField_management("temp_SB", "DistType", 13, "PYTHON", "")
+                    arcpy.Append_management("temp_SB", self.RolledBackInventory_layer)
+                arcpy.SelectLayerByAttribute_management("temp_rollback", "CLEAR_SELECTION")
+                pp.updateProgressP()
 
-        arcpy.CheckInExtension("GeoStats")
         pp.finish()
 
     def exportRollbackDisturbances(self):
