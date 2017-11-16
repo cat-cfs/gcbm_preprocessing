@@ -1,7 +1,0 @@
-from multiprocessing import cpu_count
-
-GDAL_THREADS = 2
-PROCESS_POOL_SIZE = cpu_count() / GDAL_THREADS
-
-GDAL_OPTIONS = ["NUM_THREADS={}".format(GDAL_THREADS)]
-GDAL_CREATION_OPTIONS = ["COMPRESS=DEFLATE", "BIGTIFF=YES", "NUM_THREADS={}".format(GDAL_THREADS)]
