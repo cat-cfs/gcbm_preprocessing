@@ -1,7 +1,12 @@
 import arcpy
 import logging
 import time
+import os
 from contextlib import contextmanager
+
+# Fixes interaction between time and multiprocessing modules.
+os.environ["FOR_DISABLE_CONSOLE_CTRL_HANDLER"] = "1"
+os.environ["FOR_IGNORE_EXCEPTIONS"] = "1"
 
 GEOSTATS = "GeoStats"
 
