@@ -3,12 +3,12 @@ archook.get_arcpy()
 import arcpy
 import csv
 import random
+import numpy as np
 import os
 import sys
 import inspect
 import logging
 from dbfread import DBF
-from preprocess_tools.licensemanager import GEOSTATS
 from preprocess_tools.licensemanager import arc_license
 
 class CalculateDistDEdifference(object):
@@ -294,28 +294,34 @@ class updateInvRollback(object):
         pp.finish()
 
     def generateSlashburn(self):
-        year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
-        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
-        # print "Start of slashburn processing..."
-        with arc_license(GEOSTATS):
-            PercSBofCC = self.sb_percent
-            arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
-            expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
-            logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
-            logging.info('Selecting {}% of the harvest area in each year as slashburn and adding it to the rollback disturbances...'.format(PercSBofCC))
-            # Create SB records for each timestep
-            for year in range(self.rollback_range[0], self.rollback_range[1]+1):
-                expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.new_disturbance_field), year)
-                arcpy.SelectLayerByAttribute_management("temp_rollback", "NEW_SELECTION", expression2)
-                arcpy.SelectLayerByAttribute_management("temp_rollback", "SUBSET_SELECTION", expression1)
-                if int(arcpy.GetCount_management("temp_rollback").getOutput(0)) > 0:
-                    arcpy.SubsetFeatures_ga(in_features="temp_rollback", out_training_feature_class="temp_SB", out_test_feature_class="", size_of_training_dataset=PercSBofCC, subset_size_units="PERCENTAGE_OF_INPUT")
-                    arcpy.CalculateField_management("temp_SB", "DistType", 13, "PYTHON", "")
-                    arcpy.Append_management("temp_SB", self.RolledBackInventory_layer)
-                arcpy.SelectLayerByAttribute_management("temp_rollback", "CLEAR_SELECTION")
-                pp.updateProgressP()
+		year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
+		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
+		# print "Start of slashburn processing..."
+		PercSBofCC = self.sb_percent
+		arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
+		expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
+		logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
+		logging.info('Selecting {}% of the harvest area in each year as slashburn and adding it to the rollback disturbances...'.format(PercSBofCC))
+		# Create SB records for each timestep
+		for year in range(self.rollback_range[0], self.rollback_range[1]+1):
+			expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.new_disturbance_field), year)
+			arcpy.SelectLayerByAttribute_management("temp_rollback", "NEW_SELECTION", expression2)
+			arcpy.SelectLayerByAttribute_management("temp_rollback", "SUBSET_SELECTION", expression1)
+			if int(arcpy.GetCount_management("temp_rollback").getOutput(0)) > 0:
+				number_features = [row[0] for row in arcpy.da.SearchCursor("temp_rollback", "OBJECTID")]
+				temp_rollback_count = int(arcpy.GetCount_management("temp_rollback").getOutput(0))
+				features2Bselected = random.sample(number_features,(int(np.ceil(round(float(temp_rollback_count * PercSBofCC)/100)))))
+				features2Bselected.append(0)
+				features2Bselected = str(tuple(features2Bselected)).rstrip(',)') + ')'
+				selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters("temp_rollback", "OBJECTID"), features2Bselected)
+				arcpy.SelectLayerByAttribute_management("temp_rollback","NEW_SELECTION", selectExpression)
+				arcpy.CopyFeatures_management("temp_rollback","temp_SB")
+				arcpy.CalculateField_management("temp_SB", "DistType", 13, "PYTHON", "")
+				arcpy.Append_management("temp_SB", self.RolledBackInventory_layer)
+			arcpy.SelectLayerByAttribute_management("temp_rollback", "CLEAR_SELECTION")
+			pp.updateProgressP()
 
-        pp.finish()
+		pp.finish()
 
     def exportRollbackDisturbances(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
