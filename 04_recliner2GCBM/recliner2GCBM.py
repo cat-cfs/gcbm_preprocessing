@@ -9,11 +9,10 @@ class Recliner2GCBM(object):
     def __init__(self, config_dir, output_path, transitionRules, yieldTable, aidb, ProgressPrinter, exe_path=None):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
-        if exe_path==None:
-            self.exe_path = r"M:\Spatially_explicit\03_Tools\Recliner2GCBM-x64\Recliner2GCBM.exe"
-            self.exe_path_32 = r'M:\Spatially_explicit\03_Tools\Recliner2GCBM-x86\Recliner2GCBM.exe'
-        else:
-            self.exe_path = exe_path
+        self.exe_paths = [exe_path] or [
+            os.path.join("M:", "Spatially_explicit", "03_Tools", "Recliner2GCBM-{}".format(platform), "Recliner2GCBM.exe")
+            for platform in ("x64", "x86")]
+            
         self.config_dir = config_dir
         self.output_path = output_path
         self.transition_rules = transitionRules
@@ -112,16 +111,14 @@ class Recliner2GCBM(object):
         with open(config_path, "w") as config:
             json.dump(default_config, config)
             logging.info('Recliner2GCBM config json created at {}'.format(config_path))
-        try:
-            run = subprocess.Popen([self.exe_path, "-c", config_path])
-            run.communicate()
-        except:
+
+        for exe_path in self.exe_paths:
             try:
-                run = subprocess.Popen([self.exe_path_32, "-c", config_path])
-                run.communicate()
-            except:
-                print "Recliner2GCBM Failed"
-                raise
+                command = [self.exe_path, "-c", config_path]
+                subprocess.check_call(command)
+                break
+            except Exception as e:
+                logging.error("Failed to run '{}': {}".format(" ".join(command), e))
 
         pp.finish()
 
