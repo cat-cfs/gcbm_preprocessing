@@ -11,11 +11,11 @@ class GenerateSlashburn(object):
         self.ProgressPrinter = ProgressPrinter
 
     def generateSlashburn(self, inventory, harvest_poly_shp, year_field, year_range, sb_percent):
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
-		PercSBofCC = sb_percent
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
+        PercSBofCC = sb_percent
 
-		logging.info('Prepping temporary workspace')
-		temp_gdb = os.path.join(os.path.dirname(harvest_poly_shp),"slashburn_temp.gdb")
+        logging.info('Prepping temporary workspace')
+        temp_gdb = os.path.join(os.path.dirname(harvest_poly_shp),"slashburn_temp.gdb")
         with arc_license(Products.ARC) as arcpy:
             if os.path.exists(temp_gdb):
                 arcpy.Delete_management(temp_gdb)

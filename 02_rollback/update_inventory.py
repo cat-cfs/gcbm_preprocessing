@@ -305,10 +305,10 @@ class updateInvRollback(object):
         pp.finish()
 
     def generateSlashburn(self):
-		year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
-		# print "Start of slashburn processing..."
-		PercSBofCC = self.sb_percent
+        year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
+        # print "Start of slashburn processing..."
+        PercSBofCC = self.sb_percent
         with arc_license(Products.ARC) as arcpy:
             arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
             expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
@@ -333,7 +333,7 @@ class updateInvRollback(object):
                 arcpy.SelectLayerByAttribute_management("temp_rollback", "CLEAR_SELECTION")
                 pp.updateProgressP()
 
-		pp.finish()
+        pp.finish()
 
     def exportRollbackDisturbances(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()

@@ -5,16 +5,16 @@ import logging
 from preprocess_tools.licensemanager import *
 
 class Fishnet(object):
-	def __init__(self, inventory, resolution_degrees, ProgressPrinter):
-		logging.info("Initializing class {}".format(self.__class__.__name__))
-		self.ProgressPrinter = ProgressPrinter
-		self.inventory = inventory
-		self.resolution_degrees = resolution_degrees
+    def __init__(self, inventory, resolution_degrees, ProgressPrinter):
+        logging.info("Initializing class {}".format(self.__class__.__name__))
+        self.ProgressPrinter = ProgressPrinter
+        self.inventory = inventory
+        self.resolution_degrees = resolution_degrees
 
-		self.XYgrid = "XYgrid"
-		self.XYgrid_temp = "XYgrid_temp"
+        self.XYgrid = "XYgrid"
+        self.XYgrid_temp = "XYgrid_temp"
 
-	def createFishnet(self):
+    def createFishnet(self):
         with arc_license(Products.ARC) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput=True
@@ -42,28 +42,28 @@ class Fishnet(object):
             for t in tasks:
                 t()
                 pp.updateProgressV()
-		pp.finish()
+        pp.finish()
 
-	def roundCorner(self, x, y, ud, res):
-		if ud==1:
-			rx = math.ceil(float(x)/res)*res
-			ry = math.ceil(float(y)/res)*res
-		elif ud==-1:
-			rx = math.floor(float(x)/res)*res
-			ry = math.floor(float(y)/res)*res
-		else:
-			raise Exception("Invalid value for 'ud'. Provide 1 (Round up) or -1 (Round down).")
-		logging.info('Rounded bounding box corner coord ({0},{1}) to ({2},{3})'.format(x,y,rx,ry))
-		return rx, ry
+    def roundCorner(self, x, y, ud, res):
+        if ud==1:
+            rx = math.ceil(float(x)/res)*res
+            ry = math.ceil(float(y)/res)*res
+        elif ud==-1:
+            rx = math.floor(float(x)/res)*res
+            ry = math.floor(float(y)/res)*res
+        else:
+            raise Exception("Invalid value for 'ud'. Provide 1 (Round up) or -1 (Round down).")
+        logging.info('Rounded bounding box corner coord ({0},{1}) to ({2},{3})'.format(x,y,rx,ry))
+        return rx, ry
 
-	def _createFields(self):
-		field_name_types = {
-			"CELL_ID":"LONG",
-			"Shape_Area_Ha":"DOUBLE"
-		}
+    def _createFields(self):
+        field_name_types = {
+            "CELL_ID":"LONG",
+            "Shape_Area_Ha":"DOUBLE"
+        }
 
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)
-		pp.start()
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)
+        pp.start()
 
         with arc_license(Products.ARC) as arcpy:
             for field_name in field_name_types:
@@ -72,9 +72,9 @@ class Fishnet(object):
                 arcpy.AddField_management(self.XYgrid_temp, field_name, field_type, "", "", field_length, "", "NULLABLE", "NON_REQUIRED", "")
                 pp.updateProgressP()
 
-		pp.finish()
+        pp.finish()
 
-	def _calculateFields(self):
+    def _calculateFields(self):
         with arc_license(Products.ARC) as arcpy:
             functions = [
                 lambda:arcpy.MakeFeatureLayer_management(self.XYgrid_temp, 'XYgrid_intersect'),
@@ -90,4 +90,4 @@ class Fishnet(object):
                 f()
                 pp.updateProgressP()
 
-		pp.finish()
+        pp.finish()

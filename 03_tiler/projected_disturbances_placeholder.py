@@ -42,8 +42,8 @@ class ProjectedDisturbancesPlaceholder(object):
         return sorted(glob.glob('{}*'.format(file_path.split('.')[0])), key=os.path.basename)
 
     def generateProjectedDisturbances(self, scenario, slashburn_percent, actv_slashburn_percent, actv_harvest_percent):
-		pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-		self.outLocation = os.path.abspath(r'{}\..\01a_pretiled_layers\03_disturbances\02_future\outputs\projectedDist.gdb'.format(os.getcwd()))
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        self.outLocation = os.path.abspath(r'{}\..\01a_pretiled_layers\03_disturbances\02_future\outputs\projectedDist.gdb'.format(os.getcwd()))
         with arc_license(Products.ARC) as arcpy:
             if not os.path.exists(self.outLocation):
                 arcpy.CreateFileGDB_management(os.path.dirname(self.outLocation), os.path.basename(self.outLocation))
@@ -91,8 +91,8 @@ class ProjectedDisturbancesPlaceholder(object):
             arcpy.CopyFeatures_management(projected_disturbances, outShp)
             logging.info('Projected disturbances generated for scenario {} at {}'.format(scenario, outShpDir))
 
-		pp.finish()
-		return outShp
+        pp.finish()
+        return outShp
 
 
     def calculateFireAndHarvestArea(self, harvest_percent):
@@ -204,10 +204,10 @@ class ProjectedDisturbancesPlaceholder(object):
                     selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters("inventory_gridded_1990", "OBJECTID"), features2Bselected)
                     arcpy.SelectLayerByAttribute_management("inventory_gridded_1990","NEW_SELECTION", selectExpression)
                     arcpy.CopyFeatures_management("inventory_gridded_1990","{}/{}".format(self.outLocation,harvest_proj_dist_temp1))
-                	arcpy.AddField_management(harvest_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
-                	arcpy.CalculateField_management(harvest_proj_dist_temp1, field=self.distYr_field, expression=year, expression_type="PYTHON", code_block="")
-                	arcpy.Append_management(harvest_proj_dist_temp1, harvest_proj_dist_temp)
-                	pp1.updateProgressP()
+                    arcpy.AddField_management(harvest_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
+                    arcpy.CalculateField_management(harvest_proj_dist_temp1, field=self.distYr_field, expression=year, expression_type="PYTHON", code_block="")
+                    arcpy.Append_management(harvest_proj_dist_temp1, harvest_proj_dist_temp)
+                    pp1.updateProgressP()
 
             # update the dist type and regen delay
             arcpy.CalculateField_management(harvest_proj_dist_temp, field=self.distType_field, expression=self.BASE_salvage_code, expression_type="PYTHON", code_block="")
@@ -240,9 +240,9 @@ class ProjectedDisturbancesPlaceholder(object):
                 else:
                     PercSBofCC = slashburn_percent
                 if PercSBofCC > 0:
-                	expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters(harvest_proj_dist_temp, self.distYr_field), year)
-                	arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp, "NEW_SELECTION", expression2)
-                	arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp, "SUBSET_SELECTION", expression1)
+                    expression2 = '{} = {}'.format(arcpy.AddFieldDelimiters(harvest_proj_dist_temp, self.distYr_field), year)
+                    arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp, "NEW_SELECTION", expression2)
+                    arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp, "SUBSET_SELECTION", expression1)
                     number_features = [row[0] for row in arcpy.da.SearchCursor(harvest_proj_dist_temp, "OBJECTID")]
                     temp_harvest_count = int(arcpy.GetCount_management(harvest_proj_dist_temp).getOutput(0))
                     features2Bselected = random.sample(number_features,(int(np.ceil(round(float(temp_harvest_count * PercSBofCC)/100)))))
@@ -251,10 +251,10 @@ class ProjectedDisturbancesPlaceholder(object):
                     selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters(harvest_proj_dist_temp, "OBJECTID"), features2Bselected)
                     arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp,"NEW_SELECTION", selectExpression)
                     arcpy.CopyFeatures_management(harvest_proj_dist_temp,r"{}\{}".format(self.outLocation,slasburn_proj_dist_temp))
-                	arcpy.CalculateField_management(slasburn_proj_dist_temp, self.distType_field, self.SB_code, "PYTHON", )
-                	arcpy.Append_management(slasburn_proj_dist_temp, projected_disturbances)
-                	arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp, "CLEAR_SELECTION")
-                	pp.updateProgressP()
+                    arcpy.CalculateField_management(slasburn_proj_dist_temp, self.distType_field, self.SB_code, "PYTHON", )
+                    arcpy.Append_management(slasburn_proj_dist_temp, projected_disturbances)
+                    arcpy.SelectLayerByAttribute_management(harvest_proj_dist_temp, "CLEAR_SELECTION")
+                    pp.updateProgressP()
             arcpy.Delete_management(harvest_proj_dist_temp)
             arcpy.Delete_management(slasburn_proj_dist_temp)
         
