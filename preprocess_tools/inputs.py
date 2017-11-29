@@ -1,3 +1,5 @@
+import archook
+archook.get_arcpy()
 import arcpy
 import os
 import glob

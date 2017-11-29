@@ -9,6 +9,8 @@
 #Processing time on A105338 (locally) for 100mile house TSA: 2 hrs 36 min 40 sec
 
 # Imports
+import archook
+archook.get_arcpy()
 import arcpy
 import inspect
 import math
