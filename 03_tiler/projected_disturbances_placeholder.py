@@ -144,6 +144,8 @@ class ProjectedDisturbancesPlaceholder(object):
 
     def generateFire(self, fire_areaValue, projected_disturbances):
         if fire_areaValue <= 0:
+            with arc_license(Products.ARC) as arcpy:
+                arcpy.Delete_management(fire_proj_dist_temp)
             logging.info("No projected fire was generated because no historic fire was found.")
             return
 
@@ -154,16 +156,17 @@ class ProjectedDisturbancesPlaceholder(object):
         fire_proj_dist_temp1 = "fire_proj_dist_temp1"
         with arc_license(Products.ARC) as arcpy:
             arcpy.CreateFeatureclass_management(self.outLocation, fire_proj_dist_temp, "", "inventory_gridded_1990","","","inventory_gridded_1990")
+            arcpy.MakeFeatureLayer_management("inventory_gridded_1990", "inventory_gridded_1990_layer")
             for year in self.year_range:
                 # beginning of GA replace
-                number_features = [row[0] for row in arcpy.da.SearchCursor("inventory_gridded_1990", "OBJECTID")]
-                temp_inventory_count = int(arcpy.GetCount_management("inventory_gridded_1990").getOutput(0))
-                features2Bselected = random.sample(number_features,fire_areaValue)
+                number_features = [row[0] for row in arcpy.da.SearchCursor("inventory_gridded_1990_layer", "OBJECTID")]
+                temp_inventory_count = int(arcpy.GetCount_management("inventory_gridded_1990_layer").getOutput(0))
+                features2Bselected = random.sample(number_features,int(round(fire_areaValue)))
                 features2Bselected.append(0)
                 features2Bselected = str(tuple(features2Bselected)).rstrip(',)') + ')'
-                selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters("inventory_gridded_1990", "OBJECTID"), features2Bselected)
-                arcpy.SelectLayerByAttribute_management("inventory_gridded_1990","NEW_SELECTION", selectExpression)
-                arcpy.CopyFeatures_management("inventory_gridded_1990",r"{}\{}".format(self.outLocation,fire_proj_dist_temp1))
+                selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters("inventory_gridded_1990_layer", "OBJECTID"), features2Bselected)
+                arcpy.SelectLayerByAttribute_management("inventory_gridded_1990_layer","NEW_SELECTION", selectExpression)
+                arcpy.CopyFeatures_management("inventory_gridded_1990_layer",r"{}\{}".format(self.outLocation,fire_proj_dist_temp1))
                 arcpy.AddField_management(fire_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
                 arcpy.CalculateField_management(fire_proj_dist_temp1, field=self.distYr_field, expression=year, expression_type="PYTHON", code_block="")
                 arcpy.Append_management(fire_proj_dist_temp1, fire_proj_dist_temp)
@@ -189,6 +192,7 @@ class ProjectedDisturbancesPlaceholder(object):
             harvest_proj_dist_temp = "harvest_proj_dist_temp"
             harvest_proj_dist_temp1 = "harvest_proj_dist_temp1"
             arcpy.CreateFeatureclass_management(self.outLocation, harvest_proj_dist_temp, "", "inventory_gridded_1990","","","inventory_gridded_1990")
+            arcpy.MakeFeatureLayer_management("inventory_gridded_1990", "inventory_gridded_1990_layer")
             for year in self.year_range:
                 if year >= self.activity_start_year:
                     harvest_records = round(harvest_areaValue * (actv_harvest_percent/100.0))
@@ -196,17 +200,18 @@ class ProjectedDisturbancesPlaceholder(object):
                     harvest_records = round(harvest_areaValue)
                     
                 if harvest_records >= 1:
-                    number_features = [row[0] for row in arcpy.da.SearchCursor("inventory_gridded_1990", "OBJECTID")]
-                    temp_inventory_count = int(arcpy.GetCount_management("inventory_gridded_1990").getOutput(0))
-                    features2Bselected = random.sample(number_features,harvest_records)
+                    number_features = [row[0] for row in arcpy.da.SearchCursor("inventory_gridded_1990_layer", "OBJECTID")]
+                    temp_inventory_count = int(arcpy.GetCount_management("inventory_gridded_1990_layer").getOutput(0))
+                    features2Bselected = random.sample(number_features,int(round(harvest_records)))
                     features2Bselected.append(0)
                     features2Bselected = str(tuple(features2Bselected)).rstrip(',)') + ')'
-                    selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters("inventory_gridded_1990", "OBJECTID"), features2Bselected)
-                    arcpy.SelectLayerByAttribute_management("inventory_gridded_1990","NEW_SELECTION", selectExpression)
-                    arcpy.CopyFeatures_management("inventory_gridded_1990","{}/{}".format(self.outLocation,harvest_proj_dist_temp1))
+                    selectExpression = '{} IN {}'.format(arcpy.AddFieldDelimiters("inventory_gridded_1990_layer", "OBJECTID"), features2Bselected)
+                    arcpy.SelectLayerByAttribute_management("inventory_gridded_1990_layer","NEW_SELECTION", selectExpression)
+                    arcpy.CopyFeatures_management("inventory_gridded_1990_layer","{}/{}".format(self.outLocation,harvest_proj_dist_temp1))
                     arcpy.AddField_management(harvest_proj_dist_temp1, field_name=self.distYr_field, field_type="LONG", field_precision="", field_scale="", field_length="", field_alias="", field_is_nullable="NULLABLE", field_is_required="NON_REQUIRED", field_domain="")
                     arcpy.CalculateField_management(harvest_proj_dist_temp1, field=self.distYr_field, expression=year, expression_type="PYTHON", code_block="")
                     arcpy.Append_management(harvest_proj_dist_temp1, harvest_proj_dist_temp)
+                    arcpy.SelectLayerByAttribute_management("inventory_gridded_1990_layer", "CLEAR_SELECTION")
                     pp1.updateProgressP()
 
             # update the dist type and regen delay
