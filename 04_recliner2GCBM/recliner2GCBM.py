@@ -116,6 +116,7 @@ class Recliner2GCBM(object):
             command = [self.exe_path, "-c", config_path]
             try:
                 subprocess.check_call(command)
+                logging.info("Found and ran '{}'".format(" ".join(command)))
                 break
             except Exception as e:
                 logging.error("Failed to run '{}': {}".format(" ".join(command), e))
