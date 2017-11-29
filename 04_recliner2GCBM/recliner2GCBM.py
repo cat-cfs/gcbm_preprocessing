@@ -113,7 +113,7 @@ class Recliner2GCBM(object):
             logging.info('Recliner2GCBM config json created at {}'.format(config_path))
 
         for exe_path in self.exe_paths:
-            command = [self.exe_path, "-c", config_path]
+            command = [exe_path, "-c", config_path]
             try:
                 subprocess.check_call(command)
                 logging.info("Found and ran '{}'".format(" ".join(command)))
