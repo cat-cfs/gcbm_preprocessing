@@ -41,35 +41,35 @@ class ConfigureGCBM(object):
         pp.finish()
 
     def replace_params(self, read_file, write_file, replace_d):
-    	'''
-    	Copies the file (read_file) to the destination (write_file)
-    	while replacing occurrences of the input dictionary's (replace_d)
-    	keys with the corresponding dictionary values.
-    	This allows for parameterization within the read file.
-    	Parameter key words can be included in the (text based) read file
-    	and added to the dictionary 'replace' defined below to be replaced
-    	by the value upon runtime.
-    	'''
-    	with open(read_file, 'r') as read_f:
-    		with open(write_file, 'w') as write_f:
-    			for line in read_f:
-    				pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
-    				write_f.write(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
+        '''
+        Copies the file (read_file) to the destination (write_file)
+        while replacing occurrences of the input dictionary's (replace_d)
+        keys with the corresponding dictionary values.
+        This allows for parameterization within the read file.
+        Parameter key words can be included in the (text based) read file
+        and added to the dictionary 'replace' defined below to be replaced
+        by the value upon runtime.
+        '''
+        with open(read_file, 'r') as read_f:
+            with open(write_file, 'w') as write_f:
+                for line in read_f:
+                    pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
+                    write_f.write(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
 
     def replace_params_zip(self, read_file, replace_d):
-    	'''
-    	Copies the file (read_file) to the destination (write_file)
-    	while replacing occurrences of the input dictionary's (replace_d)
-    	keys with the corresponding dictionary values.
-    	This allows for parameterization within the read file.
-    	Parameter key words can be included in the (text based) read file
-    	and added to the dictionary 'replace' defined below to be replaced
-    	by the value upon runtime.
-    	'''
+        '''
+        Copies the file (read_file) to the destination (write_file)
+        while replacing occurrences of the input dictionary's (replace_d)
+        keys with the corresponding dictionary values.
+        This allows for parameterization within the read file.
+        Parameter key words can be included in the (text based) read file
+        and added to the dictionary 'replace' defined below to be replaced
+        by the value upon runtime.
+        '''
         write_f = []
         for line in read_file.split('\n'):
-			pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
-			write_f.append(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
+            pattern = re.compile("|".join([re.escape(k) for k in replace_d.keys()]))
+            write_f.append(pattern.sub(lambda m: str(replace_d[m.group(0)]), line))
         return '\n'.join(write_f)
 
     def copyTilerOutput(self, moja_dir, tiler_scenario, scenario):
