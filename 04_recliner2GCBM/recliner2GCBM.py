@@ -113,8 +113,8 @@ class Recliner2GCBM(object):
             logging.info('Recliner2GCBM config json created at {}'.format(config_path))
 
         for exe_path in self.exe_paths:
+            command = [self.exe_path, "-c", config_path]
             try:
-                command = [self.exe_path, "-c", config_path]
                 subprocess.check_call(command)
                 break
             except Exception as e:
