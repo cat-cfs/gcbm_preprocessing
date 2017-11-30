@@ -144,8 +144,6 @@ class ProjectedDisturbancesPlaceholder(object):
 
     def generateFire(self, fire_areaValue, projected_disturbances):
         if fire_areaValue <= 0:
-            with arc_license(Products.ARC) as arcpy:
-                arcpy.Delete_management(fire_proj_dist_temp)
             logging.info("No projected fire was generated because no historic fire was found.")
             return
 
