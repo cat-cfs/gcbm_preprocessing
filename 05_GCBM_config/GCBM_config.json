@@ -37,7 +37,10 @@
         "CBMBuildLandUnitModule": {
             "library": "moja.modules.cbm",
             "order": 2,
-            "create_new": true
+            "create_new": true,
+            "settings": {
+                "mask_vars": [ "eco_boundary" ]
+            }
         },
         "CBMGrowthModule": {
             "library": "moja.modules.cbm",
@@ -321,7 +324,10 @@
     "Modules": {
         "CBMBuildLandUnitModule": {
             "library": "moja.modules.cbm",
-            "order": 1
+            "order": 1,
+            "settings": {
+                "mask_vars": [ "eco_boundary" ]
+            }
         },
         "CBMSequencer": {
             "library": "moja.modules.cbm",
