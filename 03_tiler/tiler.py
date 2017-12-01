@@ -215,7 +215,7 @@ class Tiler(object):
             for dist_code in projected_dist_lookup:
                 label = projected_dist_lookup[dist_code]
                 name = projected_name_lookup[dist_code]
-                filename = "{distName}_{year}.tif".format(distName = name, year = year)
+                filename = "projected_{distName}_{year}.tif".format(distName = name, year = year)
                 raster_filename = os.path.join(raster_dir, scenario, filename)
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
