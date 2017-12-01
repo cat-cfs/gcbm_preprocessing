@@ -219,8 +219,7 @@ class Tiler(object):
                 raster_filename = os.path.join(raster_dir, scenario, filename)
                 self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    RasterLayer("projected_{}_{}".format(name, year),
-                                raster_filename, 
+                    RasterLayer(raster_filename,
                                 nodata_value=0),
                     year=year,
                     disturbance_type=name))
