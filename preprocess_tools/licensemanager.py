@@ -95,7 +95,10 @@ def arc_license(product_or_extension):
             if not license:
                 attempt += 1
                 logging.info("Waiting for {} license...".format(product_or_extension))
-                time.sleep(wait_time)
+                try:
+                    time.sleep(wait_time)
+                except:
+                    pass
         
         attempts = "{} attempt{}".format(attempt, "s" if attempt > 1 else "")
         if license:
