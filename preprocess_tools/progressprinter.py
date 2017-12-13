@@ -2,6 +2,8 @@ import sys
 import random
 import time
 import logging
+import inspect
+from contextlib import contextmanager
 
 class ProgressPrinter(object):
     def __init__(self, size=100):
@@ -15,6 +17,15 @@ class ProgressPrinter(object):
         pproc = ProgressProcess(self, name, total, id, level)
         self.processes.update({id: pproc})
         return pproc
+
+    @contextmanager
+    def monitoredProcess(self, total=1, level=0):
+        caller = inspect.stack()[2][3]
+        id = self.generateNewId()
+        pproc = ProgressProcess(self, caller, total, id, level)
+        self.processes.update({id: pproc})
+        yield pproc.start()
+        pproc.finish()
 
     def generateNewId(self):
         start = random.randrange(0, len(self.id_array))
