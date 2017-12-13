@@ -404,7 +404,7 @@
                        "nodata_value": -1
                    },
                    {
-                       "enabled": true,
+                       "enabled": false,
                        "data_name": "CH4",
                        "pool_name": ["CH4"],
                        "variable_data_type": "double",
@@ -412,7 +412,7 @@
                        "nodata_value": -1
                    },
                    {
-                       "enabled": true,
+                       "enabled": false,
                        "data_name": "Age",
                        "variable_name": "age",
                        "variable_data_type": "Int16",
