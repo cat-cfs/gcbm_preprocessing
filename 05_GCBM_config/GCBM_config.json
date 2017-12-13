@@ -39,7 +39,7 @@
             "order": 2,
             "create_new": true,
             "settings": {
-                "mask_vars": [ "eco_boundary", "age" ]
+                "mask_vars": [ "eco_boundary" ]
             }
         },
         "CBMGrowthModule": {
@@ -326,7 +326,7 @@
             "library": "moja.modules.cbm",
             "order": 1,
             "settings": {
-                "mask_vars": [ "eco_boundary", "age" ]
+                "mask_vars": [ "eco_boundary" ]
             }
         },
         "CBMSequencer": {
