@@ -333,32 +333,37 @@
             "library": "moja.modules.cbm",
             "order": 2
         },
-        "CBMDisturbanceEventModule": {
+        "CBMDisturbanceListener": {
             "library": "moja.modules.cbm",
             "order": 3,
+            "enabled": true,
             "settings": {
                 "vars": "$disturbance_vars"
-            },
-            "enabled": true
+            }
         },
-        "CBMTransitionRulesModule": {
+        "CBMDisturbanceEventModule": {
             "library": "moja.modules.cbm",
             "order": 4,
             "enabled": true
         },
-        "CBMLandClassTransitionModule": {
+        "CBMTransitionRulesModule": {
             "library": "moja.modules.cbm",
             "order": 5,
             "enabled": true
         },
-        "CBMGrowthModule": {
+        "CBMLandClassTransitionModule": {
             "library": "moja.modules.cbm",
             "order": 6,
             "enabled": true
         },
-        "CBMDecayModule": {
+        "CBMGrowthModule": {
             "library": "moja.modules.cbm",
             "order": 7,
+            "enabled": true
+        },
+        "CBMDecayModule": {
+            "library": "moja.modules.cbm",
+            "order": 8,
             "settings": {
                 "extra_decay_removals": false
             },
@@ -367,15 +372,15 @@
         "CBMAgeIndicators": {
             "enabled": true,
             "library": "moja.modules.cbm",
-            "order": 8
+            "order": 9
         },
         "TransactionManagerAfterSubmitModule": {
             "library": "internal.flint",
-            "order": 9
+            "order": 10
         },
         "CBMAggregatorLandUnitData": {
             "library": "moja.modules.cbm",
-            "order": 10,
+            "order": 12,
             "enabled": true,
             "settings": {
                 "reporting_classifier_set": "reporting_classifiers"}
@@ -383,51 +388,354 @@
         "CBMAggregatorSQLiteWriter": {
             "library": "moja.modules.cbm",
             "enabled": true,
-            "order": 11,
+            "order": 13,
             "settings": {
                 "databasename": "$output_db"
             }
         },
         "WriteVariableGrid": {
             "library": "internal.flint",
-            "order": 12,
+            "order": 11,
             "enabled": true,
             "settings": {
                 "output_path": "$output_dir",
                 "items": [
-                   {
-                       "enabled": true,
-                       "data_name": "AG_Biomass",
-                       "pool_name": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "HardwoodMerch", "HardwoodFoliage", "HardwoodOther"],
-                       "variable_data_type": "double",
-                       "on_notification": "OutputStep",
-                       "nodata_value": -1
-                   },
-                   {
-                       "enabled": true,
-                       "data_name": "CH4",
-                       "pool_name": ["CH4"],
-                       "variable_data_type": "double",
-                       "on_notification": "OutputStep",
-                       "nodata_value": -1
-                   },
-                   {
-                       "enabled": true,
-                       "data_name": "Age",
-                       "variable_name": "age",
-                       "variable_data_type": "Int16",
-                       "on_notification": "OutputStep",
-                       "nodata_value": -1
-                   },
-                   {
-                       "enabled": false,
-                       "data_name": "Merch_Biomass",
-                       "pool_name": ["SoftwoodMerch", "HardwoodMerch"],
-                       "variable_data_type": "double",
-                       "on_notification": "OutputStep",
-                       "nodata_value": -1
-                   }
-               ]
+                    {
+                        "enabled": true,
+                        "data_name": "Age",
+                        "variable_name": "age",
+                        "variable_data_type": "Int16",
+                        "on_notification": "OutputStep",
+                        "nodata_value": -1
+                    },
+                    {
+                        "enabled": true,
+                        "data_name": "AG_Biomass_C",
+                        "pool_name": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "HardwoodMerch", "HardwoodFoliage", "HardwoodOther"],
+                        "variable_data_type": "double",
+                        "on_notification": "OutputStep",
+                        "nodata_value": -1
+                    },
+                    {
+                        "enabled": true,
+                        "data_name": "Total_Ecosystem_C",
+                        "pool_name": [
+                            "SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots", "HardwoodMerch",
+                            "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots", "AboveGroundVeryFastSoil",
+                            "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil", "MediumSoil", "AboveGroundSlowSoil",
+                            "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag", "HardwoodStemSnag", "HardwoodBranchSnag"
+                        ],
+                        "variable_data_type": "double",
+                        "on_notification": "OutputStep",
+                        "nodata_value": -1
+                    },
+                    {
+                        "enabled": true,
+                        "data_name": "Total_Biomass_C",
+                        "pool_name": [
+                            "SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots", "HardwoodMerch",
+                            "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"
+                        ],
+                        "variable_data_type": "double",
+                        "on_notification": "OutputStep",
+                        "nodata_value": -1
+                    },
+                    {
+                        "enabled": true,
+                        "data_name": "Dead_Organic_Matter_C",
+                        "pool_name": [
+                            "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil", "MediumSoil",
+                            "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag", "HardwoodStemSnag",
+                            "HardwoodBranchSnag"
+                        ],
+                        "variable_data_type": "double",
+                        "on_notification": "OutputStep",
+                        "nodata_value": -1
+                    },
+                    {
+                        "enabled": true,
+                        "data_name": "Soil_C",
+                        "pool_name": ["BelowGroundVeryFastSoil", "BelowGroundFastSoil"],
+                        "variable_data_type": "double",
+                        "on_notification": "OutputStep",
+                        "nodata_value": -1
+                    },
+					{
+						"enabled": true,
+						"data_name": "NPP",
+						"flux": {
+                            "from": ["Atmosphere"],
+                            "to": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                   "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "NEP",
+						"flux": [
+                            {
+                                "from": ["Atmosphere"],
+                                "to": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                       "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"]
+                            },
+                            {
+                                "from": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                         "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                         "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["CO2", "CH4", "CO"],
+                                "flux_source": "annual_process",
+                                "subtract": true
+                            }
+                        ],
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "NBP",
+						"flux": [
+                            {
+                                "from": ["Atmosphere"],
+                                "to": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                       "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"]
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                         "SoftwoodStemSnag", "SoftwoodBranchSnag", "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["Products"],
+                                "flux_source": "disturbance",
+                                "subtract": true
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                         "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                         "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                         "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["CO2", "CH4", "CO"],
+                                "subtract": true
+                            }
+                        ],
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Delta_Total_Ecosystem",
+						"flux": [
+                            {
+                                "from": ["Atmosphere"],
+                                "to": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                       "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"]
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                         "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                         "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                         "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["CO2", "CH4", "CO"],
+                                "subtract": true
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                         "SoftwoodStemSnag", "SoftwoodBranchSnag", "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["Products"],
+                                "flux_source": "disturbance",
+                                "subtract": true
+                            }
+                        ],
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Delta_Total_Biomass",
+						"flux": [
+                            {
+                                "from": ["Atmosphere"],
+                                "to": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                       "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"]
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                                "to": ["CO2", "CH4", "CO"],
+                                "subtract": true
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                                "to": ["Products"],
+                                "flux_source": "disturbance",
+                                "subtract": true
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                                "to": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                       "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                       "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "subtract": true
+                            }
+                        ],
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Delta_Total_DOM",
+						"flux": [
+                            {
+                                "from": ["Atmosphere"],
+                                "to": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                       "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"]
+                            },
+                            {
+                                "from": ["SoftwoodStemSnag", "SoftwoodBranchSnag", "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["CO2", "CH4", "CO"],
+                                "subtract": true
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                                "to": ["Products"],
+                                "flux_source": "disturbance",
+                                "subtract": true
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                                "to": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                       "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                       "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "subtract": true
+                            }
+                        ],
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Total_Emissions",
+						"flux": {
+                            "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                     "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                     "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                     "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                     "HardwoodStemSnag", "HardwoodBranchSnag"],
+                            "to": ["CO2", "CH4", "CO"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Total_Biomass_Emissions",
+						"flux": {
+                            "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                     "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                            "to": ["CO2", "CH4", "CO"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Total_DOM_Emissions",
+						"flux": {
+                            "from": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                     "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                     "HardwoodStemSnag", "HardwoodBranchSnag"],
+                            "to": ["CO2", "CH4", "CO"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Total_CO2_Emissions",
+						"flux": {
+                            "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                     "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                     "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                     "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                     "HardwoodStemSnag", "HardwoodBranchSnag"],
+                            "to": ["CO2"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Total_CO_Emissions",
+						"flux": {
+                            "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                     "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                     "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                     "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                     "HardwoodStemSnag", "HardwoodBranchSnag"],
+                            "to": ["CO"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Total_CH4_Emissions",
+						"flux": {
+                            "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                     "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                     "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                     "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                     "HardwoodStemSnag", "HardwoodBranchSnag"],
+                            "to": ["CH4"]
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Ecosystem_Removals",
+						"flux": [
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                         "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                         "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                         "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["CO2", "CH4", "CO"]
+                            },
+                            {
+                                "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                         "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots",
+                                         "SoftwoodStemSnag", "SoftwoodBranchSnag", "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                "to": ["Products"],
+                                "flux_source": "disturbance"
+                            }
+                        ],
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					},
+					{
+						"enabled": true,
+						"data_name": "Bio_To_Soil_From_Disturbances",
+						"flux": {
+                            "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
+                                     "HardwoodMerch", "HardwoodFoliage", "HardwoodOther", "HardwoodCoarseRoots", "HardwoodFineRoots"],
+                            "to": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                   "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                   "HardwoodStemSnag", "HardwoodBranchSnag"],
+                            "flux_source": "disturbance"
+                        },
+						"variable_data_type": "double",
+						"on_notification": "OutputStep"
+					}
+                ]
             }
         }
     }

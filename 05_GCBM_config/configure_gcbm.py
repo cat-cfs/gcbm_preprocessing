@@ -31,7 +31,6 @@ class ConfigureGCBM(object):
         self.end_year = future_range[1]
         self.activity_start_year = actv_start_year
 
-
     def configureGCBM(self, input_db, general_lyrs, tiler_output_dir):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
         self.tiler_output = tiler_output_dir
@@ -95,28 +94,24 @@ class ConfigureGCBM(object):
 
         return gcbm_scen_moja_dir
 
-
     def getTiles(self):
         '''
-        Explores all directories in the tiler_template_dir and extracts the tile
-        x, y from the file name and adds to the list of tiles.
+        Explores all directories in the tiler_template_dir for study area
+        definitions and extracts the tile lists.
         Assumes a consistent file name format and that the tiler_template_dir
         is not None (at least one tiled disturbance layer was found).
         '''
-        tiles_text = []
-        z = zipfile.ZipFile(self.tiler_template_dir)
-        dirs = set([os.path.dirname(file) for file in z.namelist()])
-
-        for d in dirs:
-            if d != '':
-                tiles_text.append(os.path.basename(d).split('_moja_')[-1])
         tiles = []
-        for tile_text in tiles_text:
-            x, y = tile_text.split('_')
-            tiles.append({"x":int(x), "y":int(y)})
-        logging.info('Tiles found: {}'.format(tiles))
-        return tiles
-
+        search_dir = os.path.dirname(os.path.abspath(self.tiler_template_dir or "."))
+        logging.info('Searching {} for tiles...'.format(search_dir))
+        for root, _, files in os.walk(search_dir):
+            for file in files:
+                if file == 'study_area.json':
+                    with open(os.path.join(root, file), 'rb') as study_area_file:
+                        study_area = json.load(study_area_file)
+                        tile_list = study_area.get("tiles")
+                        logging.info('Found tiles: {}'.format(tile_list))
+                        return tile_list
 
     def addLayerConfigNamesPreActivity(self, dirs, name):
         '''
@@ -304,7 +299,11 @@ class ConfigureGCBM(object):
         gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] = (
             gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] + reporting_ind_names)
         gcbm_config["Variables"]["admin_boundary"] = self.inventory.getProvince()
-        gcbm_config["Modules"]["CBMDisturbanceEventModule"]["settings"]["vars"] = disturbance_names
+        
+        gcbm_config["Modules"]["CBMDisturbanceListener"]["settings"]["vars"] = disturbance_names
+        if not disturbance_names:
+            gcbm_config["Modules"]["CBMDisturbanceListener"]["enabled"] = False
+            
         output_directory = self.output_dir
         if not output_directory[0]=='$':
             output_directory = os.path.join(self.output_dir, 'SCEN_{}'.format(scenario))
