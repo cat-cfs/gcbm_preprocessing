@@ -187,6 +187,22 @@ class Tiler(object):
                         age_after=-1)))
         pp.finish()
 
+    def processGenericHistoricDisturbances(self, dist, dist_type_attr, year_attr, dist_type_lookup):
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1).start()
+
+        historic_start_year, _ = self.historic_range
+        _, future_end_year     = self.future_range
+        year_range = range(historic_start_year, future_end_year + 1)
+        
+        for file_name in self.scan_for_layers(dist.getWorkspace(), dist.getFilter()):
+            for year in year_range:
+                self.layers.append(DisturbanceLayer(
+                    self.rule_manager,
+                    VectorLayer("insect_{}".format(year), file_name, Attribute(dist_type_attr, substitutions=dist_type_lookup)),
+                    year=Attribute(year_attr, filter=ValueFilter(year, True)),
+                    disturbance_type=Attribute(dist_type_attr)))
+        pp.finish()
+
     def processProjectedDisturbances(self, scenario, params):
         future_start_year, future_end_year = self.future_range
         if future_start_year > future_end_year:
