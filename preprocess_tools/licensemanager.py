@@ -80,27 +80,33 @@ def arc_license(product_or_extension):
             mgr = license_manager
     
     if not mgr:
-        logging.fatal("Tried to acquire unsupported license: {}".format(product_or_extension))
+        logging.fatal("Tried to acquire unsupported license: {}.".format(product_or_extension))
         return
     
     wait_time = 60
     max_retries = 60**2 * 12 / wait_time # Retry for up to 12 hours
     
-    attempt = 0
+    attempt = 1
     try:
         license = None
+        logging.debug("Acquiring {} license...".format(product_or_extension))
         while not license and attempt < max_retries:
-            try:
-                license = mgr.checkout(product_or_extension)
-            except:
-                logging.info("Waiting for {} license...".format(product_or_extension))
-                time.sleep(60)
-            finally:
+            license = mgr.checkout(product_or_extension)
+            if not license:
                 attempt += 1
+                logging.info("Waiting for {} license...".format(product_or_extension))
+                try:
+                    time.sleep(wait_time)
+                except:
+                    pass
         
-        if not license and attempt >= max_retries:
-            logging.fatal("Failed to acquire {} after {} attempts.".format(product_or_extension, attempt))
+        attempts = "{} attempt{}".format(attempt, "s" if attempt > 1 else "")
+        if license:
+            logging.info("Acquired {} license after {}.".format(product_or_extension, attempts))
+        else:
+            logging.fatal("Failed to acquire {} license after {}.".format(product_or_extension, attempts))
             
         yield license
     finally:
+        logging.debug("Releasing {} license.".format(product_or_extension))
         mgr.release(product_or_extension)

@@ -5,9 +5,9 @@ import json
 import sys
 import logging
 import shutil
-from distutils.dir_util import copy_tree
 import re
-import zipfile
+from distutils.dir_util import copy_tree
+from zipfile import ZipFile
 
 class ConfigureGCBM(object):
     '''
@@ -81,12 +81,16 @@ class ConfigureGCBM(object):
         gcbm_scen_moja_dir = os.path.join(os.path.dirname(tiler_scen_out), 'SCEN_{}'.format(scenario), os.path.basename(moja_dir))
         if os.path.exists(gcbm_scen_moja_dir):
             os.remove(gcbm_scen_moja_dir)
-        zin = zipfile.ZipFile(moja_dir, 'r')
-        zout = zipfile.ZipFile (gcbm_scen_moja_dir, 'w')
+        
+        if not os.path.exists(os.path.dirname(gcbm_scen_moja_dir)):
+            os.makedirs(os.path.dirname(gcbm_scen_moja_dir))
+            
+        zin = ZipFile(moja_dir, 'r')
+        zout = ZipFile(gcbm_scen_moja_dir, 'w')
         replace_d = {'{}{} CC'.format('' if tiler_scenario.lower()=='base' else 'CBM_', tiler_scenario): 'CBM_{} CC'.format(scenario)}
         for item in zin.infolist():
             buffer = zin.read(item.filename)
-            if (item.filename[-5:] == '.json'):
+            if (item.filename.endswith('.json')):
                 buffer = self.replace_params_zip(buffer, replace_d)
             zout.writestr(item, buffer)
         zout.close()
@@ -273,9 +277,7 @@ class ConfigureGCBM(object):
 
         gcbm_config["LocalDomain"]["landscape"]["tiles"] = self.getTiles()
 
-        for cn in layer_config_names:
-            name = cn[0]
-            data_id = cn[1]
+        for name, data_id in layer_config_names:
             gcbm_config["Variables"].update({
                 name: {
                     "transform": {
@@ -287,33 +289,34 @@ class ConfigureGCBM(object):
                 }
             })
 
-        classifiers = []
-        for classifier in self.inventory.getClassifiers():
-            if classifier in [name[0] for name in layer_config_names]:
-                classifiers.append(classifier)
-            else:
-                logging.warning("Classifier '{}' not added to GCBM config".format(classifier))
-                print "Warning: Classifier '{}' not added to GCBM config".format(classifier)
+        inventory_classifiers = set(self.inventory.getClassifiers())
+        layer_classifiers = {name for name, _ in layer_config_names}
+        missing_classifiers = inventory_classifiers - layer_classifiers
+        classifiers = list(inventory_classifiers - missing_classifiers)
+        for classifier in list(missing_classifiers):
+            logging.warning("Classifier '{}' not added to GCBM config".format(classifier))
+            print "Warning: Classifier '{}' not added to GCBM config".format(classifier)
+                
         reporting_ind_names = [ri for ri in self.reporting_indicators.getIndicators()]
         gcbm_config["Variables"]["initial_classifier_set"]["transform"]["vars"] = classifiers
         gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] = (
             gcbm_config["Variables"]["reporting_classifiers"]["transform"]["vars"] + reporting_ind_names)
         gcbm_config["Variables"]["admin_boundary"] = self.inventory.getProvince()
-        
         gcbm_config["Modules"]["CBMDisturbanceListener"]["settings"]["vars"] = disturbance_names
         if not disturbance_names:
             gcbm_config["Modules"]["CBMDisturbanceListener"]["enabled"] = False
-            
         output_directory = self.output_dir
-        if not output_directory[0]=='$':
+        if not output_directory.startswith('$'):
             output_directory = os.path.join(self.output_dir, 'SCEN_{}'.format(scenario))
             if not os.path.exists(output_directory):
                 os.makedirs(output_directory)
+                
         gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]["settings"]["databasename"] = os.path.join(output_directory, 'GCBMoutput.db')
         gcbm_config["Modules"]["WriteVariableGrid"]["settings"]["output_path"] = output_directory
         output_path = r'{}\SCEN_{}\GCBM_config.json'.format(self.gcbm_configs_dir, scenario)
         if not os.path.exists(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
+
         with open(output_path, 'w') as config_file:
             json.dump(gcbm_config, config_file, sort_keys=True, indent=4)
             logging.info('GCBM config generated for scenario {} at {}'.format(scenario, output_path))
