@@ -203,6 +203,44 @@ class Tiler(object):
                     disturbance_type=Attribute(dist_type_attr)))
         pp.finish()
 
+    def processProjectedDisturbancesRasters(self, scenario, raster_dir):
+        """
+        append existing raster disturbance layers to the tiler instance
+        @param scenario str name of the scenario
+        @raster_dir directory containing future disturbance rasters 
+                    ex "<tsaname>\01a_pretiled_layers\03_disturbances\02_future"
+                    specified directory contains scenario names:
+                    ex. "<tsaname>\01a_pretiled_layers\03_disturbances\02_future\base"
+        """
+
+        pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3], scenario), 1).start()
+        
+        projected_dist_lookup = {
+            7:  "Wild Fires",
+            6:  "{} CC".format("Base" if scenario.lower() == "base" else "CBM_{}".format(scenario)),
+            13: "SlashBurning"
+        }
+        
+        projected_name_lookup = {
+            7:  "fire",
+            6:  "harvest",
+            13: "slashburn"
+        }
+
+        for year in range(self.historic_range[1]+1, self.future_range[1]+1):
+            for dist_code in projected_dist_lookup:
+                label = projected_dist_lookup[dist_code]
+                name = projected_name_lookup[dist_code]
+                filename = "projected_{distName}_{year}.tif".format(distName = name, year = year)
+                raster_filename = os.path.join(raster_dir, scenario, filename)
+                self.layers.append(DisturbanceLayer(
+                    self.rule_manager,
+                    RasterLayer(raster_filename,
+                                nodata_value=0),
+                    year=year,
+                    disturbance_type=name))
+        pp.finish()
+
     def processProjectedDisturbances(self, scenario, params):
         future_start_year, future_end_year = self.future_range
         if future_start_year > future_end_year:

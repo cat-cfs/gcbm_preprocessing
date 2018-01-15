@@ -185,34 +185,39 @@ class ConfigureGCBM(object):
         # Order: Fire, Insect, Harvest, Slashburn
 
         # fire layers
-        fire = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja.zip'.format(tiler_output, self.base_scenario))
+        self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_fire_*_moja.zip'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\fire_*_moja.zip'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\projected_fire_*_moja.zip'.format(tiler_output, self.base_scenario))),
             'fire')
-        proj_fire = self.addLayerConfigNamesPostActivity(
+        self.addLayerConfigNamesPostActivity(
             glob.glob(r'{}\SCEN_{}\projected_fire_*_moja.zip'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_fire', self.GCBM_scenarios[scenario], scenario)
 
         # insect layers
-        insect = self.addLayerConfigNamesPreActivity(
+        self.addLayerConfigNamesPreActivity(
             glob.glob(r'{}\SCEN_{}\insect_*_moja.zip'.format(tiler_output, self.base_scenario)),
             'insect')
 
+        # prescribed burn layers for parks
+        self.addLayerConfigNamesPreActivity(
+            glob.glob(r'{}\SCEN_{}\prescribed_burn_*_moja.zip'.format(tiler_output, self.base_scenario)),
+            'prescribed_burn')
+            
         # harvest layers
-        harvest = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja.zip'.format(tiler_output, self.base_scenario))
+        self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_harvest_*_moja.zip'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\harvest_*_moja.zip'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja.zip'.format(tiler_output, self.base_scenario))),
             'harvest')
-        proj_harvest = self.addLayerConfigNamesPostActivity(
+        self.addLayerConfigNamesPostActivity(
             glob.glob(r'{}\SCEN_{}\projected_harvest_*_moja.zip'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_harvest', self.GCBM_scenarios[scenario], scenario)
 
         # slashburn layers
-        slashburn = self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))
+        self.addLayerConfigNamesPreActivity((glob.glob(r'{}\SCEN_{}\rollback_slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))
             +glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja.zip'.format(tiler_output, self.base_scenario))),
             'slashburn')
-        proj_slashburn = self.addLayerConfigNamesPostActivity(
+        self.addLayerConfigNamesPostActivity(
             glob.glob(r'{}\SCEN_{}\projected_slashburn_*_moja.zip'.format(tiler_output, self.GCBM_scenarios[scenario])),
             'proj_slashburn', self.GCBM_scenarios[scenario], scenario)
 
