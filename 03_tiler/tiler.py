@@ -202,6 +202,7 @@ class Tiler(object):
                     year=Attribute(year_attr, filter=ValueFilter(year, True)),
                     disturbance_type=Attribute(dist_type_attr)))
         pp.finish()
+
     def processProjectedDisturbancesRasters(self, scenario, raster_dir):
         """
         append existing raster disturbance layers to the tiler instance
@@ -239,7 +240,7 @@ class Tiler(object):
                     year=year,
                     disturbance_type=name))
         pp.finish()
-        
+
     def processProjectedDisturbances(self, scenario, params):
         future_start_year, future_end_year = self.future_range
         if future_start_year > future_end_year:
