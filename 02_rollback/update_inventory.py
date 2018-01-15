@@ -135,7 +135,7 @@ class CalculateNewDistYr(object):
                 age_diff = row.getValue(self.inv_dist_date_diff_field)
                 est_year = row.getValue(self.establishment_date_field)
                 dist_year = row.getValue(self.disturbance_yr)
-                inv_derived_disturbance = est_year - 1
+                inv_derived_disturbance = est_year #removed -1
                 if age_diff > 0:
                     row.setValue(self.regen_delay_field, age_diff)
                     row.setValue(self.new_disturbance_field, dist_year)

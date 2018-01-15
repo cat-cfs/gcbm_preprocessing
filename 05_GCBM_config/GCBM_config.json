@@ -417,7 +417,7 @@
                         "nodata_value": -1
                     },
                     {
-                        "enabled": true,
+                        "enabled": false,
                         "data_name": "Total_Ecosystem_C",
                         "pool_name": [
                             "SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots", "HardwoodMerch",
@@ -430,7 +430,7 @@
                         "nodata_value": -1
                     },
                     {
-                        "enabled": true,
+                        "enabled": false,
                         "data_name": "Total_Biomass_C",
                         "pool_name": [
                             "SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots", "HardwoodMerch",
@@ -441,7 +441,7 @@
                         "nodata_value": -1
                     },
                     {
-                        "enabled": true,
+                        "enabled": false,
                         "data_name": "Dead_Organic_Matter_C",
                         "pool_name": [
                             "AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil", "MediumSoil",
@@ -453,7 +453,7 @@
                         "nodata_value": -1
                     },
                     {
-                        "enabled": true,
+                        "enabled": false,
                         "data_name": "Soil_C",
                         "pool_name": ["BelowGroundVeryFastSoil", "BelowGroundFastSoil"],
                         "variable_data_type": "double",
@@ -494,6 +494,21 @@
                     },
                     {
                       "enabled": true,
+                      "data_name": "Decomp_Releases",
+                      "flux": [
+                                      {
+                                          "from": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
+                                                   "MediumSoil", "AboveGroundSlowSoil", "BelowGroundSlowSoil", "SoftwoodStemSnag", "SoftwoodBranchSnag",
+                                                   "HardwoodStemSnag", "HardwoodBranchSnag"],
+                                          "to": ["CO2", "CH4", "CO"],
+                                          "flux_source": "annual_process"
+                                      }
+                                  ],
+                      "variable_data_type": "double",
+                      "on_notification": "OutputStep"
+                    },
+                    {
+                      "enabled": true,
                       "data_name": "NBP",
                       "flux": [
                                       {
@@ -523,7 +538,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Delta_Total_Ecosystem",
                       "flux": [
                                       {
@@ -553,7 +568,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Delta_Total_Biomass",
                       "flux": [
                                       {
@@ -587,7 +602,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Delta_Total_DOM",
                       "flux": [
                                       {
@@ -620,7 +635,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Total_Emissions",
                       "flux": {
                                       "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
@@ -634,7 +649,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Total_Biomass_Emissions",
                       "flux": {
                                       "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
@@ -645,7 +660,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Total_DOM_Emissions",
                       "flux": {
                                       "from": ["AboveGroundVeryFastSoil", "BelowGroundVeryFastSoil", "AboveGroundFastSoil", "BelowGroundFastSoil",
@@ -657,7 +672,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Total_CO2_Emissions",
                       "flux": {
                                       "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
@@ -671,7 +686,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Total_CO_Emissions",
                       "flux": {
                                       "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
@@ -699,7 +714,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Ecosystem_Removals",
                       "flux": [
                                       {
@@ -722,7 +737,7 @@
                       "on_notification": "OutputStep"
                     },
                     {
-                      "enabled": true,
+                      "enabled": false,
                       "data_name": "Bio_To_Soil_From_Disturbances",
                       "flux": {
                                       "from": ["SoftwoodMerch", "SoftwoodFoliage", "SoftwoodOther", "SoftwoodCoarseRoots", "SoftwoodFineRoots",
