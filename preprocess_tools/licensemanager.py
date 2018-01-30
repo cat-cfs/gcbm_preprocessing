@@ -25,7 +25,8 @@ class Extensions(object):
             import arcpy
             arcpy.CheckOutExtension(extension)
             return arcpy
-        except:
+        except Exception as e:
+            logging.debug(e)
             return None
             
     @staticmethod
@@ -58,7 +59,8 @@ class Products(object):
             archook.get_arcpy()
             import arcpy
             return arcpy if arcpy.ProductInfo() != "NotInitialized" else None
-        except:
+        except Exception as e:
+            logging.debug(e)
             return None
     
     @staticmethod
