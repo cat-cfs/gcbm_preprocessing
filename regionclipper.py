@@ -30,6 +30,11 @@ class RegionClipper(object):
                           new_workspace=new_workspace)
 
     def ProcessSubRegion(self, tasks, subRegionsData):
+        '''
+        process the tasks specified in tasks for the specified subregion
+        @param tasks the dictionary of tasks to run on the subregion
+        @param subRegionsData the dictionary of subregion settings
+        '''
         getPath = lambda x: self.path_registry.GetPath(x, subRegionsData["PathName"])
         clipFeature = getPath(subRegionsData["ClipFeature"])
         clipFeatureFilter = subRegionsData["ClipFeatureFilter"]
@@ -40,6 +45,7 @@ class RegionClipper(object):
                               new_workspace= getPath(t["new_workspace"]),
                               clip_feature=clipFeature,
                               clip_feature_filter=clipFeatureFilter)
+
         for t in tasks["ClipTasks"]:
             self.clip(workspace=getPath(t["workspace"]),
                       workspace_filter=t["workspace_filter"],
@@ -53,6 +59,14 @@ class RegionClipper(object):
                       new_workspace= getPath(t["new_workspace"]))
 
     def Process(self, config, subRegionNames=None):
+        '''
+        runs the clip/copy/cut tasks specified in config, 
+        optionally for the sub-regions specified
+        @param config dictionary of tasks
+        @param subRegionNames if None all subRegions specified in config are
+        processed, otherwise if a list of subregion names are specified that 
+        set of subregions are processed
+        '''
         subRegions = config["SubRegions"]
         subRegionsByName = {}
         for r in subRegions:
@@ -90,8 +104,6 @@ def main():
     if args.subRegionNames:
         subRegions = args.subRegionsNames.split(",")
     clip(args.fileRegistryPath, args.clipTasksPath, subRegions)
-
-    # my code here
 
 if __name__ == "__main__":
     main()
