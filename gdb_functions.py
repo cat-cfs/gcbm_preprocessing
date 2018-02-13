@@ -1,4 +1,4 @@
-import logging
+import logging, glob
 from licensemanager import *
 
 class GDBFunctions(object):
@@ -53,7 +53,7 @@ class GDBFunctions(object):
 
         if not os.path.exists(new_workspace):
             self.createWorkspace(new_workspace)
-        if new_workspace==self.getWorkspace() and name==None:
+        if new_workspace==workspace and name==None:
             raise ValueError('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
         logging.info("Clipping {0} to {1}...".format(workspace, new_workspace))
         with arc_license(Products.ARC) as arcpy:
@@ -140,7 +140,7 @@ class GDBFunctions(object):
                 arcpy.env.workspace = workspace
                 all = arcpy.ListFeatureClasses()
                 return [os.path.join(workspace, layer) for layer in all if layer==filter]
-        return sorted(glob.glob(os.path.join(workspace, self.getFilter())), key=os.path.basename)
+        return sorted(glob.glob(os.path.join(workspace, filter)), key=os.path.basename)
 
     def scan_for_files(self, name):
         return sorted(glob.glob(os.path.join(workspace, '{}*'.format(name))), key=os.path.basename)

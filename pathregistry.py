@@ -8,11 +8,11 @@ class Node:
         self.edges.append(node)
 
 class PathRegistry(object):
-    def __init__(self, region_name, config):
-
+    def __init__(self, config):
+        self.region_name_placeholder = "{region_name}"
         if "Region_Name" in config:
             raise ValueError("Region_name is a reserved path item")
-        config["Region_Name"] = [region_name]
+        config["Region_Name"] = [self.region_name_placeholder]
 
         nodes = {}
         for k,v in config.items():
@@ -42,6 +42,17 @@ class PathRegistry(object):
         for k,v in PathTokens.items():
             self.Paths[k] = os.path.join(*v)
             logging.info("{k}: '{v}'".format(k=k, v= self.Paths[k]))
+
+    def GetPath(self, name, region_path_name = None):
+        if not name in self.Paths:
+            raise ValueError("registered path '{0}' not present".format(name))
+        path = self.Paths[name]
+        if self.region_name_placeholder in path:
+            if region_path_name is None:
+                raise ValueError("region name must be specified for '{0}'".format(name))
+            return path.format(region_name=region_path_name)
+        else:
+            return path
 
     def is_dependent_token(self, token):
         return token.startswith("${") and token.endswith("}")

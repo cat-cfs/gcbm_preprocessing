@@ -1,7 +1,5 @@
-from regionclipper import RegionClipper
-from pathregistry import PathRegistry
-import logging
 
+import logging, json, os, sys
 def start_logging(fn=".\\script.log",fmode='w', use_console=True):
     #set up logging to print to console window and to log file
     #
@@ -21,10 +19,13 @@ def start_logging(fn=".\\script.log",fmode='w', use_console=True):
 
     rootLogger.setLevel(logging.INFO)
 
-start_logging("log.txt")
+def loadJson(path):
+    with open(path) as json_data:
+        return json.load(json_data)
 
-class Application(object):
-    def __init__(self, region_name, pathData):
-        self.PathRegistry = PathRegistry(region_name, pathData)
+
+
+
+
 
 
