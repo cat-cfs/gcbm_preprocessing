@@ -1,34 +1,30 @@
-from gdb_functions import GDBFunctions
+from regionclipper import RegionClipper
+from pathregistry import PathRegistry
+import logging
 
-# filter used to get the desired study area from the TSA boundaries.
-# change only the associated values for "field" and "code"
-study_area_filter = {
-    "field": "TSA_NUMBER",
-    "code": "'Boundary TSA'"
-}
-# field names for the Admin and Eco attributes in the spatial_boundaries_ri file
-spatial_boundaries_attr = {
-    "Admin": "AdminBou_1",
-    "Eco": "EcoBound_1"
-}
+def start_logging(fn=".\\script.log",fmode='w', use_console=True):
+    #set up logging to print to console window and to log file
+    #
+    # From http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
+    #
+    rootLogger = logging.getLogger()
 
-working_directory=""
-inventory_workspace_path = r"F:\GCBM\17_BC_ON_1ha\05_working_BC\00_external_data\01_spatial\02_inventory\Processed.gdb"
-spatial_boundaries_path = r"F:\GCBM\17_BC_ON_1ha\05_working_BC\00_external_data\01_spatial\01_spatial_reference\PSPUS_2016_FINAL_1_Reprojected.shp"
-TSA_filter = "\"TSA_NUMBER\" = 'Boundary TSA'"
-new_Workspace = r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\00_Workspace.gdb"
-inventoryOutputName = "tsa2"
+    logFormatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M')
 
-gdbFunctions = GDBFunctions()
+    fileHandler = logging.FileHandler(fn, fmode)
+    fileHandler.setFormatter(logFormatter)
+    rootLogger.addHandler(fileHandler)
+    if use_console:
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(logFormatter)
+        rootLogger.addHandler(consoleHandler)
 
-gdbFunctions.clipCutPolys(
-    workspace = inventory_workspace_path,
-    clip_feature = spatial_boundaries_path,
-    clip_feature_filter = TSA_filter,
-    new_workspace = new_Workspace,
-    name = inventoryOutputName)
+    rootLogger.setLevel(logging.INFO)
 
+start_logging("log.txt")
 
-
+class Application(object):
+    def __init__(self, region_name, pathData):
+        self.PathRegistry = PathRegistry(region_name, pathData)
 
 
