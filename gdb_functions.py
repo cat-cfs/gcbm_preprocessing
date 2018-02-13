@@ -1,5 +1,6 @@
-import logging, glob
-from licensemanager import *
+import logging, glob, os
+from preprocess_tools.licensemanager import *
+
 
 class GDBFunctions(object):
     def createWorkspace(self, new_workspace):
@@ -142,5 +143,3 @@ class GDBFunctions(object):
                 return [os.path.join(workspace, layer) for layer in all if layer==filter]
         return sorted(glob.glob(os.path.join(workspace, filter)), key=os.path.basename)
 
-    def scan_for_files(self, name):
-        return sorted(glob.glob(os.path.join(workspace, '{}*'.format(name))), key=os.path.basename)
