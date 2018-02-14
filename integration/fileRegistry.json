@@ -11,10 +11,12 @@
   "Environment_Dir": [ "${External_Spatial_Dir}", "04_environment" ],
   "SubRegionDir": [ "${Working_Dir}", "${Region_Name}" ],
   "Pretiled_Layers": [ "${SubRegionDir}", "01a_pretiled_layers" ],
+  "Pretiled_Disturbances": [ "${Pretiled_Layers}", "03_disturbances" ],
   "Clipped_Inventory_Path": [ "${Pretiled_Layers}", "00_Workspace.gdb" ],
-  "Clipped_Historic_Disturbance_Path": [ "${Pretiled_Layers}", "03_disturbances", "01_historic" ],
+  "Clipped_Historic_Disturbance_Path": [ "${Pretiled_Disturbances}", "01_historic" ],
   "Clipped_Historic_Fire_Path": [ "${Clipped_Historic_Disturbance_Path}", "01_fire", "shapefiles" ],
   "Clipped_Historic_Harvest_Path": [ "${Clipped_Historic_Disturbance_Path}", "02_harvest" ],
   "Clipped_Historic_Insect_Path": [ "${Clipped_Historic_Disturbance_Path}", "03_insect_filtered" ],
-  "Copied_Environment_Dir": [ "${Pretiled_Layers}", "04_environment" ]
+  "Copied_Environment_Dir": [ "${Pretiled_Layers}", "04_environment" ],
+  "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs" ]
 }
