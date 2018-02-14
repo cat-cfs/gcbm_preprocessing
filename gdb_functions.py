@@ -115,7 +115,7 @@ class GDBFunctions(object):
                     arcpy.env.workspace = workspace
                     arcpy.FeatureClassToFeatureClass_conversion(os.path.basename(layer), new_workspace, os.path.basename(layer))
             else:
-                for file in self.scan_for_files(os.path.basename(layer).split('.')[0]):
+                for file in self.scan_for_files(workspace, os.path.basename(layer).split('.')[0]):
                     shutil.copyfile(file, os.path.join(new_workspace, os.path.basename(file)))
         self._workspace = new_workspace
         logging.info('Done')
@@ -143,3 +143,5 @@ class GDBFunctions(object):
                 return [os.path.join(workspace, layer) for layer in all if layer==filter]
         return sorted(glob.glob(os.path.join(workspace, filter)), key=os.path.basename)
 
+    def scan_for_files(self, workspace, name):
+        return sorted(glob.glob(os.path.join(workspace, '{}*'.format(name))), key=os.path.basename)

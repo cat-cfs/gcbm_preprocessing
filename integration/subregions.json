@@ -3,7 +3,6 @@
     "Name": "Boundary",
     "Region_Number": 2,
     "PathName": "TSA_2_Boundary",
-    "ClipFeature": "Clip_Feature",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
     "InventoryName": "tsa2"
   }

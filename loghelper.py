@@ -19,10 +19,6 @@ def start_logging(fn=".\\script.log",fmode='w', use_console=True):
 
     rootLogger.setLevel(logging.INFO)
 
-def loadJson(path):
-    with open(path) as json_data:
-        return json.load(json_data)
-
 
 
 
