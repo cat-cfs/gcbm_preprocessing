@@ -1,0 +1,23 @@
+{
+  "InventoryWorkspace": "Clipped_Inventory_Path",
+  "InventoryFilter": "inventory",
+  "InventoryAgeField": "Age2015",
+  "Disturbances": [
+    {
+      "Workspace": "Clipped_Historic_Disturbance_Path",
+      "WorkspaceFilter": "NFDB*.shp",
+      "YearField": "YEAR_"
+    },
+    {
+      "Workspace": "Clipped_Historic_Disturbance_Path",
+      "WorkspaceFilter": "NBAC*.shp",
+      "YearField": "EDATE"
+    },
+    {
+      "Workspace": "Clipped_Historic_Harvest_Path",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
+      "YearField": "HARV_YR"
+    }
+  ]
+
+}

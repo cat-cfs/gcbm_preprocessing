@@ -1,5 +1,4 @@
 {
-  "Tasks": {
     "ClipCutPolysTasks": [
       {
         "workspace": "Inventory_Workspace",
@@ -41,15 +40,4 @@
         "new_workspace": "Copied_Environment_Dir"
       }
     ]
-  },
-  "SubRegions": [
-    {
-      "Name": "Boundary",
-      "Region_Number": 2,
-      "PathName": "TSA_2_Boundary",
-      "ClipFeature": "Clip_Feature",
-      "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
-      "InventoryName": "tsa2"
-    }
-  ]
 }

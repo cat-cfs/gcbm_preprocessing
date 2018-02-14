@@ -58,7 +58,7 @@ class RegionClipper(object):
                       workspace_filter=t["workspace_filter"],
                       new_workspace= getPath(t["new_workspace"]))
 
-    def Process(self, config, subRegionNames=None):
+    def Process(self, config, subRegionConfig, subRegionNames=None):
         '''
         runs the clip/copy/cut tasks specified in config, 
         optionally for the sub-regions specified
@@ -67,43 +67,58 @@ class RegionClipper(object):
         processed, otherwise if a list of subregion names are specified that 
         set of subregions are processed
         '''
-        subRegions = config["SubRegions"]
         subRegionsByName = {}
-        for r in subRegions:
+        for r in subRegionConfig:
             subRegionName = r["Name"]
             if subRegionName in subRegionsByName:
-                raise ValueError("duplicate subregion detected {0}".format(subRegionName))
+                raise ValueError("duplicate subregion detected {0}"
+                                 .format(subRegionName))
             subRegionsByName[subRegionName] = r
         if subRegionNames == None: #subregion filter unspecified, process all
-            for s in subRegions:
-                self.ProcessSubRegion(config["Tasks"], s)
+            for s in subRegionConfig:
+                self.ProcessSubRegion(config, s)
         else:
             for sname in subRegionNames:
-                self.ProcessSubRegion(config["Tasks"], subRegionsByName[sname])
+                if sname in subRegionName:
+                    raise ValueError("specified subregion name not found in "+
+                                     "subregion data '{}'".format(sname))
+                self.ProcessSubRegion(config, subRegionsByName[sname])
 
-
-def clip(fileRegistryPath, clipTasksPath, subRegionNames=None):
+def clip(fileRegistryPath, clipTasksPath, subRegionPath, 
+         subRegionNames=None):
     gdbFunctions = GDBFunctions()
     pathRegistry = PathRegistry(loadJson(fileRegistryPath))
     clipTasks = loadJson(clipTasksPath)
+    subRegionConfig = loadJson(subRegionPath)
 
     r = RegionClipper(gdbfunctions = gdbFunctions,
                       path_registry = pathRegistry)
 
-    r.Process(config=clipTasks, subRegionNames=subRegionNames)
+    r.Process(config=clipTasks, subRegionConfig=subRegionConfig,
+             subRegionNames=subRegionNames)
 
 def main():
-    
+
     start_logging("{0}.log".format(os.path.splitext(sys.argv[0])[0]))
-    parser = argparse.ArgumentParser(description="region clipper. clips, and copys spatial data")
+    parser = argparse.ArgumentParser(description="region clipper. clips, and "+
+                                     "copys spatial data: clips the "+ 
+                                     "subregions defined in subRegionConfig "+
+                                     "with each of the tasks defined in "+
+                                     "subRegionNames")
     parser.add_argument("--fileRegistryPath", help="path to file registry data")
     parser.add_argument("--clipTasksPath", help="path to clip tasks data")
-    parser.add_argument("--subRegionNames", help="optional comma delimited string of sub region names to process, if unspecified all regions will be processed")
+    parser.add_argument("--subRegionPath", help="path to sub region data")
+    parser.add_argument("--subRegionNames", help="optional comma delimited "+
+                        "string of sub region names (as defined in "+
+                        "subRegionConfig) to process, if unspecified all "+
+                        "regions will be processed")
     args = parser.parse_args()
     subRegions = None
     if args.subRegionNames:
-        subRegions = args.subRegionsNames.split(",")
-    clip(args.fileRegistryPath, args.clipTasksPath, subRegions)
+        subRegions = args.subRegionNames.split(",")
+    clip(args.fileRegistryPath, args.clipTasksPath,
+         args.subRegionPath, subRegions)
+
 
 if __name__ == "__main__":
     main()
