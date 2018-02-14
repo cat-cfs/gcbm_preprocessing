@@ -1,8 +1,8 @@
 from loghelper import *
 from gdb_functions import GDBFunctions
-from config.pathregistry import PathRegistry
-from config.subregionconfig import SubRegionConfig
-from config.regionclipperconfig import RegionClipperConfig
+from configuration.pathregistry import PathRegistry
+from configuration.subregionconfig import SubRegionConfig
+from configuration.regionclipperconfig import RegionClipperConfig
 import os, sys, argparse, json
 
 class RegionClipper(object):

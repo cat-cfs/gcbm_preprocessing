@@ -4,9 +4,9 @@ from grid_inventory import GridInventory
 
 from merge_disturbances import MergeDisturbances
 
-from config.pathregistry import PathRegistry
-from config.subregionconfig import SubRegionConfig
-from config.regionpreprocessorconfig import RegionPreprocessorConfig
+from configuration.pathregistry import PathRegistry
+from configuration.subregionconfig import SubRegionConfig
+from configuration.regionpreprocessorconfig import RegionPreprocessorConfig
 
 import os, sys, argparse
 
