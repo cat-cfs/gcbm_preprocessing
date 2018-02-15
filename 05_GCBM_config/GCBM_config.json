@@ -112,7 +112,8 @@
         "SphagnumMossFast": 0.0,
         "FeatherMossSlow": 0.0,
         "SphagnumMossSlow": 0.0,
-        "DissolvedOrganicCarbon": 0.0
+        "DissolvedOrganicCarbon": 0.0,
+        "ResiduesForBioenergy": 0.0
     },
     "Variables": {
         "is_forest": true,
@@ -712,6 +713,40 @@
                                   },
                       "variable_data_type": "double",
                       "on_notification": "OutputStep"
+                    },
+                    {
+                        "data_name": "Total_ResiduesForBioenergy",
+                        "enabled": true,
+                        "flux": {
+                            "from": [
+                                "SoftwoodMerch",
+                                "SoftwoodFoliage",
+                                "SoftwoodOther",
+                                "SoftwoodCoarseRoots",
+                                "SoftwoodFineRoots",
+                                "HardwoodMerch",
+                                "HardwoodFoliage",
+                                "HardwoodOther",
+                                "HardwoodCoarseRoots",
+                                "HardwoodFineRoots",
+                                "AboveGroundVeryFastSoil",
+                                "BelowGroundVeryFastSoil",
+                                "AboveGroundFastSoil",
+                                "BelowGroundFastSoil",
+                                "MediumSoil",
+                                "AboveGroundSlowSoil",
+                                "BelowGroundSlowSoil",
+                                "SoftwoodStemSnag",
+                                "SoftwoodBranchSnag",
+                                "HardwoodStemSnag",
+                                "HardwoodBranchSnag"
+                            ],
+                            "to": [
+                                "ResiduesForBioenergy"
+                            ]
+                        },
+                        "on_notification": "OutputStep",
+                        "variable_data_type": "double"
                     },
                     {
                       "enabled": false,
