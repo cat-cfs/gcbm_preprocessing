@@ -22,19 +22,11 @@ class RegionClipperConfig(object):
             raise ValueError("specified task not valid '{}'".format(task))
         return task
 
-    def _unpack_path(self, path):
-        if self.pathRegistry.is_dependent_token(path):
-            return self.pathRegistry.GetPath(
-               self.pathRegistry.strip_dependent_token(path),
-               self.regionPath)
-        else:
-            return path
-
-    def GetTasks(self):
+    def GetTasks(self, region_path):
         for t in self.data:
             yield RegionClipperTask(
                 task = self._validate_task(t["task"]),
-                workspace = self._unpack_path(t["workspace"]),
+                workspace = self.pathRegistry.UnpackPath(t["workspace"], region_path),
                 workspace_filter = t["workspace_filter"],
-                new_workspace = self._unpack_path(t["new_workspace"])
+                new_workspace = self.pathRegistry.UnpackPath(t["new_workspace"], region_path)
             )

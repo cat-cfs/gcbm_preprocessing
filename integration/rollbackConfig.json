@@ -1,10 +1,5 @@
 {
-  "Resolution": 0.01,
-  "Area_Majority_Rule": true,
-  "InventoryWorkspace": "${Clipped_Inventory_Path}",
-  "InventoryFilter": "inventory",
-  "InventoryAgeField": "Age2015",
-  "Disturbances": [
+  "MergeDisturbances": [
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
@@ -21,5 +16,4 @@
       "YearField": "HARV_YR"
     }
   ]
-
 }

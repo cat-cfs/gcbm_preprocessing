@@ -59,6 +59,14 @@ class PathRegistry(object):
         else:
             return path
 
+    def UnpackPath(self, path, region_path_name = None):
+        if self.is_dependent_token(path):
+            return self.GetPath(
+               self.strip_dependent_token(path),
+               region_path_name)
+        else:
+            return path
+
     def is_dependent_token(self, token):
         return token.startswith("${") and token.endswith("}")
 

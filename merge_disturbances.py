@@ -19,7 +19,7 @@ class MergeDisturbances(object):
                       key=os.path.basename)
 
     def runMergeDisturbances(self, workspace, disturbances):
-        
+
         grid = r"{}\XYgrid".format(workspace)
         output = r"{}\MergedDisturbances_polys".format(workspace)
         gridded_output = r"{}\MergedDisturbances".format(workspace)

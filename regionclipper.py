@@ -6,7 +6,8 @@ from configuration.regionclipperconfig import RegionClipperConfig
 import os, sys, argparse, json
 
 class RegionClipper(object):
-    def __init__(self, gdbfunctions, path_registry):
+    def __init__(self, configPath, gdbfunctions, path_registry):
+        self.configPath = configPath
         self.gdbfunc = gdbfunctions
         self.path_registry = path_registry
 
@@ -31,17 +32,20 @@ class RegionClipper(object):
                           workspace_filter=workspace_filter,
                           new_workspace=new_workspace)
 
-    def createConfiguration(self, configPath, regionPath):
-        return RegionClipperConfig(configPath, self.path_registry, regionPath)
+    def createConfiguration(self, regionPath):
+        return RegionClipperConfig(self.configPath,
+                                   self.path_registry,
+                                   regionPath)
 
-    def ProcessSubRegion(self, clipConfig, clipFeature, clipFeatureFilter):
+    def ProcessSubRegion(self, region_path, clipConfig, clipFeature, clipFeatureFilter):
         '''
         process the tasks specified in tasks for the specified subregion
+        @param region_path the region directory name
         @param clipConfig RegionClipperConfig instance
         @param clipFeature path to feature for clipping operations
         @param clipFeatureFilter name of feature in clipFeature
         '''
-        for t in clipConfig.GetTasks():
+        for t in clipConfig.GetTasks(region_path):
             if t.task == "clipCutPolys":
                 self.clipCutPolys(
                     workspace=t.workspace,
@@ -65,11 +69,10 @@ class RegionClipper(object):
                 raise ValueError("specified task not supported '{}'"
                                  .format(t.task))
 
-    def Process(self, regionClipperConfig, subRegionConfig, subRegionNames=None):
+    def Process(self, subRegionConfig, subRegionNames=None):
         '''
         runs the clip/copy/cut tasks specified in config, 
         optionally for the sub-regions specified
-        @param regionClipperConfig path to region clipper configuration
         @param subRegionConfig SubRegionConfig instance
         @param subRegionNames if None all subRegions specified in subRegionConfig are
         processed, otherwise if a list of subregion names are specified that 
@@ -83,8 +86,8 @@ class RegionClipper(object):
             region_path = r["PathName"]
             clipFeature = self.path_registry.GetPath("Clip_Feature", region_path)
             clipFeatureFilter = r["ClipFeatureFilter"]
-            clipConfig = self.createConfiguration(regionClipperConfig, region_path)
-            self.ProcessSubRegion(clipConfig, clipFeature, clipFeatureFilter)
+            clipConfig = self.createConfiguration(region_path)
+            self.ProcessSubRegion(region_path, clipConfig, clipFeature, clipFeatureFilter)
 
 def main():
 
@@ -110,11 +113,11 @@ def main():
     pathRegistry = PathRegistry(args.pathRegistry)
     subRegionConfig = SubRegionConfig(args.subRegionConfig)
 
-    r = RegionClipper(gdbfunctions = gdbFunctions,
+    r = RegionClipper(configPath = args.regionClipperConfig,
+                      gdbfunctions = gdbFunctions,
                       path_registry = pathRegistry)
 
-    r.Process(regionClipperConfig = args.regionClipperConfig,
-              subRegionConfig = subRegionConfig,
+    r.Process(subRegionConfig = subRegionConfig,
               subRegionNames = subRegionNames)
 
 

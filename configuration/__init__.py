@@ -1,4 +1,4 @@
 import pathregistry
 import regionclipperconfig
-import regionpreprocessorconfig
+import regiongridderconfig
 import subregionconfig
