@@ -1,5 +1,5 @@
 from loghelper import *
-from gdb_functions import GDBFunctions
+from clip.gdb_functions import GDBFunctions
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.regionclipperconfig import RegionClipperConfig

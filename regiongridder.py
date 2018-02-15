@@ -1,6 +1,6 @@
 from loghelper import *
-from create_grid import Fishnet
-from grid_inventory import GridInventory
+from grid.create_grid import Fishnet
+from grid.grid_inventory import GridInventory
 
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
@@ -46,9 +46,9 @@ def main():
                         "regions will be processed")
     args = parser.parse_args()
 
-    regionGridderConfig = RegionGridderConfig(args.regionGridderConfig)
-    pathRegistry = PathRegistry(args.pathRegistry)
-    subRegionConfig = SubRegionConfig(args.subRegionConfig)
+    regionGridderConfig = RegionGridderConfig(os.path.abspath(args.regionGridderConfig))
+    pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+    subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
     fishnet = Fishnet(regionGridderConfig.GetResolution())
     gridInventory = GridInventory(regionGridderConfig.GetAreaMajorityRule())
 
