@@ -15,7 +15,7 @@ class RegionGridderConfig(object):
         return self.data["Area_Majority_Rule"]
 
     def GetInventoryWorkspace(self, pathRegistry, region_path):
-        return self.pathRegistry.UnpackPath(self.data["InventoryWorkspace"], region_path)
+        return pathRegistry.UnpackPath(self.data["InventoryWorkspace"], region_path)
 
     def GetInventoryFilter(self):
         return self.data["InventoryFilter"]

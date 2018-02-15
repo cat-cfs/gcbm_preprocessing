@@ -12,7 +12,7 @@ class RegionGridder(object):
 
     def __init__(self, config, pathRegistry, fishnet, gridInventory):
         self.config = config
-        self.pathRegistry
+        self.pathRegistry = pathRegistry
         self.fishnet = fishnet
         self.gridInventory = gridInventory
 
@@ -23,8 +23,8 @@ class RegionGridder(object):
         ageFieldName = self.config.GetInventoryAgeField()
         self.fishnet.createFishnet(workspace, workspaceFilter)
         self.gridInventory.gridInventory(workspace,
-                                        workspace_filter,
-                                        ageFieldName)
+                                         workspaceFilter,
+                                         ageFieldName)
 
     def Process(self, subRegionConfig, subRegionNames=None):
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
@@ -37,7 +37,7 @@ def main():
 
     start_logging("{0}.log".format(os.path.splitext(sys.argv[0])[0]))
     parser = argparse.ArgumentParser(description="region preprocessor")
-    parser.add_argument("--fileRegistryPath", help="path to file registry data")
+    parser.add_argument("--pathRegistry", help="path to file registry data")
     parser.add_argument("--regionGridderConfig", help="path to region gridder configuration")
     parser.add_argument("--subRegionConfig", help="path to sub region data")
     parser.add_argument("--subRegionNames", help="optional comma delimited "+
@@ -47,8 +47,8 @@ def main():
     args = parser.parse_args()
 
     regionGridderConfig = RegionGridderConfig(args.regionGridderConfig)
-    pathRegistry = PathRegistry(args.fileRegistryPath)
-    subRegionConfig = SubRegionConfig(args.subRegionNames)
+    pathRegistry = PathRegistry(args.pathRegistry)
+    subRegionConfig = SubRegionConfig(args.subRegionConfig)
     fishnet = Fishnet(regionGridderConfig.GetResolution())
     gridInventory = GridInventory(regionGridderConfig.GetAreaMajorityRule())
 
@@ -57,6 +57,9 @@ def main():
         pathRegistry = pathRegistry,
         fishnet = fishnet,
         gridInventory = gridInventory)
+
+    p.Process(subRegionConfig = subRegionConfig,
+              subRegionNames = args.subRegionNames)
 
 if __name__ == "__main__":
     main()
