@@ -54,7 +54,7 @@ class CalculateDistDEdifference(object):
         pp.finish()
 
 class CalculateNewDistYr(object):
-    def __init__(self, inventory_workspace, inventory_field_names, inventory_year, rollback_start, harv_yr_field):
+    def __init__(self, inventory_workspace, inventory_year, inventory_field_names, rollback_start, harv_yr_field):
         self.inventory_workspace = inventory_workspace
         self.inventory_field_names = inventory_field_names
         self.rollback_start = rollback_start

@@ -14,19 +14,23 @@ from preprocess_tools.licensemanager import *
 
 class MergeDisturbances(object):
 
+    def __init__(self, workspace, disturbances):
+        self.workspace = workspace
+        self.disturbances = disturbances
+
     def scan_for_layers(self, path, filter):
         return sorted(glob.glob(os.path.join(path, filter)),
                       key=os.path.basename)
 
-    def runMergeDisturbances(self, workspace, disturbances):
+    def runMergeDisturbances(self):
 
-        grid = r"{}\XYgrid".format(workspace)
-        output = r"{}\MergedDisturbances_polys".format(workspace)
-        gridded_output = r"{}\MergedDisturbances".format(workspace)
+        grid = r"{}\XYgrid".format(self.workspace)
+        output = r"{}\MergedDisturbances_polys".format(self.workspace)
+        gridded_output = r"{}\MergedDisturbances".format(self.workspace)
 
-        self.spatialJoin(),
-        fms, vtab = self.prepFieldMap(disturbances),
-        self.mergeLayers(workspace, fms, vTab, output, grid, gridded_output)
+        self.spatialJoin()
+        fms, vtab = self.prepFieldMap(self.disturbances)
+        self.mergeLayers(fms, vTab, output, grid, gridded_output)
 
     def spatialJoin(self):
         with arc_license(Products.ARC) as arcpy:
@@ -37,13 +41,13 @@ class MergeDisturbances(object):
             spatial_rel = arcpy.GetParameterAsText(4).lower()
             self.SpatialJoinLargestOverlap(target_features, join_features, out_fc, keep_all, spatial_rel)
 
-    def prepFieldMap(self, disturbances):
+    def prepFieldMap(self):
         with arc_license(Products.ARC) as arcpy:
             fm_year = arcpy.FieldMap()
             fms = arcpy.FieldMappings()
             vTab = arcpy.ValueTable()
             
-            for dist in disturbances:
+            for dist in self.disturbances:
                 ws = dist["Workspace"]
                 arcpy.env.workspace = ws
                 arcpy.env.overwriteOutput = True
@@ -71,9 +75,9 @@ class MergeDisturbances(object):
             fms.addFieldMap(fm_year)
             return fms, vtab
 
-    def mergeLayers(self, workspace, fms, vtab, output_name, grid_name, gridded_output_name):
+    def mergeLayers(self, fms, vtab, output_name, grid_name, gridded_output_name):
         with arc_license(Products.ARC) as arcpy:
-            arcpy.env.workspace = workspace
+            arcpy.env.workspace = self.workspace
             arcpy.Merge_management(vTab, output_name, fms)
             self.SpatialJoinLargestOverlap(grid_name, output_name, gridded_output_name, False, "largest_overlap")
 
