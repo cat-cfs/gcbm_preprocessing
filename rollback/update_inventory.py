@@ -303,10 +303,12 @@ class updateInvRollback(object):
                 "","SINGLE_PART","DISSOLVE_LINES")
 
     def exportRollbackInventory(self):
+
         logging.info('Exporting rolled back inventory rasters to {}'.format(self.rasterOutput))
+        rasterMeta = []
         with arc_license(Products.ARC) as arcpy:
             arcpy.env.overwriteOutput = True
-            classifier_names = self.inventory_classifiers
+
             fields = {
                 "age": self.inventory_field_names["rollback_age"],
                 "species": self.inventory_field_names["species"]
@@ -314,20 +316,35 @@ class updateInvRollback(object):
             for ri in self.reporting_indicators:
                 if self.reporting_indicators[ri]==None:
                     fields.update({ri:ri})
-            for classifier_name in classifier_names:
+            for classifier_name, classifier_attribute in self.inventory_classifiers.items():
                 logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory_workspace,self.RolledBackInventory)))
-                field_name = self.inventory.getClassifierAttr(classifier_name)
+                field_name = classifier_attribute
                 file_path = os.path.join(self.rasterOutput, "{}.tif".format(classifier_name))
+                attribute_table_path = os.path.join(self.rasterOutput, "{}.tif.vat.dbf".format(classifier_name))
                 arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path, self.resolution)
-                self.inventory.addRaster(file_path, classifier_name, self.createAttributeTable(
-                    os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(classifier_name)), field_name))
+                rasterMeta.append(
+                    {
+                        "file_path": file_path,
+                        "attribute": classifier_name,
+                        "attribute_table": self.createAttributeTable(attribute_table_path)
+                    }
+                )
             for attr in fields:
                 logging.info('Exporting field {} from {}'.format(attr, os.path.join(self.inventory_workspace,self.RolledBackInventory)))
                 field_name = fields[attr]
                 file_path = os.path.join(self.rasterOutput,"{}.tif".format(attr))
+                attribute_table_path = os.path.join(self.rasterOutput, "{}.tif.vat.dbf".format(attr))
                 arcpy.FeatureToRaster_conversion(self.RolledBackInventory, field_name, file_path, self.resolution)
+                rasterMeta.append(
+                    {
+                        "file_path": file_path,
+                        "attribute": classifier_name,
+                        "attribute_table": self.createAttributeTable(attribute_table_path)
+                    })
                 self.inventory.addRaster(file_path, attr, self.createAttributeTable(
                     os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
+
+            return rasterMeta
 
     def createAttributeTable(self, dbf_path, field_name):
         # Creates an attribute table with the field name given

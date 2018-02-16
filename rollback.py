@@ -5,12 +5,9 @@ from rollback.update_inventory import CalculateNewDistYr
 from rollback.update_inventory import updateInvRollback
 
 class Rollback(object):
-    def __init__(self):
 
-
-
-
-def InitializeClasses(inventory_workspace,
+    def RunRollback(self,
+                    inventory_workspace,
                     inventory_year,
                     inventory_field_names,
                     inventory_classifiers,
@@ -21,19 +18,20 @@ def InitializeClasses(inventory_workspace,
                     rollback_disturbances,
                     resolution,
                     sbpercent,
-                    reportingIndicators):
+                    reportingIndicators,
+                    disturbances):
 
-    mergeDist = MergeDisturbances()
-    intersect = IntersectDisturbancesInventory(inventory_workspace, inventory_year, inventory_field_names, spatial_boundaries_area_filter, rollback_range[0])
-    calcDistDEdiff = CalculateDistDEdifference(inventory_workspace, inventory_year, inventory_field_names)
-    calcNewDistYr = CalculateNewDistYr(inventory_workspace, inventory_year, inventory_field_names, rollback_range[0],harvest_year_field)
-    updateInv = updateInvRollback(inventory_workspace, inventory_year, inventory_field_names, inventory_classifiers, rollback_out_dir, rollback_disturbances, rollback_range, resolution, sbpercent, reportingIndicators )
+        mergeDist = MergeDisturbances(inventory_workspace, disturbances)
+        intersect = IntersectDisturbancesInventory(inventory_workspace, inventory_year, inventory_field_names, spatial_boundaries_area_filter, rollback_range[0])
+        calcDistDEdiff = CalculateDistDEdifference(inventory_workspace, inventory_year, inventory_field_names)
+        calcNewDistYr = CalculateNewDistYr(inventory_workspace, inventory_year, inventory_field_names, rollback_range[0],harvest_year_field)
+        updateInv = updateInvRollback(inventory_workspace, inventory_year, inventory_field_names, inventory_classifiers, rollback_out_dir, rollback_disturbances, rollback_range, resolution, sbpercent, reportingIndicators )
 
-    mergeDist.runMergeDisturbances()
-    intersect.runIntersectDisturbancesInventory()
-    calcDistDEdiff.calculateDistDEdifference()
-    calcNewDistYr.calculateNewDistYr()
-    updateInv.updateInvRollback()  # ***
+        mergeDist.runMergeDisturbances()
+        intersect.runIntersectDisturbancesInventory()
+        calcDistDEdiff.calculateDistDEdifference()
+        calcNewDistYr.calculateNewDistYr()
+        raster_metadata = updateInv.updateInvRollback()
 
 def main():
     r = Rollback()
