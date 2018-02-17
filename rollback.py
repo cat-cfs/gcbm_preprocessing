@@ -20,7 +20,7 @@ class Rollback(object):
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
         for r in regions:
-            self.ProcessSubRegion(region_path = r["PathName"])
+            self.RunRollback(region_path = r["PathName"])
 
     def RunRollback(self, region_path):
         inventory_workspace = self.rollbackConfig.GetInventoryWorkspace(region_path)
@@ -45,12 +45,12 @@ class Rollback(object):
                                       inventory_year,
                                       inventory_field_names,
                                       inventory_classifiers,
-                                      InventoryRasterOutputDir,
-                                      rollback_disturbances,
+                                      inventory_raster_output_dir,
+                                      rollback_disturbances_output,
                                       rollback_range,
                                       resolution,
                                       slashburnpercent,
-                                      reportingIndicators)
+                                      reportingclassifiers)
 
         mergeDist.runMergeDisturbances()
         intersect.runIntersectDisturbancesInventory()

@@ -17,7 +17,10 @@ class RollbackConfig(object):
         return self.config["Inventory_Year"]
 
     def GetInventoryFieldNames(self):
-        return self.config["Inventory_FieldNames"]
+        return self.config["Inventory_Field_Names"]
+
+    def GetInventoryClassifiers(self):
+        return self.config["Inventory_Classifiers"]
 
     def GetSpatialBoundariesAreaFilter(self):
         return self.config["Spatial_Boundaries_Area_Filter"]
@@ -50,7 +53,15 @@ class RollbackConfig(object):
         return self.config["Reporting_Classifiers"]
 
     def GetRollbackDisturbances(self, region_path):
-        x = self.config["RollBackDisturbancesOutput"]
-        return self.pathRegistry.UnpackPath(x, region_path)
+        x = self.config["RollbackDisturbances"]
+        result = []
+        for dist in x:
+            result.append({
+                "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
+                "WorkspaceFilter": dist["WorkspaceFilter"],
+                "YearField": dist["YearField"]
+            })
+        return result
+
 
 
