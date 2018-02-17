@@ -51,7 +51,7 @@ class CalculateDistDEdifference(object):
                 else:
                     row.setValue(inv_dist_dateDiff, 0)
                 cur.updateRow(row)
-        pp.finish()
+ 
 
 class CalculateNewDistYr(object):
     def __init__(self, inventory_workspace, inventory_year, inventory_field_names, rollback_start, harv_yr_field):
@@ -188,19 +188,19 @@ class RollbackDistributor(object):
 
 class updateInvRollback(object):
     def __init__(self, inventory_workspace, inventory_year, inventory_field_names,
-                 inventory_classifiers, rollbackInvOut, rollbackDisturbances, rollback_range,
-                 resolution, sb_percent, reportingIndicators):
+                 inventory_classifiers, rollbackInvOut, rollbackDisturbancesOutput, rollback_range,
+                 resolution, sb_percent, reporting_classifiers):
 
         self.inventory_workspace = inventory_workspace
         self.inventory_year = inventory_year
         self.inventory_field_names = inventory_field_names
         self.inventory_classifiers = inventory_classifiers
 
-        self.rollbackDisturbanceOutput = rollbackDisturbances
+        self.rollbackDisturbanceOutput = rollbackDisturbancesOutput
         self.rasterOutput = rollbackInvOut
         self.resolution = resolution
-        self.sb_percent = sb_percent
-        self.reporting_indicators = reportingIndicators.getIndicators()
+        self.slashburn_percent = sb_percent
+        self.reporting_classifiers = reporting_classifiers
 
         #data
         self.gridded_inventory = "inventory_gridded"
@@ -266,7 +266,7 @@ class updateInvRollback(object):
     def generateSlashburn(self):
         year_range = range(self.rollback_range[0], self.rollback_range[1]+1)
         # print "Start of slashburn processing..."
-        PercSBofCC = self.sb_percent
+        PercSBofCC = self.slashburn_percent
         with arc_license(Products.ARC) as arcpy:
             arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
             expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
@@ -313,9 +313,13 @@ class updateInvRollback(object):
                 "age": self.inventory_field_names["rollback_age"],
                 "species": self.inventory_field_names["species"]
             }
-            for ri in self.reporting_indicators:
-                if self.reporting_indicators[ri]==None:
-                    fields.update({ri:ri})
+
+            for classifierName, fieldName in self.reporting_classifiers:
+                if not classifierName in fields:
+                    fields.update({classifierName:fieldName})
+                else:
+                    raise KeyError("duplicated reporting classifier: '{}'".format(classifierName))
+
             for classifier_name, classifier_attribute in self.inventory_classifiers.items():
                 logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory_workspace,self.RolledBackInventory)))
                 field_name = classifier_attribute

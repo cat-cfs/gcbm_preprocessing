@@ -34,7 +34,7 @@ class IntersectDisturbancesInventory(object):
 
     def runIntersectDisturbancesInventory(self):
         self.StudyArea = self.spatial_boundaries_area_filter["code"]
-        self.studyAreaOperator = self.spatial_boundaries_area_filter["operator"]
+        self.studyAreaOperator = "="
         self.rolledback_years = self.inventory_year - self.rollback_start
         self.invAge_fieldName = self.inventory_field_names['age']
 
