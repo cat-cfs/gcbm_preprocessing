@@ -35,7 +35,7 @@ class GridInventory(object):
             arcpy.env.overwriteOutput = True
             arcpy.Delete_management("in_memory")
 
-        self.spatialJoin(workspace)
+        #self.spatialJoin(workspace)
         self.makeFeatureLayer(
             workspace = workspace,
             workspace_filter = workspace_filter)
@@ -60,20 +60,20 @@ class GridInventory(object):
                 out = self.gridded_inventory,
                 ageFieldName = ageFieldName)
 
-    def spatialJoin(self, workspace):
-        with arc_license(Products.ARC) as arcpy:
-            target_features = arcpy.GetParameterAsText(0)
-            join_features = arcpy.GetParameterAsText(1)
-            out_fc = arcpy.GetParameterAsText(2)
-            keep_all = arcpy.GetParameter(3)
-            spatial_rel = arcpy.GetParameterAsText(4).lower()
-            self.SpatialJoinLargestOverlap(
-                workspace = workspace,
-                target_features = target_features,
-                join_features = join_features,
-                out_fc = out_fc,
-                keep_all = keep_all,
-                spatial_rel = spatial_rel)
+    #def spatialJoin(self, workspace):
+    #    with arc_license(Products.ARC) as arcpy:
+    #        target_features = arcpy.GetParameterAsText(0)
+    #        join_features = arcpy.GetParameterAsText(1)
+    #        out_fc = arcpy.GetParameterAsText(2)
+    #        keep_all = arcpy.GetParameter(3)
+    #        spatial_rel = arcpy.GetParameterAsText(4).lower()
+    #        self.SpatialJoinLargestOverlap(
+    #            workspace = workspace,
+    #            target_features = target_features,
+    #            join_features = join_features,
+    #            out_fc = out_fc,
+    #            keep_all = keep_all,
+    #            spatial_rel = spatial_rel)
 
     def makeFeatureLayer(self, workspace, workspace_filter):
         with arc_license(Products.ARC) as arcpy:

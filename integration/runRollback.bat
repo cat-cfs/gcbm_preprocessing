@@ -1,1 +1,1 @@
-python ..\regionclipper.py --pathRegistry .\pathRegistry.json --rollbackConfig .\rollbackConfig.json --subRegionConfig .\subRegions.json
+python ..\rollback.py --pathRegistry .\pathRegistry.json --rollbackConfig .\rollbackConfig.json --subRegionConfig .\subRegions.json

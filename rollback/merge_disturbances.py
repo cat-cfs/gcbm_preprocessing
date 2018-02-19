@@ -28,33 +28,33 @@ class MergeDisturbances(object):
         output = r"{}\MergedDisturbances_polys".format(self.workspace)
         gridded_output = r"{}\MergedDisturbances".format(self.workspace)
 
-        self.spatialJoin()
+        #self.spatialJoin()
         fms, vtab = self.prepFieldMap(self.disturbances)
         self.mergeLayers(fms, vTab, output, grid, gridded_output)
 
-    def spatialJoin(self):
-        with arc_license(Products.ARC) as arcpy:
-            target_features = arcpy.GetParameterAsText(0)
-            join_features = arcpy.GetParameterAsText(1)
-            out_fc = arcpy.GetParameterAsText(2)
-            keep_all = arcpy.GetParameter(3)
-            spatial_rel = arcpy.GetParameterAsText(4).lower()
-            self.SpatialJoinLargestOverlap(target_features, join_features, out_fc, keep_all, spatial_rel)
+    #def spatialJoin(self):
+    #    with arc_license(Products.ARC) as arcpy:
+    #        target_features = arcpy.GetParameterAsText(0)
+    #        join_features = arcpy.GetParameterAsText(1)
+    #        out_fc = arcpy.GetParameterAsText(2)
+    #        keep_all = arcpy.GetParameter(3)
+    #        spatial_rel = arcpy.GetParameterAsText(4).lower()
+    #        self.SpatialJoinLargestOverlap(target_features, join_features, out_fc, keep_all, spatial_rel)
 
-    def prepFieldMap(self):
+    def prepFieldMap(self, disturbances):
         with arc_license(Products.ARC) as arcpy:
             fm_year = arcpy.FieldMap()
             fms = arcpy.FieldMappings()
             vTab = arcpy.ValueTable()
             
-            for dist in self.disturbances:
+            for dist in disturbances:
                 ws = dist["Workspace"]
                 arcpy.env.workspace = ws
                 arcpy.env.overwriteOutput = True
-                fcs1 = self.scan_for_layers(ws, dist["Filter"])
+                fcs1 = self.scan_for_layers(ws, dist["WorkspaceFilter"])
                 if fcs1:
                     for fc in fcs1:
-                        self.fms.addTable(fc)
+                        fms.addTable(fc)
                         if "NBAC" in fc:
                             fm_year.addInputField(fc, dist["YearField"], 0, 3)
                         else:
