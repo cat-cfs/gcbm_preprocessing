@@ -104,21 +104,25 @@ def main():
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+
                         "regions will be processed")
-    args = parser.parse_args()
-    subRegionNames = None
-    if args.subRegionNames:
-        subRegionNames = args.subRegionNames.split(",")
+    try:
+        args = parser.parse_args()
+        subRegionNames = None
+        if args.subRegionNames:
+            subRegionNames = args.subRegionNames.split(",")
 
-    gdbFunctions = GDBFunctions()
-    pathRegistry = PathRegistry(args.pathRegistry)
-    subRegionConfig = SubRegionConfig(args.subRegionConfig)
+        gdbFunctions = GDBFunctions()
+        pathRegistry = PathRegistry(args.pathRegistry)
+        subRegionConfig = SubRegionConfig(args.subRegionConfig)
 
-    r = RegionClipper(configPath = args.regionClipperConfig,
-                      gdbfunctions = gdbFunctions,
-                      path_registry = pathRegistry)
+        r = RegionClipper(configPath = args.regionClipperConfig,
+                          gdbfunctions = gdbFunctions,
+                          path_registry = pathRegistry)
 
-    r.Process(subRegionConfig = subRegionConfig,
-              subRegionNames = subRegionNames)
+        r.Process(subRegionConfig = subRegionConfig,
+                  subRegionNames = subRegionNames)
+    except Exception as ex:
+        logging.exception("error")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

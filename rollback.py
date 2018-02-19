@@ -69,16 +69,18 @@ def main():
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+
                         "regions will be processed")
+    try:
+        args = parser.parse_args()
 
-    args = parser.parse_args()
+        pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+        rollbackConfig = RollbackConfig(os.path.abspath(args.rollbackConfig), pathRegistry)
+        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
-    pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-    rollbackConfig = RollbackConfig(os.path.abspath(args.rollbackConfig), pathRegistry)
-    subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        r = Rollback(rollbackConfig)
+        r.Process(subRegionConfig, args.subRegionNames)
+    except Exception as ex:
+        logging.exception("error")
+        sys.exit(1)
 
-    r = Rollback(rollbackConfig)
-    r.Process(subRegionConfig, args.subRegionNames)
-
-    
 if __name__ == "__main__":
     main()

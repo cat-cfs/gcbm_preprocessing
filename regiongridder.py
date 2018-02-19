@@ -44,22 +44,26 @@ def main():
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+
                         "regions will be processed")
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
 
-    regionGridderConfig = RegionGridderConfig(os.path.abspath(args.regionGridderConfig))
-    pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-    subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
-    fishnet = Fishnet(regionGridderConfig.GetResolution())
-    gridInventory = GridInventory(regionGridderConfig.GetAreaMajorityRule())
+        regionGridderConfig = RegionGridderConfig(os.path.abspath(args.regionGridderConfig))
+        pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        fishnet = Fishnet(regionGridderConfig.GetResolution())
+        gridInventory = GridInventory(regionGridderConfig.GetAreaMajorityRule())
 
-    p = RegionGridder(
-        config = regionGridderConfig,
-        pathRegistry = pathRegistry,
-        fishnet = fishnet,
-        gridInventory = gridInventory)
+        p = RegionGridder(
+            config = regionGridderConfig,
+            pathRegistry = pathRegistry,
+            fishnet = fishnet,
+            gridInventory = gridInventory)
 
-    p.Process(subRegionConfig = subRegionConfig,
-              subRegionNames = args.subRegionNames)
+        p.Process(subRegionConfig = subRegionConfig,
+                  subRegionNames = args.subRegionNames)
+    except Exception as ex:
+        logging.exception("error")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
