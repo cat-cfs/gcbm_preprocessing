@@ -30,7 +30,7 @@ class MergeDisturbances(object):
 
         #self.spatialJoin()
         fms, vtab = self.prepFieldMap(self.disturbances)
-        self.mergeLayers(fms, vTab, output, grid, gridded_output)
+        self.mergeLayers(fms, vtab, output, grid, gridded_output)
 
     #def spatialJoin(self):
     #    with arc_license(Products.ARC) as arcpy:
@@ -73,12 +73,12 @@ class MergeDisturbances(object):
 
             # Add the FieldMap objects to the FieldMappings object
             fms.addFieldMap(fm_year)
-            return fms, vtab
+            return fms, vTab
 
     def mergeLayers(self, fms, vtab, output_name, grid_name, gridded_output_name):
         with arc_license(Products.ARC) as arcpy:
             arcpy.env.workspace = self.workspace
-            arcpy.Merge_management(vTab, output_name, fms)
+            arcpy.Merge_management(vtab, output_name, fms)
             self.SpatialJoinLargestOverlap(grid_name, output_name, gridded_output_name, False, "largest_overlap")
 
     # Spatial Join tool--------------------------------------------------------------------

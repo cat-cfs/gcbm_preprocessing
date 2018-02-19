@@ -26,7 +26,7 @@ class Rollback(object):
         inventory_workspace = self.rollbackConfig.GetInventoryWorkspace(region_path)
         inventory_year = int(self.rollbackConfig.GetInventoryYear())
         inventory_field_names = self.rollbackConfig.GetInventoryFieldNames()
-        inventory_classifiers = self.rollbackConfig.GetInventoryClassifiers(),
+        inventory_classifiers = self.rollbackConfig.GetInventoryClassifiers()
         spatial_boundaries_area_filter = self.rollbackConfig.GetSpatialBoundariesAreaFilter()
         rollback_range = self.rollbackConfig.GetRollbackRange()
         harvest_year_field = self.rollbackConfig.GetHistoricHarvestYearField()
@@ -40,7 +40,7 @@ class Rollback(object):
         mergeDist = MergeDisturbances(inventory_workspace, disturbances)
         intersect = IntersectDisturbancesInventory(inventory_workspace, inventory_year, inventory_field_names, spatial_boundaries_area_filter, rollback_range[0])
         calcDistDEdiff = CalculateDistDEdifference(inventory_workspace, inventory_year, inventory_field_names)
-        calcNewDistYr = CalculateNewDistYr(inventory_workspace, inventory_year, inventory_field_names, rollback_range[0],harvest_year_field)
+        calcNewDistYr = CalculateNewDistYr(inventory_workspace, inventory_year, inventory_field_names, rollback_range[0],harvest_year_field, self.rollbackConfig.GetDistAgeProportionFilePath())
         updateInv = updateInvRollback(inventory_workspace,
                                       inventory_year,
                                       inventory_field_names,

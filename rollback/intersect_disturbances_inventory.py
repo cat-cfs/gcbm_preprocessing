@@ -55,7 +55,7 @@ class IntersectDisturbancesInventory(object):
         self.output = r"{}\DisturbedInventory".format(self.inventory_workspace)
 
         self.addFields()
-        self.selectInventoryRecords(self.inventory_workspace, invAge_fieldName, rolledback_years)
+        self.selectInventoryRecords()
         self.makeFeatureLayer()
         self.selectDisturbanceRecords()
         self.intersectLayers()

@@ -54,18 +54,20 @@ class CalculateDistDEdifference(object):
  
 
 class CalculateNewDistYr(object):
-    def __init__(self, inventory_workspace, inventory_year, inventory_field_names, rollback_start, harv_yr_field):
+    def __init__(self, inventory_workspace, inventory_year,
+                 inventory_field_names, rollback_start,
+                 harv_yr_field, dist_age_prop_file_path):
         self.inventory_workspace = inventory_workspace
         self.inventory_field_names = inventory_field_names
         self.rollback_start = rollback_start
         self.inv_vintage = inventory_year
         self.harv_yr_field = harv_yr_field
-
+        self.dist_age_prop_file_path = dist_age_prop_file_path
         #Constants
         self.DisturbedInventory = "DisturbedInventory"
         self.disturbedInventory_layer = "disturbedInventory_layer"
 
-    def calculateNewDistYr(self, dist_age_prop_file_path):
+    def calculateNewDistYr(self):
         with arc_license(Products.ARC) as arcpy:
             arcpy.env.workspace = self.inventory_workspace
             arcpy.env.overwriteOutput = True
@@ -83,7 +85,7 @@ class CalculateNewDistYr(object):
             self.makeLayers()
             self.calculateDistType()
             self.calculateRegenDelay()
-            self.calculatePreDistAge(dist_age_prop_file_path)
+            self.calculatePreDistAge(self.dist_age_prop_file_path)
             self.calculateRolledBackInvAge()
 
     def makeLayers(self):
@@ -293,13 +295,13 @@ class updateInvRollback(object):
     def exportRollbackDisturbances(self):
 
         #Export rollback disturbances
-        logging.info('Exporting rollback disturbances to {}'.format(self.rollbackDisturbanceOutput.getPath()))
+        logging.info('Exporting rollback disturbances to {}'.format(self.rollbackDisturbanceOutput))
         dissolveFields = [self.dist_type_field, self.new_disturbance_field,self.regen_delay_field, self.CELL_ID]
         selectClause =  "{} IS NOT NULL".format(self.new_disturbance_field)
 
         with arc_license(Products.ARC) as arcpy:
             arcpy.SelectLayerByAttribute_management(self.RolledBackInventory_layer, "NEW_SELECTION", selectClause)
-            arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput.getPath(),dissolveFields,
+            arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput, dissolveFields,
                 "","SINGLE_PART","DISSOLVE_LINES")
 
     def exportRollbackInventory(self):
@@ -314,7 +316,7 @@ class updateInvRollback(object):
                 "species": self.inventory_field_names["species"]
             }
 
-            for classifierName, fieldName in self.reporting_classifiers:
+            for classifierName, fieldName in self.reporting_classifiers.items():
                 if not classifierName in fields:
                     fields.update({classifierName:fieldName})
                 else:
@@ -330,7 +332,7 @@ class updateInvRollback(object):
                     {
                         "file_path": file_path,
                         "attribute": classifier_name,
-                        "attribute_table": self.createAttributeTable(attribute_table_path)
+                        "attribute_table": self.createAttributeTable(attribute_table_path, field_name)
                     }
                 )
             for attr in fields:
@@ -342,11 +344,9 @@ class updateInvRollback(object):
                 rasterMeta.append(
                     {
                         "file_path": file_path,
-                        "attribute": classifier_name,
-                        "attribute_table": self.createAttributeTable(attribute_table_path)
+                        "attribute": attr,
+                        "attribute_table": self.createAttributeTable(attribute_table_path, field_name)
                     })
-                self.inventory.addRaster(file_path, attr, self.createAttributeTable(
-                    os.path.join(os.path.dirname(file_path), "{}.tif.vat.dbf".format(attr)), field_name))
 
             return rasterMeta
 

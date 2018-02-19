@@ -4,12 +4,21 @@
   "Inventory_Year": 2015,
   "Inventory_Field_Names": {
     "age": "Age2015",
-    "species": "LdSpp"
+    "species": "LdSpp",
+    "establishment_date": "DE",
+    "dist_date_diff": "Dist_DE_DIFF",
+    "pre_dist_age": "preDistAge",
+    "dist_type": "DistType",
+    "regen_delay": "RegenDelay",
+    "rollback_age": "Age1990",
+    "disturbance_yr": "DistYEAR",
+    "new_disturbance_yr": "DistYEAR_new"
   },
   "Inventory_Classifiers": {
     "LdSpp": "LdSpp",
     "AU": "AU"
   },
+  "DistAgeProportionFilePath": "${Disturbance_Age_Proportions}",
   "Spatial_Boundaries_Area_Filter": {
     "field": "TSA_NUMBER",
     "code": "'Boundary TSA'"

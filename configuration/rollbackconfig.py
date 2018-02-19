@@ -48,6 +48,7 @@ class RollbackConfig(object):
         if x<0 or x >100:
             raise ValueError("configuration slashburn percent out of range." \
                 + "expected 0<=x<=100, got: {}".format(x))
+        return x
 
     def GetReportingClassifiers(self):
         return self.config["Reporting_Classifiers"]
@@ -63,5 +64,7 @@ class RollbackConfig(object):
             })
         return result
 
+    def GetDistAgeProportionFilePath(self):
+        return self.pathRegistry.UnpackPath(self.config["DistAgeProportionFilePath"])
 
 
