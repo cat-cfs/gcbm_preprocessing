@@ -22,9 +22,6 @@ class RollbackConfig(object):
     def GetInventoryClassifiers(self):
         return self.config["Inventory_Classifiers"]
 
-    def GetSpatialBoundariesAreaFilter(self):
-        return self.config["Spatial_Boundaries_Area_Filter"]
-
     def GetRollbackRange(self):
         return [self.config["Rollback_Range"]["StartYear"],
                 self.config["Rollback_Range"]["EndYear"]]

@@ -17,13 +17,12 @@ from preprocess_tools.licensemanager import *
 
 class IntersectDisturbancesInventory(object):
     def __init__(self, inventory_workspace, inventory_year,
-                 inventory_field_names, spatial_boundaries_area_filter,
+                 inventory_field_names, 
                  rollback_start):
 
         self.inventory_workspace = inventory_workspace
         self.inventory_year = inventory_year
         self.inventory_field_names = inventory_field_names
-        self.spatial_boundaries_area_filter = spatial_boundaries_area_filter
         self.rollback_start = rollback_start
 
         # Temp Layers
@@ -33,14 +32,11 @@ class IntersectDisturbancesInventory(object):
         self.SpBoundary_layer = r"in_memory\SpBoundary_layer"
 
     def runIntersectDisturbancesInventory(self):
-        self.StudyArea = self.spatial_boundaries_area_filter["code"]
-        self.studyAreaOperator = "="
         self.rolledback_years = self.inventory_year - self.rollback_start
         self.invAge_fieldName = self.inventory_field_names['age']
 
         # Field Names
         self.disturbance_fieldName = "DistYEAR"
-        self.studyArea_fieldName = self.spatial_boundaries_area_filter["field"]
         self.establishmentDate_fieldName = self.inventory_field_names["establishment_date"]
         self.inv_dist_dateDiff = self.inventory_field_names['dist_date_diff']
         self.preDistAge = self.inventory_field_names['pre_dist_age']

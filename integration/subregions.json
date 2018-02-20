@@ -1,5 +1,12 @@
 [
   {
+    "Name": "Arrow",
+    "Region_Number": 1,
+    "PathName": "TSA_1_Arrow",
+    "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'",
+    "InventoryName": "tsa1"
+  },
+  {
     "Name": "Boundary",
     "Region_Number": 2,
     "PathName": "TSA_2_Boundary",

@@ -19,10 +19,6 @@
     "AU": "AU"
   },
   "DistAgeProportionFilePath": "${Disturbance_Age_Proportions}",
-  "Spatial_Boundaries_Area_Filter": {
-    "field": "TSA_NUMBER",
-    "code": "'Boundary TSA'"
-  },
   "Rollback_Range": {
     "StartYear": 1990,
     "EndYear": 2013
