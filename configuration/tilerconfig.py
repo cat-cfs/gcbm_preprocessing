@@ -17,7 +17,7 @@ class TilerConfig(object):
         args = {}
         for k,v in config["args"].items():
             if isinstance(v, dict) and "tiler_type" in v:
-                args[k] = AssembleTilerObject(v)
+                args[k] = self.AssembleTilerObject(v)
             else:
                 args[k] = v
         type = locate(config["tiler_type"])
@@ -31,6 +31,13 @@ class TilerConfig(object):
     def AssembleTiler(self):
         tilerConfig = self.config["TilerConfig"]
         tiler = AssembleTilerObject(tilerConfig)
+
+    def AssembleLayers(self):
+        layers = []
+        for layerConfig in self.config["Layers"]:
+            config = layerConfig["LayerConfig"]
+            layer = self.AssembleTilerObject(config)
+            layers.append(layer)
 
     def UpdateMetaIndex(self, layerMeta, layerConfig):
         if layerMeta in self.layerMetaIndex:
