@@ -35,7 +35,7 @@ class RegionGridder(object):
 
 def main():
 
-    start_logging("{0}.log".format(os.path.splitext(sys.argv[0])[0]))
+    create_script_log(sys.argv[0])
     parser = argparse.ArgumentParser(description="region preprocessor")
     parser.add_argument("--pathRegistry", help="path to file registry data")
     parser.add_argument("--regionGridderConfig", help="path to region gridder configuration")
@@ -59,8 +59,11 @@ def main():
             fishnet = fishnet,
             gridInventory = gridInventory)
 
+        subRegionNames = args.subRegionNames.split(",") \
+            if args.subRegionNames else None
+
         p.Process(subRegionConfig = subRegionConfig,
-                  subRegionNames = args.subRegionNames)
+                  subRegionNames = subRegionNames)
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)

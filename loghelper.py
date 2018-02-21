@@ -19,6 +19,15 @@ def start_logging(fn=".\\script.log",fmode='w', use_console=True):
 
     rootLogger.setLevel(logging.INFO)
 
+def create_script_log(scriptPath):
+    """
+    creates a log file in the current working directory where the script name
+    is the name of the script file (with extension changed to .log)
+    """
+    s = os.path.basename(scriptPath)
+    s = os.path.splitext(s)[0]
+    s = "{0}.log".format(s)
+    start_logging(s)
 
 
 

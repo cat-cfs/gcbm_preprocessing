@@ -59,7 +59,7 @@ class Rollback(object):
 
 def main():
 
-    start_logging("{0}.log".format(os.path.splitext(sys.argv[0])[0]))
+    create_script_log(sys.argv[0])
     parser = argparse.ArgumentParser(description="rollback")
     parser.add_argument("--pathRegistry", help="path to file registry data")
     parser.add_argument("--rollbackConfig", help="path to rollback configuration")
@@ -75,8 +75,11 @@ def main():
         rollbackConfig = RollbackConfig(os.path.abspath(args.rollbackConfig), pathRegistry)
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
+        subRegionNames = args.subRegionNames.split(",") \
+            if args.subRegionNames else None
+
         r = Rollback(rollbackConfig)
-        r.Process(subRegionConfig, args.subRegionNames)
+        r.Process(subRegionConfig, subRegionNames)
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)

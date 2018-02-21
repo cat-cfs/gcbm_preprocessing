@@ -91,7 +91,7 @@ class RegionClipper(object):
 
 def main():
 
-    start_logging("{0}.log".format(os.path.splitext(sys.argv[0])[0]))
+    create_script_log(sys.argv[0])
     parser = argparse.ArgumentParser(description="region clipper. clips, and "+
                                      "copys spatial data: clips the "+ 
                                      "subregions defined in subRegionConfig "+
@@ -106,9 +106,8 @@ def main():
                         "regions will be processed")
     try:
         args = parser.parse_args()
-        subRegionNames = None
-        if args.subRegionNames:
-            subRegionNames = args.subRegionNames.split(",")
+        subRegionNames = args.subRegionNames.split(",") \
+            if args.subRegionNames else None
 
         gdbFunctions = GDBFunctions()
         pathRegistry = PathRegistry(args.pathRegistry)
