@@ -4,7 +4,18 @@ from pydoc import locate
 class TilerConfig(object):
 
     def __init__(self, path=None):
-
+        self.typeRegistry = {
+            "BoundingBox": "mojadata.boundingbox",
+            "CompressingTiler2D": "mojadata.compressingtiler2d",
+            "VectorLayer": "mojadata.layer.vectorlayer",
+            "RasterLayer": "mojadata.layer.rasterlayer",
+            "DisturbanceLayer": "mojadata.layer.gcbm.disturbancelayer",
+            "Attribute": "mojadata.layer.attribute",
+            "ValueFilter": "mojadata.layer.filter.valuefilter",
+            "SliceValueFilter": "mojadata.layer.filter.slicevaluefilter",
+            "TransitionRule": "mojadata.layer.gcbm.transitionrule",
+            "SharedTransitionRuleManager": "mojadata.layer.gcbm.transitionrulemanager"
+            }
         self.layerMetaIndex = {}
         self.config = {}
         if path is not None:
@@ -13,6 +24,13 @@ class TilerConfig(object):
                self.UpdateMetaIndex(layer["Metadata"],
                                    layer["LayerConfig"])
 
+    def GetFullyQualifiedTypeName(self, typename):
+        if not typeName in self.typeRegistry:
+            raise ValueError("specified type unknown/unsupported {0}"
+                             .format(typeName))
+        else:
+            return "{0}.{1}".format(self.typeRegistry[typename], typename)
+
     def AssembleTilerObject(self, config):
         args = {}
         for k,v in config["args"].items():
@@ -20,11 +38,10 @@ class TilerConfig(object):
                 args[k] = self.AssembleTilerObject(v)
             else:
                 args[k] = v
-        type = locate(config["tiler_type"])
+        type = locate(GetFullyQualifiedTypeName(config["tiler_type"]))
         if not type:
-            raise ValueError("specified tiler type not found: '{}'." +
-                "Make sure to use fully qualified name".format(
-                config["tiler_type"]))
+            raise ValueError("specified tiler type not found: '{}'."
+                             .format(config["tiler_type"]))
 
         return type(**args)
 
@@ -68,6 +85,8 @@ class TilerConfig(object):
             return json.load(json_data)
 
     def CreateConfigItem(self, typeName, **kwargs):
+        if not typeName in self.typeRegistry:
+            raise ValueError("specified type unknown/unsupported {0}".format(typeName))
         return {
             "tiler_type": typeName,
             "args": kwargs

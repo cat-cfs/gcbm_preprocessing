@@ -23,4 +23,5 @@
   "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs" ],
   "InventoryRasterOutputDir": [ "${Pretiled_Layers}", "02_inventory" ],
   "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ]
+  "TilerConfigPath": ["${Pretiled_Layers}", "tiler_config.json"]
 }

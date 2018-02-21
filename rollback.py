@@ -3,6 +3,7 @@ import argparse
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.rollbackconfig import RollbackConfig
+from configuration.tilerconfig import TilerConfig
 
 from rollback.merge_disturbances import MergeDisturbances
 from rollback.intersect_disturbances_inventory import IntersectDisturbancesInventory
@@ -15,12 +16,20 @@ class Rollback(object):
     def __init__(self, rollbackConfig):
         self.rollbackConfig = rollbackConfig
 
+    def CreateTilerConfig(self, region_path):
+        tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path)
+        t = TilerConfig()
+        t.Initialize(""
+
+        t.writeJson(tilerPath)
+
     def Process(self, subRegionConfig, subRegionNames=None):
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
         for r in regions:
-            self.RunRollback(region_path = r["PathName"])
+            inventoryMeta = self.RunRollback(region_path = r["PathName"])
+
 
     def RunRollback(self, region_path):
         inventory_workspace = self.rollbackConfig.GetInventoryWorkspace(region_path)
@@ -64,7 +73,6 @@ def main():
     parser.add_argument("--pathRegistry", help="path to file registry data")
     parser.add_argument("--rollbackConfig", help="path to rollback configuration")
     parser.add_argument("--subRegionConfig", help="path to sub region data")
-    parser.add_argument("--tilerConfigDir", help="path to the tilerConfig created by this process")
     parser.add_argument("--subRegionNames", help="optional comma delimited "+
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+

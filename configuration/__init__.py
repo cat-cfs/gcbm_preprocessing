@@ -2,3 +2,4 @@ import pathregistry
 import regionclipperconfig
 import regiongridderconfig
 import subregionconfig
+import tilerconfig

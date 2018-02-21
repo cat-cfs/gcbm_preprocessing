@@ -64,4 +64,5 @@ class RollbackConfig(object):
     def GetDistAgeProportionFilePath(self):
         return self.pathRegistry.UnpackPath(self.config["DistAgeProportionFilePath"])
 
-
+    def GetTilerConfigPath(self, region_path):
+        return self.pathRegistry.GetPath("TilerConfigPath")
