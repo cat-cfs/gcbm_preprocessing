@@ -16,20 +16,38 @@ class Rollback(object):
     def __init__(self, rollbackConfig):
         self.rollbackConfig = rollbackConfig
 
-    def CreateTilerConfig(self, region_path):
+    def CreateTilerConfig(self, region_path, inventoryMeta, resolution):
         tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path)
         t = TilerConfig()
-        t.Initialize(""
 
+        inventoryLayers = [
+            t.CreateConfigItem(typename="RasterLayer", 
+                               path=x["file_path"],
+                               attributes=[x["attribute"]],
+                               attribute_table=x["attribute_table"])
+            for x in inventoryMeta]
+
+        boundingbox = t.CreateConfigItem(typename="BoundingBox",
+                                         layer=inventoryLayers[0],
+                                         pixel_size=resolution)
+        t.Initialize(
+            t.CreateConfigItem(typeName="CompressingTiler2D",
+                             bounding_box=boundingbox,
+                             use_bounding_box_resolution=True))
+
+        for i in inventoryLayers:
+            t.AppendLayer("inventory", i)
         t.writeJson(tilerPath)
 
-    def Process(self, subRegionConfig, subRegionNames=None):
+    def Process(self, subRegionConfig, resolution, subRegionNames=None):
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
         for r in regions:
             inventoryMeta = self.RunRollback(region_path = r["PathName"])
-
+            CreateTilerConfig(region_path = r["PathName"],
+                              inventoryMeta = inventoryMeta,
+                              resolution = self.rollbackConfig.GetResolution())
 
     def RunRollback(self, region_path):
         inventory_workspace = self.rollbackConfig.GetInventoryWorkspace(region_path)
