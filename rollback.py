@@ -18,17 +18,19 @@ class Rollback(object):
         self.rollbackConfig = rollbackConfig
 
     def CreateTilerConfig(self, region_path, inventoryMeta, resolution):
+        
         tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path)
+        logging.info("creating tiler config at '{}'".format(tilerPath))
         t = TilerConfig()
 
         inventoryLayers = [
-            t.CreateConfigItem(typename="RasterLayer", 
+            t.CreateConfigItem(typeName="RasterLayer",
                                path=x["file_path"],
                                attributes=[x["attribute"]],
                                attribute_table=x["attribute_table"])
             for x in inventoryMeta]
 
-        boundingbox = t.CreateConfigItem(typename="BoundingBox",
+        boundingbox = t.CreateConfigItem(typeName="BoundingBox",
                                          layer=inventoryLayers[0],
                                          pixel_size=resolution)
         t.Initialize(
@@ -46,7 +48,7 @@ class Rollback(object):
 
         for r in regions:
             inventoryMeta = self.RunRollback(region_path = r["PathName"])
-            CreateTilerConfig(region_path = r["PathName"],
+            self.CreateTilerConfig(region_path = r["PathName"],
                               inventoryMeta = inventoryMeta,
                               resolution = self.rollbackConfig.GetResolution())
 
@@ -97,6 +99,7 @@ class Rollback(object):
             calcDistDEdiff.calculateDistDEdifference()
             calcNewDistYr.calculateNewDistYr()
             raster_metadata = updateInv.updateInvRollback()
+            return raster_metadata
 
 def main():
 
@@ -124,6 +127,8 @@ def main():
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)
+
+    logging.info("all rollup tasks finished")
 
 if __name__ == "__main__":
     main()

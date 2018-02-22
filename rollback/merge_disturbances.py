@@ -97,7 +97,6 @@ class MergeDisturbances(object):
                     if row[2] > overlap_dict[row[0]][1]:
                         overlap_dict[row[0]] = [row[1], row[2]]
                 except:
-                    logging.exception()
                     overlap_dict[row[0]] = [row[1], row[2]]
 
         # Copy the target features and write the largest overlap join feature ID to each record
@@ -122,7 +121,6 @@ class MergeDisturbances(object):
                     row[1] = overlap_dict[row[0]][0]
                     ucur.updateRow(row)
                 except:
-                    logging.exception()
                     if not keep_all:
                         ucur.deleteRow()
 

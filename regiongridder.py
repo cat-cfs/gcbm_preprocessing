@@ -69,5 +69,6 @@ def main():
         logging.exception("error")
         sys.exit(1)
 
+    logging.info("all gridder tasks finished")
 if __name__ == "__main__":
     main()

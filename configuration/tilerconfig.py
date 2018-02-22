@@ -78,7 +78,7 @@ class TilerConfig(object):
 
     def writeJson(self, path, indent=4):
         with open(path, 'w') as outfile:
-            json.dumps(self.config, indent=indent)
+            json.dump(self.config, outfile, indent=indent)
 
     def loadJson(self, path):
         with open(path) as json_data:

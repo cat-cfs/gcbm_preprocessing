@@ -237,7 +237,7 @@ class updateInvRollback(object):
         self.rollbackAgeNonDistStands()
         self.generateSlashburn()
         self.exportRollbackDisturbances()
-        self.exportRollbackInventory()
+        return self.exportRollbackInventory()
 
     def makeLayers1(self):
         logging.info("making layers")

@@ -125,6 +125,7 @@ def main():
         logging.exception("error")
         sys.exit(1)
 
+    logging.info("all clipping tasks finished")
 
 if __name__ == "__main__":
     main()
