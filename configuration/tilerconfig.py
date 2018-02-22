@@ -38,7 +38,7 @@ class TilerConfig(object):
                 args[k] = self.AssembleTilerObject(v)
             else:
                 args[k] = v
-        type = locate(GetFullyQualifiedTypeName(config["tiler_type"]))
+        type = locate(self.GetFullyQualifiedTypeName(config["tiler_type"]))
         if not type:
             raise ValueError("specified tiler type not found: '{}'."
                              .format(config["tiler_type"]))
