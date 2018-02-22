@@ -1,7 +1,7 @@
 from loghelper import *
 from grid.create_grid import Fishnet
 from grid.grid_inventory import GridInventory
-
+from preprocess_tools.licensemanager import *
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.regiongridderconfig import RegionGridderConfig
@@ -50,20 +50,21 @@ def main():
         regionGridderConfig = RegionGridderConfig(os.path.abspath(args.regionGridderConfig))
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
-        fishnet = Fishnet(regionGridderConfig.GetResolution())
-        gridInventory = GridInventory(regionGridderConfig.GetAreaMajorityRule())
+        with arc_license(Products.ARC) as arcpy:
+            fishnet = Fishnet(arcpy, regionGridderConfig.GetResolution())
+            gridInventory = GridInventory(arcpy, regionGridderConfig.GetAreaMajorityRule())
 
-        p = RegionGridder(
-            config = regionGridderConfig,
-            pathRegistry = pathRegistry,
-            fishnet = fishnet,
-            gridInventory = gridInventory)
+            p = RegionGridder(
+                config = regionGridderConfig,
+                pathRegistry = pathRegistry,
+                fishnet = fishnet,
+                gridInventory = gridInventory)
 
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
+            subRegionNames = args.subRegionNames.split(",") \
+                if args.subRegionNames else None
 
-        p.Process(subRegionConfig = subRegionConfig,
-                  subRegionNames = subRegionNames)
+            p.Process(subRegionConfig = subRegionConfig,
+                        subRegionNames = subRegionNames)
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)

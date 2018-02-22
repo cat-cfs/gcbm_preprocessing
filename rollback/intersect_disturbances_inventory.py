@@ -16,10 +16,11 @@ import logging
 from preprocess_tools.licensemanager import *
 
 class IntersectDisturbancesInventory(object):
-    def __init__(self, inventory_workspace, inventory_year,
+    def __init__(self, arcpy, inventory_workspace, inventory_year,
                  inventory_field_names, 
                  rollback_start):
 
+        self.arcpy = arcpy
         self.inventory_workspace = inventory_workspace
         self.inventory_year = inventory_year
         self.inventory_field_names = inventory_field_names
@@ -32,6 +33,7 @@ class IntersectDisturbancesInventory(object):
         self.SpBoundary_layer = r"in_memory\SpBoundary_layer"
 
     def runIntersectDisturbancesInventory(self):
+        logging.info("intersecting rollback disturbances and inventory")
         self.rolledback_years = self.inventory_year - self.rollback_start
         self.invAge_fieldName = self.inventory_field_names['age']
 
@@ -50,6 +52,7 @@ class IntersectDisturbancesInventory(object):
         self.temp_overlay = r"{}\temp_DisturbedInventory".format(self.inventory_workspace)
         self.output = r"{}\DisturbedInventory".format(self.inventory_workspace)
 
+
         self.addFields()
         self.selectInventoryRecords()
         self.makeFeatureLayer()
@@ -59,6 +62,7 @@ class IntersectDisturbancesInventory(object):
 
 
     def addFields(self):
+        logging.info("adding new fields to inventory")
         field_names = [
             self.establishmentDate_fieldName,
             self.inv_dist_dateDiff,
@@ -68,39 +72,34 @@ class IntersectDisturbancesInventory(object):
             self.rollback_age_field,
             self.new_disturbance_field
         ]
-        with arc_license(Products.ARC) as arcpy:
-            for field_name in field_names:
-                arcpy.AddField_management(self.gridded_inventory, field_name, "LONG", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+        for field_name in field_names:
+            self.arcpy.AddField_management(self.gridded_inventory, field_name, "LONG", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
 
     def selectInventoryRecords(self):
-        with arc_license(Products.ARC) as arcpy:
-            inv_whereClause = '{} < {}'.format(arcpy.AddFieldDelimiters(self.inventory_workspace, self.invAge_fieldName), self.rolledback_years)
-            logging.info('Selecting inventory records where {}'.format(inv_whereClause))
-            arcpy.Select_analysis(self.gridded_inventory, self.inventory_layer3, inv_whereClause)
+        inv_whereClause = '{} < {}'.format(self.arcpy.AddFieldDelimiters(self.inventory_workspace, self.invAge_fieldName), self.rolledback_years)
+        logging.info('Selecting inventory records where {}'.format(inv_whereClause))
+        self.arcpy.Select_analysis(self.gridded_inventory, self.inventory_layer3, inv_whereClause)
 
 
     def makeFeatureLayer(self):
-        with arc_license(Products.ARC) as arcpy:
-            arcpy.MakeFeatureLayer_management(self.disturbances, self.disturbances_layer)
+        logging.info("make feature layer")
+        self.arcpy.MakeFeatureLayer_management(self.disturbances, self.disturbances_layer)
 
 
     def selectDisturbanceRecords(self):
-        with arc_license(Products.ARC) as arcpy:
-            #Select disturbance records that occur before inventory vintage
-            dist_whereClause = '{} < {}'.format(arcpy.AddFieldDelimiters(self.disturbances, self.disturbance_fieldName), self.inventory_year)
-            logging.info('Selecting disturbance records that occur before inventory vintage: {}'.format(dist_whereClause))
-            arcpy.Select_analysis(self.disturbances_layer, self.disturbances_layer2, dist_whereClause)
+        #Select disturbance records that occur before inventory vintage
+        dist_whereClause = '{} < {}'.format(self.arcpy.AddFieldDelimiters(self.disturbances, self.disturbance_fieldName), self.inventory_year)
+        logging.info('Selecting disturbance records that occur before inventory vintage: {}'.format(dist_whereClause))
+        self.arcpy.Select_analysis(self.disturbances_layer, self.disturbances_layer2, dist_whereClause)
 
     def intersectLayers(self):
-        with arc_license(Products.ARC) as arcpy:
-            # Intersecting disturbance and Inventory layers...
-            logging.info('Intersecting disturbance and inventory layers')
-            arcpy.Union_analysis([self.inventory_layer3,self.disturbances_layer2], self.temp_overlay, "ALL")
+        # Intersecting disturbance and Inventory layers...
+        logging.info('Intersecting disturbance and inventory layers')
+        self.arcpy.Union_analysis([self.inventory_layer3,self.disturbances_layer2], self.temp_overlay, "ALL")
 
     def removeNonConcurring(self):
-        with arc_license(Products.ARC) as arcpy:
-            nonConcurrence_whereClause = "{} > 0".format(arcpy.AddFieldDelimiters(self.output, "CELL_ID"))
-            # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
-            logging.info("Removing stand-replacing disturbance polygons with {} where inventory doesn't spatially concur that a disturbance took place".format(nonConcurrence_whereClause))
-            arcpy.Select_analysis(self.temp_overlay, self.output, nonConcurrence_whereClause)
-            arcpy.RepairGeometry_management(self.output, "DELETE_NULL")
+        nonConcurrence_whereClause = "{} > 0".format(self.arcpy.AddFieldDelimiters(self.output, "CELL_ID"))
+        # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
+        logging.info("Removing stand-replacing disturbance polygons with {} where inventory doesn't spatially concur that a disturbance took place".format(nonConcurrence_whereClause))
+        self.arcpy.Select_analysis(self.temp_overlay, self.output, nonConcurrence_whereClause)
+        self.arcpy.RepairGeometry_management(self.output, "DELETE_NULL")
