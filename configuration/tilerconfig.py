@@ -91,3 +91,48 @@ class TilerConfig(object):
             "tiler_type": typeName,
             "args": kwargs
         }
+
+    def CreateVectorLayerConfig(self, name, path, attributeConfigs, 
+                    raw=False, nodata_value=-1,
+                    data_type=None, layer=None, date=None):
+        return self.CreateConfigItem(
+            "VectorLayer",
+             name=name,
+             path=path,
+             attributes=attributeConfigs,
+             raw=raw,
+             nodata_value=nodata_value,
+             data_type=data_type,
+             layer=layer,
+             date=date)
+
+    def CreateDisturbanceLayerConfig(self, layerConfig, year, disturbance_type, transitionConfig=None):
+
+        return self.CreateConfigItem(
+            "DisturbanceLayer", 
+            lyr = layerConfig,
+            year = year,
+            disturbance_type = disturbance_type,
+            transition = transitionConfig)
+
+    def CreateTransitionRuleConfig(self, regen_delay=0, age_after=-1, classifiers=None):
+        return self.CreateConfigItem(
+            "TransitionRule",
+            regen_delay=regen_delay,
+            age_after=age_after,
+            classifiers=classifiers)
+
+    def CreateAttributeConfig(self, layer_name, db_name=None, filterConfig=None, substitutions=None):
+        return self.CreateConfigItem(
+            "Attribute", 
+            layer_name = layer_name,
+            db_name = db_name,
+            filter = filterConfig,
+            substitutions = substitutions)
+
+    def CreateSliceValueFilterConfig(self, target_val, slice_pos=0, slice_len=None):
+        return self.CreateConfigItem(
+            "SliceValueFilter",
+            target_val=target_val,
+            slice_pos=slice_pos,
+            slice_len=slice_len)
