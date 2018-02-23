@@ -4,98 +4,18 @@ import argparse
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.rollbackconfig import RollbackConfig
-from configuration.tilerconfig import TilerConfig
 
 from rollback.merge_disturbances import MergeDisturbances
 from rollback.intersect_disturbances_inventory import IntersectDisturbancesInventory
 from rollback.update_inventory import CalculateDistDEdifference
 from rollback.update_inventory import CalculateNewDistYr
 from rollback.update_inventory import updateInvRollback
+from rollback.rollback_tiler_config import RollbackTilerConfig
 
 class Rollback(object):
 
     def __init__(self, rollbackConfig):
         self.rollbackConfig = rollbackConfig
-
-    def AddRollbackDisturbance(self, tilerConfig, rollback_disturbances_path, 
-                               year, dist_lookup, dist_code, name):
-
-        DistYearAttributeConfig = tilerConfig.CreateConfigItem(
-            "Attribute", 
-            layer_name="DistYEAR_n",
-            filter=tilerConfig.CreateConfigItem("ValueFilter",target_val=year)),
-        DistTypeAttributeConfig = tilerConfig.CreateConfigItem(
-            "Attribute",
-            layer_name="DistType",
-            filter=tilerConfig.CreateConfigItem("ValueFilter",target_val=dist_code),
-            substitution=dist_lookup),
-        RegenDelayAttribueConfig = self.tilerConfig.CreateConfigItem(
-            "Attribute", 
-            layer_name="RegenDelay")
-
-        tilerConfig.CreateConfigItemList(
-            "Attribute",
-            [
-                DistYearAttributeConfig,
-                DistTypeAttributeConfig,
-                RegenDelayAttribueConfig
-            ]
-        )
-
-        yearfilterConfig = self.tilerConfig.CreateConfigItem(
-            "ValueFilter",
-            target_val=year)
-
-        attributeConfig = self.tilerConfig.CreateConfigItem(
-            "Attribute",
-            fire_year_field, filterConfig)
-
-        vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
-            "VectorLayer",
-            "fire_{}".format(year),
-            inventory_workspace,
-            attributeConfig,
-            layer=layer_name)
-
-        transitionConfig = self.tilerConfig.CreateConfigItem(
-            "TransitionRule",
-            regen_delay = 0,
-            age_after = 0)
-
-        disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
-            "DisturbanceLayer",
-            lyr = vectorLayerConfig,
-            year = year,
-            disturbance_type = disturbanceType,
-            transition = transitionConfig)
-
-
-    def CreateTilerConfig(self, region_path, inventoryMeta, resolution):
-        
-        tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path)
-        logging.info("creating tiler config at '{}'".format(tilerPath))
-        t = TilerConfig()
-
-        inventoryLayers = [
-            t.CreateConfigItem(typeName="RasterLayer",
-                               path=x["file_path"],
-                               attributes=[x["attribute"]],
-                               attribute_table=x["attribute_table"])
-            for x in inventoryMeta]
-
-        boundingbox = t.CreateConfigItem(typeName="BoundingBox",
-                                         layer=inventoryLayers[0],
-                                         pixel_size=resolution)
-        t.Initialize(
-            t.CreateConfigItem(typeName="CompressingTiler2D",
-                             bounding_box=boundingbox,
-                             use_bounding_box_resolution=True))
-
-        for i in inventoryLayers:
-            t.AppendLayer("inventory", i)
-
-        
-        t.writeJson(tilerPath)
 
     def Process(self, subRegionConfig, resolution, subRegionNames=None):
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
@@ -103,9 +23,15 @@ class Rollback(object):
 
         for r in regions:
             inventoryMeta = self.RunRollback(region_path = r["PathName"])
-            self.CreateTilerConfig(region_path = r["PathName"],
-                              inventoryMeta = inventoryMeta,
-                              resolution = self.rollbackConfig.GetResolution())
+
+            tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path = r["PathName"])
+            tilerConfig = RollbackTilerConfig()
+            tilerConfig.Generate(outPath=tilerPath,
+                inventoryMeta = inventoryMeta,
+                resolution = self.rollbackConfig.GetResolution(),
+                rollback_disturbances_path=self.rollbackConfig.GetRollbackDisturbancesOutput(region_path),
+                rollback_range=self.rollbackConfig.GetRollbackRange(),
+                dist_lookup=self.rollbackConfig.GetRollbackDisturbanceTypes())
 
     def RunRollback(self, region_path):
         inventory_workspace = self.rollbackConfig.GetInventoryWorkspace(region_path)

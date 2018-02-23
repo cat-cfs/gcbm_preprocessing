@@ -46,5 +46,23 @@
       "WorkspaceFilter": "BC_cutblocks90_15.shp",
       "YearField": "HARV_YR"
     }
+  ],
+  "RollbackDisturbanceTypes": [
+    {
+      "Code": 1,
+      "Name": "fire",
+      "CBM_Disturbance_Type": "Wild Fires"
+    },
+    {
+      "Code": 2,
+      "Name": "harvest",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
+    },
+    {
+      "Code": 13,
+      "Name": "slashburn",
+      "CBM_Disturbance_Type": "SlashBurning"
+    }
   ]
+
 }

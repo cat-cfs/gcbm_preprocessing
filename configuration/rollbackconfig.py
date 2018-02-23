@@ -66,3 +66,6 @@ class RollbackConfig(object):
 
     def GetTilerConfigPath(self, region_path):
         return self.pathRegistry.GetPath("TilerConfigPath", region_path)
+
+    def GetRollbackDisturbanceTypes(self):
+        return self.config["RollbackDisturbanceTypes"]
