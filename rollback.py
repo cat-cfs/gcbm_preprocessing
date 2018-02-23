@@ -17,6 +17,59 @@ class Rollback(object):
     def __init__(self, rollbackConfig):
         self.rollbackConfig = rollbackConfig
 
+    def AddRollbackDisturbance(self, tilerConfig, rollback_disturbances_path, 
+                               year, dist_lookup, dist_code, name):
+
+        DistYearAttributeConfig = tilerConfig.CreateConfigItem(
+            "Attribute", 
+            layer_name="DistYEAR_n",
+            filter=tilerConfig.CreateConfigItem("ValueFilter",target_val=year)),
+        DistTypeAttributeConfig = tilerConfig.CreateConfigItem(
+            "Attribute",
+            layer_name="DistType",
+            filter=tilerConfig.CreateConfigItem("ValueFilter",target_val=dist_code),
+            substitution=dist_lookup),
+        RegenDelayAttribueConfig = self.tilerConfig.CreateConfigItem(
+            "Attribute", 
+            layer_name="RegenDelay")
+
+        tilerConfig.CreateConfigItemList(
+            "Attribute",
+            [
+                DistYearAttributeConfig,
+                DistTypeAttributeConfig,
+                RegenDelayAttribueConfig
+            ]
+        )
+
+        yearfilterConfig = self.tilerConfig.CreateConfigItem(
+            "ValueFilter",
+            target_val=year)
+
+        attributeConfig = self.tilerConfig.CreateConfigItem(
+            "Attribute",
+            fire_year_field, filterConfig)
+
+        vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
+            "VectorLayer",
+            "fire_{}".format(year),
+            inventory_workspace,
+            attributeConfig,
+            layer=layer_name)
+
+        transitionConfig = self.tilerConfig.CreateConfigItem(
+            "TransitionRule",
+            regen_delay = 0,
+            age_after = 0)
+
+        disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
+            "DisturbanceLayer",
+            lyr = vectorLayerConfig,
+            year = year,
+            disturbance_type = disturbanceType,
+            transition = transitionConfig)
+
+
     def CreateTilerConfig(self, region_path, inventoryMeta, resolution):
         
         tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path)
@@ -40,6 +93,8 @@ class Rollback(object):
 
         for i in inventoryLayers:
             t.AppendLayer("inventory", i)
+
+        
         t.writeJson(tilerPath)
 
     def Process(self, subRegionConfig, resolution, subRegionNames=None):

@@ -35,6 +35,7 @@ class TilerConfig(object):
         args = {}
         for k,v in config["args"].items():
             if isinstance(v, dict) and "tiler_type" in v:
+
                 args[k] = self.AssembleTilerObject(v)
             else:
                 args[k] = v
@@ -42,8 +43,12 @@ class TilerConfig(object):
         if not type:
             raise ValueError("specified tiler type not found: '{}'."
                              .format(config["tiler_type"]))
-
-        return type(**args)
+        try:
+            inst = type(**args)
+            return inst
+        except:
+            raise RuntimeError("unable to create tiler type '{0}', specified arguments are '{1}'"
+                               .format(config["tiler_type"], **args))
 
     def AssembleTiler(self):
         tilerConfig = self.config["TilerConfig"]
@@ -92,47 +97,19 @@ class TilerConfig(object):
             "args": kwargs
         }
 
-    def CreateVectorLayerConfig(self, name, path, attributeConfigs, 
-                    raw=False, nodata_value=-1,
-                    data_type=None, layer=None, date=None):
-        return self.CreateConfigItem(
-            "VectorLayer",
-             name=name,
-             path=path,
-             attributes=attributeConfigs,
-             raw=raw,
-             nodata_value=nodata_value,
-             data_type=data_type,
-             layer=layer,
-             date=date)
+    def CreateConfigItemList(self, typeName, items=None):
+        itemlist = {
+            "tiler_type": typeName,
+            "argsList": []
+        }
+        if not items is None:
+            itemlist = self.AppendToConfigItemList(itemlist, items)
+        return itemlist
 
-    def CreateDisturbanceLayerConfig(self, layerConfig, year, disturbance_type, transitionConfig=None):
-
-        return self.CreateConfigItem(
-            "DisturbanceLayer", 
-            lyr = layerConfig,
-            year = year,
-            disturbance_type = disturbance_type,
-            transition = transitionConfig)
-
-    def CreateTransitionRuleConfig(self, regen_delay=0, age_after=-1, classifiers=None):
-        return self.CreateConfigItem(
-            "TransitionRule",
-            regen_delay=regen_delay,
-            age_after=age_after,
-            classifiers=classifiers)
-
-    def CreateAttributeConfig(self, layer_name, db_name=None, filterConfig=None, substitutions=None):
-        return self.CreateConfigItem(
-            "Attribute", 
-            layer_name = layer_name,
-            db_name = db_name,
-            filter = filterConfig,
-            substitutions = substitutions)
-
-    def CreateSliceValueFilterConfig(self, target_val, slice_pos=0, slice_len=None):
-        return self.CreateConfigItem(
-            "SliceValueFilter",
-            target_val=target_val,
-            slice_pos=slice_pos,
-            slice_len=slice_len)
+    def AppendToConfigItemList(self, itemList, items):
+        listType = itemList["tiler_type"]
+        for item in items:
+            if item["tiler_type"] != listType:
+               raise ValueError("mixed types within item list not supported")
+            itemList.argsList.append(item["args"])
+        return itemList

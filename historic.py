@@ -14,25 +14,37 @@ class Historic(object):
     def GenerateSlashBurn(self):
         pass
 
-    def AppendFire(self, year, inventory_workspace, layer_name, fire_year_field, disturbanceType):
+    def AppendFireLayer(self, year, inventory_workspace, layer_name,
+                   fire_year_field, disturbanceType):
 
-        filterConfig = self.tilerConfig.CreateSliceValueFilterConfig(
-            year, slice_len=4)
+        filterConfig = self.tilerConfig.CreateConfigItem(
+            "SliceValueFilter",
+            target_val=year,
+            slice_len=4)
 
-        attributeConfig = self.tilerConfig.CreateAttributeConfig(
-            fire_year_field, filterConfig)
+        attributeConfig = self.tilerConfig.CreateConfigItem(
+            "Attribute",
+            layer_name=fire_year_field,
+            filter=filterConfig)
 
-        vectorLayerConfig =  self.tilerConfig.CreateVectorLayerConfig(
-            "fire_{}".format(year),
-            inventory_workspace,
-            attributeConfig,
+        vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
+            "VectorLayer",
+            name="fire_{}".format(year),
+            path=inventory_workspace,
+            attributes=attributeConfig,
             layer=layer_name)
 
-        transitionConfig = self.tilerConfig.CreateTransitionRuleConfig(
-            regen_delay = 0, age_after = 0)
+        transitionConfig = self.tilerConfig.CreateConfigItem(
+            "TransitionRule",
+            regen_delay = 0,
+            age_after = 0)
 
-        disturbanceLayerConfig = self.tilerConfig.CreateDisturbanceLayerConfig(
-                vectorLayerConfig, year, disturbanceType, transitionConfig)
+        disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
+            "DisturbanceLayer",
+            lyr = vectorLayerConfig,
+            year = year,
+            disturbance_type = disturbanceType,
+            transition = transitionConfig)
 
         self.tilerConfig.AppendLayer("HistoricFire", disturbanceLayerConfig)
 
