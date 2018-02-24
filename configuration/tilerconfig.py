@@ -91,7 +91,8 @@ class TilerConfig(object):
 
     def CreateConfigItem(self, typeName, **kwargs):
         if not typeName in self.typeRegistry:
-            raise ValueError("specified type unknown/unsupported {0}".format(typeName))
+            raise ValueError("specified type unknown/unsupported {0}"
+                             .format(typeName))
         return {
             "tiler_type": typeName,
             "args": kwargs
@@ -111,5 +112,5 @@ class TilerConfig(object):
         for item in items:
             if item["tiler_type"] != listType:
                raise ValueError("mixed types within item list not supported")
-            itemList.argsList.append(item["args"])
+            itemList["argsList"].append(item["args"])
         return itemList

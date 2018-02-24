@@ -14,8 +14,11 @@ class Historic(object):
     def GenerateSlashBurn(self):
         pass
 
-    def AppendFireLayer(self, year, inventory_workspace, layer_name,
-                   fire_year_field, disturbanceType):
+    def AppendHistoricInsectDisturbances(self):
+        pass
+
+    def AppendMergedDisturbanceLayer(self, year, inventory_workspace, layer_name,
+                   year_field, name, disturbanceType):
 
         filterConfig = self.tilerConfig.CreateConfigItem(
             "SliceValueFilter",
@@ -24,15 +27,15 @@ class Historic(object):
 
         attributeConfig = self.tilerConfig.CreateConfigItem(
             "Attribute",
-            layer_name=fire_year_field,
+            layer_name=year_field,
             filter=filterConfig)
 
         vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
             "VectorLayer",
-            name="fire_{}".format(year),
+            name="{0}_{1}".format(name, year),
             path=inventory_workspace,
             attributes=attributeConfig,
-            layer=layer_name)
+            layer="MergedDisturbances")
 
         transitionConfig = self.tilerConfig.CreateConfigItem(
             "TransitionRule",
@@ -46,7 +49,7 @@ class Historic(object):
             disturbance_type = disturbanceType,
             transition = transitionConfig)
 
-        self.tilerConfig.AppendLayer("HistoricFire", disturbanceLayerConfig)
+        self.tilerConfig.AppendLayer("Historic_Fire", disturbanceLayerConfig)
 
     def AppendHarvest(self, tilerConfig):
         pass

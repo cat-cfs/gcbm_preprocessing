@@ -22,14 +22,16 @@ class Rollback(object):
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
         for r in regions:
-            inventoryMeta = self.RunRollback(region_path = r["PathName"])
+            region_path = r["PathName"]
+            inventoryMeta = self.RunRollback(region_path = region_path)
 
-            tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path = r["PathName"])
+            tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path = region_path)
+            rollbackDisturbancePath = self.rollbackConfig.GetRollbackDisturbancesOutput(region_path)
             tilerConfig = RollbackTilerConfig()
             tilerConfig.Generate(outPath=tilerPath,
                 inventoryMeta = inventoryMeta,
                 resolution = self.rollbackConfig.GetResolution(),
-                rollback_disturbances_path=self.rollbackConfig.GetRollbackDisturbancesOutput(region_path),
+                rollback_disturbances_path=rollbackDisturbancePath,
                 rollback_range=self.rollbackConfig.GetRollbackRange(),
                 dist_lookup=self.rollbackConfig.GetRollbackDisturbanceTypes())
 

@@ -58,9 +58,9 @@ class RollbackTilerConfig(object):
             "Attribute",
             layer_name="DistType",
             filter=t.CreateConfigItem("ValueFilter",target_val=dist_code),
-            substitution={dist_code, cbm_disturbance_type_name})
+            substitution={dist_code: cbm_disturbance_type_name})
         
-        RegenDelayAttributeConfig = self.t.CreateConfigItem(
+        RegenDelayAttributeConfig = t.CreateConfigItem(
             "Attribute", 
             layer_name="RegenDelay")
 
@@ -76,7 +76,7 @@ class RollbackTilerConfig(object):
         vectorLayerConfig =  t.CreateConfigItem(
             "VectorLayer",
             name = "rollback_{}_{}".format(name, year),
-            path = inventory_workspace,
+            path = rollback_disturbances_path,
             attributes = attributeList)
 
         transitionConfig = t.CreateConfigItem(
@@ -90,6 +90,9 @@ class RollbackTilerConfig(object):
             year = year,
             disturbance_type = DistTypeAttributeConfig,
             transition = transitionConfig)
+        
+        t.AppendLayer("rollback_{}".format(name),
+                      disturbanceLayerConfig)
 
     def _WriteTilerConfig(self, path):
         self.tilerConfig.writeJson(path)
