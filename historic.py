@@ -14,11 +14,38 @@ class Historic(object):
     def GenerateSlashBurn(self):
         pass
 
-    def AppendHistoricInsectDisturbances(self):
-        pass
+    def AppendHistoricInsectDisturbance(self, nameFormat, filename,
+                                        year, attribute, attribute_lookup,
+                                        layerMeta):
+        attributeConfig = self.tilerConfig.CreateConfigItem(
+            "Attribute",
+            layer_name=attribute,
+            substitutions=attribute_lookup)
 
-    def AppendMergedDisturbanceLayer(self, year, inventory_workspace, layer_name,
-                   year_field, name, disturbanceType):
+        vectorlayerConfig = self.tilerConfig.CreateConfigItem(
+            "VectorLayer",
+            name = nameFormat.format(year),
+            path = filename,
+            attributes = attributeConfig)
+
+        transitionRuleConfig = self.tilerConfig.CreateConfigItem(
+            "TransitionRule",
+            regen_delay=0,
+            age_after=-1)
+
+        disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
+            "DisturbanceLayer",
+            lyr = vectorlayerConfig,
+            year = year,
+            disturbance_type= self.tilerConfig.CreateConfigItem(
+                "Attribute", layer_name=attribute),
+            transition = transitionRuleConfig)
+
+        self.tilerConfig.AppendLayer(layerMeta, disturbanceLayerConfig)
+
+    def AppendMergedDisturbanceLayer(self, year, inventory_workspace,
+                                     year_field, name, cbmDisturbanceTypeName,
+                                     layerMeta):
 
         filterConfig = self.tilerConfig.CreateConfigItem(
             "SliceValueFilter",
@@ -32,7 +59,7 @@ class Historic(object):
 
         vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
             "VectorLayer",
-            name="{0}_{1}".format(name, year),
+            name=name,
             path=inventory_workspace,
             attributes=attributeConfig,
             layer="MergedDisturbances")
@@ -46,19 +73,45 @@ class Historic(object):
             "DisturbanceLayer",
             lyr = vectorLayerConfig,
             year = year,
-            disturbance_type = disturbanceType,
+            disturbance_type = cbmDisturbanceTypeName,
             transition = transitionConfig)
 
-        self.tilerConfig.AppendLayer("Historic_Fire", disturbanceLayerConfig)
+        self.tilerConfig.AppendLayer(layerMeta,
+                                     disturbanceLayerConfig)
 
-    def AppendHarvest(self, tilerConfig):
-        pass
+    def AppendSlashburn(self, year, path, yearField, name_filter, name,
+                        cbmDisturbanceTypeName, layerMeta):
+        valueFilterConfig = self.tilerConfig.CreateConfigItem(
+            "ValueFilter",
+            target_val = year,
+            str_comparison = True)
 
-    def AppendSlashburn(self, tilerConfig):
-        pass
+        attributeConfig = self.tilerConfig.CreateConfigItem(
+            "Attribute",
+            layer_name = yearField,
+            filter = valueFilterConfig)
 
-    def AppendInsect(self, tilerConfig):
-        pass
+        vectorLayerConfig = self.tilerConfig.CreateConfigItem(
+            "VectorLayer",
+            name = name,
+            path = path,
+            attributes=attributeConfig)
+
+        transitionConfig = self.tilerConfig.CreateConfigItem(
+            regen_delay=0,
+            age_after=0)
+
+        disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
+            "DisturbanceLayer",
+            lyr = vectorLayerConfig,
+            year = year,
+            disturbance_type = cbmDisturbanceTypeName,
+            transition = transitionConfig)
+
+        self.tilerConfig.AppendLayer(layerMeta,
+                                     disturbanceLayerConfig)
+
+
 
 
 
