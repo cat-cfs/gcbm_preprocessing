@@ -1,6 +1,7 @@
 {
   "InventoryWorkspace": "",
-  ""
+  "rollback_end_year": null,
+  "historic_end_year": null,
   "MergedLayerData": [
     {
       "Name": "fire",
