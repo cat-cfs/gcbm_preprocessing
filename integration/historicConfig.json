@@ -1,0 +1,38 @@
+{
+  "InventoryWorkspace": "",
+  ""
+  "MergedLayerData": [
+    {
+      "Name": "fire",
+      "YearField": "YEAR_",
+      "CBMDisturbanceTypeName": "Wild Fires",
+      "Metadata": "Historic Fire"
+    },
+    {
+      "Name": "fire",
+      "YearField": "EDATE",
+      "CBMDisturbanceTypeName": "Wild Fires"
+    },
+    {
+      "Name": "harvest",
+      "YearField": "HARV_YR",
+      "CBMDisturbanceTypeName": "Clearcut harvesting with salvage"
+    }
+  ],
+  "InsectDisturbances": {
+    "Name": "insect",
+    "Directory": "${Historic_Insect_Dir}",
+    "Attribute": "Severity",
+    "attribute_lookup": {
+      "V": "Mountain Pine Beetle - Very Severe Impact",
+      "S": "Mountain Pine Beetle - Severe Impact",
+      "M": "Mountain Pine Beetle - Moderate Impact",
+      "L": "Mountain Pine Beetle - Low Impact",
+      "4": "Mountain Pine Beetle - Very Severe Impact",
+      "3": "Mountain Pine Beetle - Severe Impact",
+      "2": "Mountain Pine Beetle - Moderate Impact",
+      "1": "Mountain Pine Beetle - Low Impact"
+    }
+  }
+
+}

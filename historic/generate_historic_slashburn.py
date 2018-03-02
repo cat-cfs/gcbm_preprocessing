@@ -6,7 +6,9 @@ class GenerateSlashburn(object):
         self.arcpy = arcpy
 
     def generateSlashburn(self, inventory_workspace, 
-                          inventory_disturbance_year_fieldname, harvest_shp, harvest_shp_year_field, year_range, sb_percent):
+                          inventory_disturbance_year_fieldname,
+                          harvest_shp,harvest_shp_year_field, year_range, sb_percent):
+
         logging.info("generating slashburn")
         PercSBofCC = sb_percent
 

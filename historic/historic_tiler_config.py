@@ -1,26 +1,22 @@
 from configuration.tilerconfig import TilerConfig
 
 class HistoricTilerConfig(object):
-    
+
     def __init__(self, path):
         self.tilerConfig = TilerConfig(tilerConfigPath)
 
-    def AddMergedDisturbanceLayers(self, inventory_workspace, rollback_end_year, historic_end_year):
-        items = [
-            {"Name": "fire", "YearField": "YEAR_", "CBMDisturbanceTypeName": "Wild Fires"},
-            {"Name": "fire", "YearField": "EDATE", "CBMDisturbanceTypeName": "Wild Fires"},
-            {"Name": "harvest", "YearField": "HARV_YR", "CBMDisturbanceTypeName": "Wild Fires"}
-        ]
-        for item in items:
-            for year in range(rollback_end_year + 1, historic_end_year + 1):
+    def AddMergedDisturbanceLayers(self, layerData, inventory_workspace, rollback_end_year, historic_end_year):
+
+        for item in layerData:
+            for year in range(rollback_end_year + 1,
+                              historic_end_year + 1):
                 self._AddMergedDisturbanceLayer(
                     name = "{0}_{1}".format(item["Name"], year),
                     year = year,
                     inventory_workspace = inventory_workspace,
                     year_field = item["YearField"],
                     cbmDisturbanceTypeName = item["CBMDisturbanceTypeName"],
-                    layerMeta = "historic_fire")
-
+                    layerMeta = layerData["Metadata"])
 
     def _AddHistoricInsectDisturbance(self, name, filename,
                                         year, attribute, attribute_lookup,
@@ -96,7 +92,7 @@ class HistoricTilerConfig(object):
                                      disturbanceLayerConfig)
 
     def _AddSlashburn(self, year, path, yearField, name_filter, name,
-                        cbmDisturbanceTypeName, layerMeta):
+                      cbmDisturbanceTypeName, layerMeta):
         valueFilterConfig = self.tilerConfig.CreateConfigItem(
             "ValueFilter",
             target_val = year,
