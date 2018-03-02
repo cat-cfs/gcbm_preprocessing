@@ -1,0 +1,93 @@
+{
+  "Resolution": 0.01,
+  "Inventory_Workspace": "${Clipped_Inventory_Path}",
+  "Inventory_Year": 2015,
+  "Inventory_Field_Names": {
+    "age": "Age2015",
+    "species": "LdSpp",
+    "establishment_date": "DE",
+    "dist_date_diff": "Dist_DE_DIFF",
+    "pre_dist_age": "preDistAge",
+    "dist_type": "DistType",
+    "regen_delay": "RegenDelay",
+    "rollback_age": "Age1990",
+    "disturbance_yr": "DistYEAR",
+    "new_disturbance_yr": "DistYEAR_new"
+  },
+  "Inventory_Classifiers": {
+    "LdSpp": "LdSpp",
+    "AU": "AU"
+  },
+  "DistAgeProportionFilePath": "${Disturbance_Age_Proportions}",
+  "Rollback_Range": {
+    "StartYear": 1990,
+    "EndYear": 2013
+  },
+  "Historic_Range": {
+    "StartYear": 1990,
+    "EndYear": 2013
+  },
+  "Reporting_Classifiers": {
+    "THLB": "THLB"
+  },
+  "HistoricHarvestYearField": "HARV_YR",
+  "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
+  "RollBackDisturbancesOutput": "${RollbackDisturbancesOutput}",
+  "SlashburnPercent": 100,
+  "RollbackDisturbances": [
+    {
+      "Code": 1,
+      "Name": "fire",
+      "Workspace": "${Clipped_Historic_Disturbance_Path}",
+      "WorkspaceFilter": "NFDB*.shp",
+      "YearField": "YEAR_",
+      "CBM_Disturbance_Type": "Wild Fires"
+    },
+    {
+      "Name": "fire",
+      "Workspace": "${Clipped_Historic_Disturbance_Path}",
+      "WorkspaceFilter": "NBAC*.shp",
+      "YearField": "EDATE"
+    },
+    {
+      "Name": "harvest",
+      "Workspace": "${Clipped_Historic_Harvest_Path}",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
+      "YearField": "HARV_YR"
+    }
+  ],
+  "RollbackDisturbanceTypes": [
+    {
+      "Code": 1,
+      "Name": "fire",
+      
+    },
+    {
+      "Code": 2,
+      "Name": "harvest",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
+    },
+    {
+      "Code": 13,
+      "Name": "slashburn",
+      "CBM_Disturbance_Type": "SlashBurning"
+    }
+  ],
+  "InsectDisturbances": {
+    "Name": "insect",
+    "Directory": "${Historic_Insect_Dir}",
+    "Attribute": "Severity",
+    "attribute_lookup": {
+      "V": "Mountain Pine Beetle - Very Severe Impact",
+      "S": "Mountain Pine Beetle - Severe Impact",
+      "M": "Mountain Pine Beetle - Moderate Impact",
+      "L": "Mountain Pine Beetle - Low Impact",
+      "4": "Mountain Pine Beetle - Very Severe Impact",
+      "3": "Mountain Pine Beetle - Severe Impact",
+      "2": "Mountain Pine Beetle - Moderate Impact",
+      "1": "Mountain Pine Beetle - Low Impact"
+    }
+  }
+
+}
+}
