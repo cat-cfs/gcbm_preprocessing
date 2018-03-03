@@ -35,26 +35,30 @@ class RandomRasterSubset(object):
         """
         if percent < 0 or percent > 100:
            raise ValueError("specified percent out of bounds")
-        p = percent/100.0
+        p = percent / 100.0
+
+        # copy the original to a new file
+        shutil.copy(input, output)
+        if p == 1: return
 
         # read the input as an array
         raster1 = self.readInput(input)
 
-        # copy the original to a new file
-        shutil.copy(input, output)
-
+        #it is faster to generate random numbers for every position
+        #(filtered or not) than to attempt to generate for only the filtered
+        #subset with a non numpy native method
         rnd = np.random.rand(raster1.shape[0], raster1.shape[1])
 
+        #filter the input raster values based on the specified filter
         filtered = np.isin(raster1, filter)
 
-        # generate random numbers for each of the positions that is not filtered
-        subset = np.where((filtered==True) & (rnd < p), raster1, default) 
+        #filter the subset based on passing both the filter and 
+        #having p >= the random value for the index
+        subset = np.where((filtered) & (rnd < p), raster1, default) 
 
         self.writeOutput(output, subset)
 
-
-
 r = RandomRasterSubset()
 r.RandomSubset(r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\inputs\base\projected_fire_2015.tif",
-              "out.tif", 50, 0, filter=[1])
+              "out.tif", 70, 0, filter=[1])
 
