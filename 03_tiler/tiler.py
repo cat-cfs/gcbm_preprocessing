@@ -203,7 +203,7 @@ class Tiler(object):
                     disturbance_type=Attribute(dist_type_attr)))
         pp.finish()
 
-    def processProjectedDisturbancesRasters(self, scenario, raster_dir):
+    def processProjectedDisturbancesRasters(self, scenario, raster_dir, params):
         """
         append existing raster disturbance layers to the tiler instance
         @param scenario str name of the scenario
