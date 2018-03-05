@@ -58,7 +58,4 @@ class RandomRasterSubset(object):
 
         self.writeOutput(output, subset)
 
-r = RandomRasterSubset()
-r.RandomSubset(r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\inputs\base\projected_fire_2015.tif",
-              "out.tif", 10, 0, filter=[1])
 
