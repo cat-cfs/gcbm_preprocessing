@@ -211,10 +211,11 @@ class Tiler(object):
         """
         append existing raster disturbance layers to the tiler instance
         @param scenario str name of the scenario
-        @raster_dir directory containing future disturbance rasters 
-                    ex "<tsaname>\01a_pretiled_layers\03_disturbances\02_future"
-                    specified directory contains scenario names:
-                    ex. "<tsaname>\01a_pretiled_layers\03_disturbances\02_future\base"
+        @param base_raster_dir directory containing future disturbance rasters 
+                    ex "<tsaname>\01a_pretiled_layers\03_disturbances\02_future\inputs\base"
+        @param scenario_raster_dir directory where the processed rasters are written
+                    ex. "<tsaname>\01a_pretiled_layers\03_disturbances\02_future\outputs\<scenario>"
+        @param params a triple: (slashburn percent, slashburn activity percent, harvest activity percent)
         """
 
         pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3], scenario), 1).start()
@@ -236,10 +237,13 @@ class Tiler(object):
         actv_percent_harv = params[2]
 
         f = FutureRasterProcessor(
-            r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\inputs\base",
+            base_raster_dir,
             list(range(self.historic_range[1]+1, self.future_range[1]+1)),
-            r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\outputs\base",
-            "fire", "harvest", "slashburn", "projected_fire_{}.tif", "projected_harvest_{}.tif", "projected_slashburn_{}.tif")
+            scenario_raster_dir,
+            "fire", "harvest", "slashburn",
+            "projected_fire_{}.tif",
+            "projected_harvest_{}.tif",
+            "projected_slashburn_{}.tif")
 
         result = []
         result.extend(f.processFire())

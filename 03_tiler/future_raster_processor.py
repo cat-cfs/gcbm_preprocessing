@@ -115,14 +115,3 @@ class FutureRasterProcessor(object):
                     path = fire_raster_scenario_path,
                     disturbance_name = self.fire_name))
         return result
-
-f = FutureRasterProcessor(
-    r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\inputs\base",
-    list(range(2015,2075)),
-    r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\outputs\base",
-    "fire", "harvest", "slashburn", "projected_fire_{}.tif", "projected_harvest_{}.tif", "projected_slashburn_{}.tif")
-
-result = []
-result.extend(f.processFire())
-result.extend(f.processHarvest(2030,50,RandomRasterSubset()))
-result.extend(f.processSlashburn(50, 2030, 50, RandomRasterSubset()))
