@@ -203,7 +203,11 @@ class Tiler(object):
                     disturbance_type=Attribute(dist_type_attr)))
         pp.finish()
 
-    def processProjectedDisturbancesRasters(self, scenario, raster_dir, params):
+    def processProjectedDisturbancesRasters(self, scenario, base_raster_dir, scenario_raster_dir, params):
+
+        #not at the top so we dont break existing things for everyone (gdal will be imported)
+        from future_raster_processor import FutureRasterProcessor
+        from random_raster_subset import RandomRasterSubset
         """
         append existing raster disturbance layers to the tiler instance
         @param scenario str name of the scenario
@@ -216,9 +220,9 @@ class Tiler(object):
         pp = self.ProgressPrinter.newProcess("{}_{}".format(inspect.stack()[0][3], scenario), 1).start()
         
         projected_dist_lookup = {
-            7:  "Wild Fires",
-            6:  "{} CC".format("Base" if scenario.lower() == "base" else "CBM_{}".format(scenario)),
-            13: "SlashBurning"
+            "fire":  "Wild Fires",
+            "harvest":  "{} CC".format("Base" if scenario.lower() == "base" else "CBM_{}".format(scenario)),
+            "slashburn": "SlashBurning"
         }
         
         projected_name_lookup = {
@@ -227,18 +231,31 @@ class Tiler(object):
             13: "slashburn"
         }
 
-        for year in range(self.historic_range[1]+1, self.future_range[1]+1):
-            for dist_code in projected_dist_lookup:
-                label = projected_dist_lookup[dist_code]
-                name = projected_name_lookup[dist_code]
-                filename = "projected_{distName}_{year}.tif".format(distName = name, year = year)
-                raster_filename = os.path.join(raster_dir, scenario, filename)
-                self.layers.append(DisturbanceLayer(
+        percent_sb = params[0]
+        actv_percent_sb = params[1]
+        actv_percent_harv = params[2]
+
+        f = FutureRasterProcessor(
+            r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\inputs\base",
+            list(range(self.historic_range[1]+1, self.future_range[1]+1)),
+            r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\outputs\base",
+            "fire", "harvest", "slashburn", "projected_fire_{}.tif", "projected_harvest_{}.tif", "projected_slashburn_{}.tif")
+
+        result = []
+        result.extend(f.processFire())
+        result.extend(f.processHarvest(self.activity_start_year, actv_percent_harv, RandomRasterSubset()))
+        result.extend(f.processSlashburn(percent_sb, self.activity_start_year, actv_percent_sb, RandomRasterSubset()))
+
+        for item in result:
+            self.layers.append(DisturbanceLayer(
                     self.rule_manager,
-                    RasterLayer(raster_filename,
-                                nodata_value=0),
-                    year=year,
-                    disturbance_type=name))
+                    RasterLayer(item["Path"],
+                                attributes="event",
+                                attribute_table={1: [1]}),
+                    year=item["Year"],
+                    disturbance_type=projected_dist_lookup[item["DisturbanceName"]]))
+
+
         pp.finish()
 
     def processProjectedDisturbances(self, scenario, params):

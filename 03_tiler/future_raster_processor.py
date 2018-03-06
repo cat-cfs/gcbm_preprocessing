@@ -1,33 +1,46 @@
 import os, shutil, logging
-from randomrastersubset import RandomRasterSubset
+from random_raster_subset import RandomRasterSubset
 
 class FutureRasterProcessor(object):
-    def __init__(self, base_raster_dir, years, output_dir):
+    def __init__(self, base_raster_dir, years, output_dir,
+                 fire_name, harvest_name, slashburn_name,
+                 fire_format, harvest_format, slashburn_format):
         self.years = years
         self.base_raster_dir = base_raster_dir
         self.output_dir = output_dir
-        self.fire_format = "projected_fire_{year}.tif"
-        self.harvest_format = "projected_harvest_{year}.tif"
-        self.slashburn_format = "projected_slashburn_{year}.tif"
+
+        self.fire_format = fire_format #"projected_fire_{}.tif"
+        self.harvest_format = harvest_format #"projected_harvest_{}.tif"
+        self.slashburn_format = slashburn_format #"projected_slashburn_{}.tif"
+
+        self.fire_name = fire_name
+        self.harvest_name = harvest_name
+        self.slashburn_name = slashburn_name
 
         self.base_paths = {
-            "fire": {},
-            "harvest": {},
+            fire_name: {},
+            harvest_name: {},
         }
         for year in years:
-            self.base_paths["fire"][year] = self._getValidPath(self.fire_format, year)
-            self.base_paths["harvest"][year] = self._getValidPath(self.harvest_format, year)
+            self.base_paths[fire_name][year] = self._getValidPath(self.fire_format, year)
+            self.base_paths[harvest_name][year] = self._getValidPath(self.harvest_format, year)
+
+    def createProcessedRasterResult(self, year, path, disturbance_name):
+        return {
+            "Year": year,
+            "Path": path,
+            "DisturbanceName": disturbance_name
+            }
 
     def _getValidPath(self, format, year):
         path = os.path.join(
             self.base_raster_dir,
-            format.format(year=year))
+            format.format(year))
         if not os.path.exists(path):
             raise ValueError("path does not exist {}"
                                 .format(path))
         return path
 
-    
     def processSlashburn(self, percent, activityStartYear, activityPercent, random_subset):
         """
         param percent the percentage of harvest for slashburn prior to the activity start year
@@ -37,18 +50,25 @@ class FutureRasterProcessor(object):
         """
 
         logging.info("processing future slashburn")
+        result = []
         for year in self.years:
             harvest_raster_scenario_path = os.path.join(self.output_dir, 
-                                                        self.harvest_format.format(year=year))
+                                                        self.harvest_format.format(year))
             if not os.path.exists(harvest_raster_scenario_path):
                 raise ValueError("harvest scenarios must be processed before slashburn")
-            slashburn_path = os.path.join(self.output_dir, self.slashburn_format.format(year=year))
+            slashburn_path = os.path.join(self.output_dir, self.slashburn_format.format(year))
             if year >= activityStartYear:
                 percent = activityPercent
 
             random_subset.RandomSubset(input = harvest_raster_scenario_path,
                                        output = slashburn_path,
                                        percent = percent)
+            result.append(
+                self.createProcessedRasterResult(
+                    year = year,
+                    path = slashburn_path,
+                    disturbance_name = self.slashburn_name))
+        return result
 
     def processHarvest(self, activityStartYear, activityPercent, random_subset):
         """
@@ -58,10 +78,11 @@ class FutureRasterProcessor(object):
         param random_subset instance of RandomRasterSubset to process rasters
         """
         logging.info("processing future harvest")
+        result = []
         for year in self.years:
             harvest_raster_base_path = self.base_paths["harvest"][year]
             harvest_raster_scenario_path = os.path.join(self.output_dir, 
-                                                        self.harvest_format.format(year=year))
+                                                        self.harvest_format.format(year))
             if year >= activityStartYear:
                 random_subset.RandomSubset(
                     input = harvest_raster_base_path,
@@ -70,28 +91,38 @@ class FutureRasterProcessor(object):
             else:
                 shutil.copy(harvest_raster_base_path,
                             harvest_raster_scenario_path)
+            result.append(
+                self.createProcessedRasterResult(
+                    year = year,
+                    path = harvest_raster_scenario_path,
+                    disturbance_name = self.harvest_name))
+        return result
 
     def processFire(self):
         """copies fire rasters to the scenario dir"""
 
         logging.info("copying base fire rasters to scenario dir")
+        result = []
         for year in self.years:
             fire_raster_base_path = self.base_paths["fire"][year]
             fire_raster_scenario_path = os.path.join(self.output_dir, 
-                                                     self.fire_format.format(year=year))
+                                                     self.fire_format.format(year))
             shutil.copy(fire_raster_base_path,
                         fire_raster_scenario_path)
+            result.append(
+                self.createProcessedRasterResult(
+                    year = year,
+                    path = fire_raster_scenario_path,
+                    disturbance_name = self.fire_name))
+        return result
 
 f = FutureRasterProcessor(
     r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\inputs\base",
-    list(range(2015, 2075)),
-    r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\outputs\base")
+    list(range(2015,2075)),
+    r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\03_disturbances\02_future\outputs\base",
+    "fire", "harvest", "slashburn", "projected_fire_{}.tif", "projected_harvest_{}.tif", "projected_slashburn_{}.tif")
 
-
-import time
-t0 = time.time()
-f.processFire()
-f.processHarvest(2040, 50, RandomRasterSubset())
-f.processSlashburn(50, 2040, 100, RandomRasterSubset()) 
-t1 = time.time()
-print(t1-t0)
+result = []
+result.extend(f.processFire())
+result.extend(f.processHarvest(2030,50,RandomRasterSubset()))
+result.extend(f.processSlashburn(50, 2030, 50, RandomRasterSubset()))
