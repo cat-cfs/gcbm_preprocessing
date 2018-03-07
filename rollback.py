@@ -3,7 +3,7 @@ from preprocess_tools.licensemanager import *
 import argparse
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-from configuration.rollbackconfig import RollbackConfig
+from configuration.historicconfig import HistoricConfig
 
 from rollback.merge_disturbances import MergeDisturbances
 from rollback.intersect_disturbances_inventory import IntersectDisturbancesInventory
@@ -14,8 +14,8 @@ from rollback.rollback_tiler_config import RollbackTilerConfig
 
 class Rollback(object):
 
-    def __init__(self, rollbackConfig):
-        self.rollbackConfig = rollbackConfig
+    def __init__(self, config):
+        self.config = config
 
     def Process(self, subRegionConfig, resolution, subRegionNames=None):
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
@@ -25,29 +25,29 @@ class Rollback(object):
             region_path = r["PathName"]
             inventoryMeta = self.RunRollback(region_path = region_path)
 
-            tilerPath = self.rollbackConfig.GetTilerConfigPath(region_path = region_path)
-            rollbackDisturbancePath = self.rollbackConfig.GetRollbackDisturbancesOutput(region_path)
+            tilerPath = self.config.GetTilerConfigPath(region_path = region_path)
+            rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutput(region_path)
             tilerConfig = RollbackTilerConfig()
             tilerConfig.Generate(outPath=tilerPath,
                 inventoryMeta = inventoryMeta,
-                resolution = self.rollbackConfig.GetResolution(),
+                resolution = self.config.GetResolution(),
                 rollback_disturbances_path=rollbackDisturbancePath,
-                rollback_range=self.rollbackConfig.GetRollbackRange(),
-                dist_lookup=self.rollbackConfig.GetRollbackDisturbanceTypes())
+                rollback_range=self.config.GetRollbackRange(),
+                dist_lookup=self.config.GetRollbackDisturbances(region_path))
 
     def RunRollback(self, region_path):
-        inventory_workspace = self.rollbackConfig.GetInventoryWorkspace(region_path)
-        inventory_year = int(self.rollbackConfig.GetInventoryYear())
-        inventory_field_names = self.rollbackConfig.GetInventoryFieldNames()
-        inventory_classifiers = self.rollbackConfig.GetInventoryClassifiers()
-        rollback_range = self.rollbackConfig.GetRollbackRange()
-        harvest_year_field = self.rollbackConfig.GetHistoricHarvestYearField()
-        inventory_raster_output_dir = self.rollbackConfig.GetInventoryRasterOutputDir(region_path)
-        rollback_disturbances_output = self.rollbackConfig.GetRollbackDisturbancesOutput(region_path)
-        resolution = self.rollbackConfig.GetResolution()
-        slashburnpercent = self.rollbackConfig.GetSlashBurnPercent()
-        reportingclassifiers = self.rollbackConfig.GetReportingClassifiers()
-        disturbances = self.rollbackConfig.GetRollbackDisturbances(region_path)
+        inventory_workspace = self.config.GetInventoryWorkspace(region_path)
+        inventory_year = int(self.config.GetInventoryYear())
+        inventory_field_names = self.config.GetInventoryFieldNames()
+        inventory_classifiers = self.config.GetInventoryClassifiers()
+        rollback_range = self.config.GetRollbackRange()
+        harvest_year_field = self.config.GetHistoricHarvestYearField()
+        inventory_raster_output_dir = self.config.GetInventoryRasterOutputDir(region_path)
+        rollback_disturbances_output = self.config.GetRollbackDisturbancesOutput(region_path)
+        resolution = self.config.GetResolution()
+        slashburnpercent = self.config.GetSlashBurnPercent()
+        reportingclassifiers = self.config.GetReportingClassifiers()
+        disturbances = self.config.GetRollbackDisturbances(region_path)
 
         with arc_license(Products.ARC) as arcpy:
             mergeDist = MergeDisturbances(arcpy, inventory_workspace, disturbances)
@@ -65,7 +65,7 @@ class Rollback(object):
                                                inventory_year,
                                                inventory_field_names,
                                                rollback_range[0],harvest_year_field,
-                                               self.rollbackConfig.GetDistAgeProportionFilePath())
+                                               self.config.GetDistAgeProportionFilePath())
             updateInv = updateInvRollback(arcpy, inventory_workspace,
                                           inventory_year,
                                           inventory_field_names,
@@ -89,7 +89,7 @@ def main():
     create_script_log(sys.argv[0])
     parser = argparse.ArgumentParser(description="rollback")
     parser.add_argument("--pathRegistry", help="path to file registry data")
-    parser.add_argument("--rollbackConfig", help="path to rollback configuration")
+    parser.add_argument("--historicConfig", help="path to historic configuration")
     parser.add_argument("--subRegionConfig", help="path to sub region data")
     parser.add_argument("--subRegionNames", help="optional comma delimited "+
                         "string of sub region names (as defined in "+
@@ -99,13 +99,13 @@ def main():
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        rollbackConfig = RollbackConfig(os.path.abspath(args.rollbackConfig), pathRegistry)
+        historicConfig = HistoricConfig(os.path.abspath(args.historicConfig), pathRegistry)
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
         subRegionNames = args.subRegionNames.split(",") \
             if args.subRegionNames else None
 
-        r = Rollback(rollbackConfig)
+        r = Rollback(historicConfig)
         r.Process(subRegionConfig, subRegionNames)
     except Exception as ex:
         logging.exception("error")

@@ -1,25 +1,68 @@
 {
-  "InventoryWorkspace": "",
-  "rollback_end_year": null,
-  "historic_end_year": null,
-  "MergedLayerData": [
+  "Resolution": 0.01,
+  "Area_Majority_Rule": true,
+  "Inventory_Workspace": "${Clipped_Inventory_Path}",
+  "Inventory_Filter": "inventory",
+  "Inventory_Year": 2015,
+  "Inventory_Field_Names": {
+    "age": "Age2015",
+    "species": "LdSpp",
+    "establishment_date": "DE",
+    "dist_date_diff": "Dist_DE_DIFF",
+    "pre_dist_age": "preDistAge",
+    "dist_type": "DistType",
+    "regen_delay": "RegenDelay",
+    "rollback_age": "Age1990",
+    "disturbance_yr": "DistYEAR",
+    "new_disturbance_yr": "DistYEAR_new"
+  },
+  "Inventory_Classifiers": {
+    "LdSpp": "LdSpp",
+    "AU": "AU"
+  },
+  "Reporting_Classifiers": {
+    "THLB": "THLB"
+  },
+  "DistAgeProportionFilePath": "${Disturbance_Age_Proportions}",
+  "Rollback_Range": {
+    "StartYear": 1990,
+    "EndYear": 2013
+  },
+  "Historic_Range": {
+    "StartYear": 1990,
+    "EndYear": 2013
+  },
+  "HistoricHarvestYearField": "HARV_YR",
+  "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
+  "RollBackDisturbancesOutput": "${RollbackDisturbancesOutput}",
+  "SlashburnPercent": 100,
+  "RollbackDisturbances": [
     {
+      "Code": 1,
       "Name": "fire",
+      "Workspace": "${Clipped_Historic_Disturbance_Path}",
+      "WorkspaceFilter": "NFDB*.shp",
       "YearField": "YEAR_",
-      "CBMDisturbanceTypeName": "Wild Fires",
-      "Metadata": "Historic Fire"
+      "CBM_Disturbance_Type": "Wild Fires"
     },
     {
+      "Code": 2,
       "Name": "fire",
+      "Workspace": "${Clipped_Historic_Disturbance_Path}",
+      "WorkspaceFilter": "NBAC*.shp",
       "YearField": "EDATE",
-      "CBMDisturbanceTypeName": "Wild Fires"
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
     },
     {
+      "Code": 13,
       "Name": "harvest",
+      "Workspace": "${Clipped_Historic_Harvest_Path}",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
       "YearField": "HARV_YR",
-      "CBMDisturbanceTypeName": "Clearcut harvesting with salvage"
+      "CBM_Disturbance_Type": "SlashBurning"
     }
   ],
+
   "InsectDisturbances": {
     "Name": "insect",
     "Directory": "${Historic_Insect_Dir}",
@@ -36,4 +79,5 @@
     }
   }
 
+}
 }

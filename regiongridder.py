@@ -4,7 +4,7 @@ from grid.grid_inventory import GridInventory
 from preprocess_tools.licensemanager import *
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-from configuration.regiongridderconfig import RegionGridderConfig
+from configuration.historicconfig import HistoricConfig
 
 import os, sys, argparse
 
@@ -38,7 +38,7 @@ def main():
     create_script_log(sys.argv[0])
     parser = argparse.ArgumentParser(description="region preprocessor")
     parser.add_argument("--pathRegistry", help="path to file registry data")
-    parser.add_argument("--regionGridderConfig", help="path to region gridder configuration")
+    parser.add_argument("--historicConfig", help="path to historic configuration")
     parser.add_argument("--subRegionConfig", help="path to sub region data")
     parser.add_argument("--subRegionNames", help="optional comma delimited "+
                         "string of sub region names (as defined in "+
@@ -47,15 +47,15 @@ def main():
     try:
         args = parser.parse_args()
 
-        regionGridderConfig = RegionGridderConfig(os.path.abspath(args.regionGridderConfig))
+        historicConfig = HistoricConfig(os.path.abspath(args.historicConfig))
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
         with arc_license(Products.ARC) as arcpy:
-            fishnet = Fishnet(arcpy, regionGridderConfig.GetResolution())
-            gridInventory = GridInventory(arcpy, regionGridderConfig.GetAreaMajorityRule())
+            fishnet = Fishnet(arcpy, historicConfig.GetResolution())
+            gridInventory = GridInventory(arcpy, historicConfig.GetAreaMajorityRule())
 
             p = RegionGridder(
-                config = regionGridderConfig,
+                config = historicConfig,
                 pathRegistry = pathRegistry,
                 fishnet = fishnet,
                 gridInventory = gridInventory)
