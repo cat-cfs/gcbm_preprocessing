@@ -20,7 +20,7 @@
   "Clipped_Historic_Harvest_Path": [ "${Clipped_Historic_Disturbance_Path}", "02_harvest" ],
   "Clipped_Historic_Insect_Path": [ "${Clipped_Historic_Disturbance_Path}", "03_insect_filtered" ],
   "Copied_Environment_Dir": [ "${Pretiled_Layers}", "04_environment" ],
-  "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs" ],
+  "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs", "base" ],
   "InventoryRasterOutputDir": [ "${Pretiled_Layers}", "02_inventory" ],
   "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
   "TilerConfigPath": ["${Pretiled_Layers}", "tiler_config.json" ]

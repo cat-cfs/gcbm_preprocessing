@@ -1,3 +1,4 @@
+import json
 
 class HistoricConfig(object):
     def __init__(self, configPath, pathRegistry):

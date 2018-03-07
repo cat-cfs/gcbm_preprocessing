@@ -1,0 +1,32 @@
+{
+  "Base_Raster_Dir": "${Future_Dist_Input_Dir}",
+  "Start_Year": 2015,
+  "End_Year": 2070,
+  "Disturbance_Types": [
+    {
+      "Name": "fire",
+      "CBM_Name": "Wild Fires",
+      "Path_Format": "projected_fire_{}.tif"
+    },
+    {
+      "Name": "harvest",
+      "CBM_Name": "BASE CC",
+      "Path_Format": "projected_harvest_{}.tif"
+    },
+    {
+      "Name": "slashburn",
+      "CBM_Name": "SlashBurning",
+      "Path_Format": "projected_slashburn_{}.tif"
+    }
+  ],
+  "Scenarios": [
+    {
+      "Name": "base",
+      "Activity_Start_Year": -1,
+      "Slashburn_Percent": 50,
+      "Slashburn_Activity_Percent": 50,
+      "Harvest_Activity_Percent": 50
+    }
+  ]
+
+}
