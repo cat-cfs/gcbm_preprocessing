@@ -71,7 +71,7 @@ class HistoricConfig(object):
         return self.pathRegistry.UnpackPath(
             self.config["DistAgeProportionFilePath"])
 
-    def GetTilerConfigPath(self, region_path):
+    def GetHistoricTilerConfigPath(self, region_path):
         return self.pathRegistry.GetPath(
-            "TilerConfigPath", region_path)
+            "HistoricTilerConfigPath", region_path)
 

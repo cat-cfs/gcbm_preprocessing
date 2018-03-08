@@ -3,7 +3,7 @@ from configuration.tilerconfig import TilerConfig
 class HistoricTilerConfig(object):
 
     def __init__(self, path):
-        self.tilerConfig = TilerConfig(tilerConfigPath)
+        self.tilerConfig = TilerConfig(path)
 
     def AddMergedDisturbanceLayers(self, layerData, inventory_workspace, rollback_end_year, historic_end_year):
 

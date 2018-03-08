@@ -25,7 +25,7 @@ class Rollback(object):
             region_path = r["PathName"]
             inventoryMeta = self.RunRollback(region_path = region_path)
 
-            tilerPath = self.config.GetTilerConfigPath(region_path = region_path)
+            tilerPath = self.config.GetHistoricTilerConfigPath(region_path = region_path)
             rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutput(region_path)
             tilerConfig = RollbackTilerConfig()
             tilerConfig.Generate(outPath=tilerPath,

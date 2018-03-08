@@ -18,15 +18,26 @@ class FutureConfig(object):
         with open(path) as json_data:
             return json.load(json_data)
 
+
     def GetStartYear(self):
         return int(self.config["Start_Year"])
 
     def GetEndYear(self):
         return int(self.config["End_Year"])
 
-    def GetBaseRasterYear(self, region_name):
+    def GetBaseRasterDir(self, region_name):
         return self.pathRegistry.UnpackPath(
             self.config["Base_Raster_Dir"],
+            region_name)
+
+    def GetRasterOutputDir(self, region_name):
+        return self.pathRegistry.UnpackPath(
+            self.config["Future_Dist_Output_Dir"],
+            region_name)
+
+    def GetHistoricTilerConfigPath(self, region_name):
+        return self.pathRegistry.UnpackPath(
+            self.config["HistoricTilerConfigPath"],
             region_name)
 
     def GetPathFormat(self, disturbanceName):

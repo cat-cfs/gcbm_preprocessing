@@ -1,5 +1,7 @@
 {
   "Base_Raster_Dir": "${Future_Dist_Input_Dir}",
+  "Raster_Output_Dir": "${Future_Dist_Output_Dir}",
+  "TilerConfigInputPath": "${HistoricTilerConfigPath}",
   "Start_Year": 2015,
   "End_Year": 2070,
   "Disturbance_Types": [
@@ -24,6 +26,13 @@
       "Name": "base",
       "Activity_Start_Year": -1,
       "Slashburn_Percent": 50,
+      "Slashburn_Activity_Percent": 50,
+      "Harvest_Activity_Percent": 50
+    },
+    {
+      "Name": "A",
+      "Activity_Start_Year": -1,
+      "Slashburn_Percent": 51,
       "Slashburn_Activity_Percent": 50,
       "Harvest_Activity_Percent": 50
     }
