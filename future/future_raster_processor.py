@@ -9,9 +9,9 @@ class FutureRasterProcessor(object):
         self.base_raster_dir = base_raster_dir
         self.output_dir = output_dir
 
-        self.fire_format = fire_format #"projected_fire_{}.tif"
-        self.harvest_format = harvest_format #"projected_harvest_{}.tif"
-        self.slashburn_format = slashburn_format #"projected_slashburn_{}.tif"
+        self.fire_format = fire_format
+        self.harvest_format = harvest_format
+        self.slashburn_format = slashburn_format
 
         self.fire_name = fire_name
         self.harvest_name = harvest_name
@@ -40,6 +40,7 @@ class FutureRasterProcessor(object):
             raise ValueError("path does not exist {}"
                                 .format(path))
         return path
+
 
     def processSlashburn(self, percent, activityStartYear, activityPercent, random_subset):
         """
