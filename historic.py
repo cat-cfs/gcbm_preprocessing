@@ -18,7 +18,7 @@ class Historic(object):
             rollback_end_year = "",
             historic_end_year = "")
         
-        self.tilerConfig._AddHistoricInsectDisturbance(
+        self.tilerConfig.AddHistoricInsectDisturbance(
             name = "",
             filename = "",
             year = "",
@@ -26,7 +26,7 @@ class Historic(object):
             attribute_lookup = "",
             layerMeta = "")
 
-        self.tilerConfig._AddSlashburn(
+        self.tilerConfig.AddSlashburn(
             year = "",
             path = "",
             yearField = "",

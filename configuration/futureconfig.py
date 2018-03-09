@@ -11,6 +11,7 @@ class FutureConfig(object):
 
         self.scenarios = {x["Name"]: x for x in 
                           self.config["Scenarios"]}
+
         if len(self.scenarios) != len(self.config["Scenarios"]):
             raise ValueError("duplicate scenario name detected")
 
@@ -48,3 +49,6 @@ class FutureConfig(object):
 
     def GetScenario(self, scenario_name):
         return self.scenarios[scenario_name]
+
+    def GetScenarios(self):
+        return self.scenarios

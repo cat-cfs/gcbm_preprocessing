@@ -18,7 +18,7 @@ class HistoricTilerConfig(object):
                     cbmDisturbanceTypeName = item["CBMDisturbanceTypeName"],
                     layerMeta = layerData["Metadata"])
 
-    def _AddHistoricInsectDisturbance(self, name, filename,
+    def AddHistoricInsectDisturbance(self, name, filename,
                                         year, attribute, attribute_lookup,
                                         layerMeta):
         attributeConfig = self.tilerConfig.CreateConfigItem(
@@ -47,7 +47,7 @@ class HistoricTilerConfig(object):
 
         self.tilerConfig.AppendLayer(layerMeta, disturbanceLayerConfig)
 
-    def _AddMergedDisturbanceLayer(self, name, year, inventory_workspace, 
+    def AddMergedDisturbanceLayer(self, name, year, inventory_workspace, 
                                      year_field, cbmDisturbanceTypeName,
                                      layerMeta):
         """
@@ -91,7 +91,7 @@ class HistoricTilerConfig(object):
         self.tilerConfig.AppendLayer(layerMeta,
                                      disturbanceLayerConfig)
 
-    def _AddSlashburn(self, year, path, yearField, name_filter, name,
+    def AddSlashburn(self, year, path, yearField, name_filter, name,
                       cbmDisturbanceTypeName, layerMeta):
         valueFilterConfig = self.tilerConfig.CreateConfigItem(
             "ValueFilter",
