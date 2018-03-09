@@ -13,20 +13,17 @@ class RandomRasterSubset(object):
         """
         reads the input raster and returns it as a numpy array
         """
-        try:
-            ds = gdal.Open(input)
-            return np.array(ds.GetRasterBand(band)
-                            .ReadAsArray())
-        finally:
-            del ds
+        ds = gdal.Open(input)
+        array = np.array(ds.GetRasterBand(band)
+                       .ReadAsArray())
+        del ds
+        return array
 
     def writeOutput(self, output, values, band=1):
-        try:
-            ds = gdal.Open(output, gdal.GA_Update)
-            band = ds.GetRasterBand(band)
-            band.WriteArray(values)
-        finally:
-            del ds
+        ds = gdal.Open(output, gdal.GA_Update)
+        band = ds.GetRasterBand(band)
+        band.WriteArray(values)
+        del ds
 
     def RandomSubset(self, input, output, percent, default = 0, filter = [1], band=1):
         """

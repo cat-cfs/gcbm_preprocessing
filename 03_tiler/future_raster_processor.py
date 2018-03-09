@@ -6,10 +6,15 @@ class FutureRasterProcessor(object):
                  fire_name, harvest_name, slashburn_name,
                  fire_format, harvest_format, slashburn_format):
         self.years = years
+
         self.base_raster_dir = base_raster_dir
         self.output_dir = output_dir
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
+
+        logging.info("processing future rasters")
+        logging.info("input dir {}".format(self.base_raster_dir))
+        logging.info("output dir {}".format(self.output_dir))
 
         self.fire_format = fire_format #"projected_fire_{}.tif"
         self.harvest_format = harvest_format #"projected_harvest_{}.tif"
