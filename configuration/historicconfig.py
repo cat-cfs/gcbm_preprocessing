@@ -19,6 +19,9 @@ class HistoricConfig(object):
         return self.pathRegistry.UnpackPath(
             self.config["Inventory_Workspace"], region_path)
 
+    def GetInventoryYear(self):
+        return self.config["Inventory_Year"]
+
     def GetInventoryFilter(self):
         return self.config["Inventory_Filter"]
 
