@@ -46,11 +46,7 @@ class Historic(object):
             sb_percent = "")
 
 def main():
-    parser = argparse.ArgumentParser(description="region clipper. clips, and "+
-                                     "copys spatial data: clips the "+ 
-                                     "subregions defined in subRegionConfig "+
-                                     "with each of the tasks defined in "+
-                                     "subRegionNames")
+    parser = argparse.ArgumentParser(description="historic processor: processes inputs for the tiler for the historic portion of simulations")
     parser.add_argument("--pathRegistry", help="path to file registry data")
     parser.add_argument("--historicConfig", help="path to clip tasks data")
     parser.add_argument("--subRegionConfig", help="path to sub region data")
@@ -58,6 +54,23 @@ def main():
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+
                         "regions will be processed")
+
+    try:
+        args = parser.parse_args()
+
+        pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+        historicConfig = HistoricConfig(os.path.abspath(args.historicConfig),
+                                        pathRegistry)
+        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+
+        subRegionNames = args.subRegionNames.split(",") \
+            if args.subRegionNames else None
+
+        r = Rollback(historicConfig)
+        r.Process(subRegionConfig, subRegionNames)
+    except Exception as ex:
+        logging.exception("error")
+        sys.exit(1)
 
 
 

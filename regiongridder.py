@@ -17,10 +17,9 @@ class RegionGridder(object):
         self.gridInventory = gridInventory
 
     def ProcessSubRegion(self, region_path):
-        workspace = self.config.GetInventoryWorkspace(
-            self.pathRegistry, region_path)
+        workspace = self.config.GetInventoryWorkspace(region_path)
         workspaceFilter = self.config.GetInventoryFilter()
-        ageFieldName = self.config.GetInventoryAgeField()
+        ageFieldName = self.config.GetInventoryField("age")
         self.fishnet.createFishnet(workspace, workspaceFilter)
         self.gridInventory.gridInventory(workspace,
                                          workspaceFilter,
@@ -47,8 +46,8 @@ def main():
     try:
         args = parser.parse_args()
 
-        historicConfig = HistoricConfig(os.path.abspath(args.historicConfig))
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+        historicConfig = HistoricConfig(os.path.abspath(args.historicConfig),pathRegistry)
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
         with arc_license(Products.ARC) as arcpy:
             fishnet = Fishnet(arcpy, historicConfig.GetResolution())

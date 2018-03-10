@@ -10,20 +10,20 @@ class HistoricConfig(object):
             return json.load(json_data)
 
     def GetResolution(self):
-        return self.data["Resolution"]
+        return self.config["Resolution"]
 
     def GetAreaMajorityRule(self):
-        return self.data["Area_Majority_Rule"]
+        return self.config["Area_Majority_Rule"]
 
     def GetInventoryWorkspace(self, region_path):
         return self.pathRegistry.UnpackPath(
-            self.data["Inventory_Workspace"], region_path)
+            self.config["Inventory_Workspace"], region_path)
 
     def GetInventoryFilter(self):
-        return self.data["Inventory_Filter"]
+        return self.config["Inventory_Filter"]
 
     def GetInventoryField(self, field):
-        return self.data["Inventory_Field_Names"][field]
+        return self.config["Inventory_Field_Names"][field]
 
     def GetInventoryFieldNames(self):
         return self.config["Inventory_Field_Names"]
