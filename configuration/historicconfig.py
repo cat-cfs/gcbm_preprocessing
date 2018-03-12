@@ -64,9 +64,12 @@ class HistoricConfig(object):
         result = []
         for dist in x:
             result.append({
+                "Code": dist["Code"],
+                "Name": dist["Name"],
                 "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
-                "YearField": dist["YearField"]
+                "YearField": dist["YearField"],
+                "CBM_Disturbance_Type": dist["CBM_Disturbance_Type"]
             })
         return result
 
