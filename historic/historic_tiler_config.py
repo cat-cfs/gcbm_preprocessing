@@ -1,24 +1,35 @@
 from configuration.tilerconfig import TilerConfig
-
+import os
 class HistoricTilerConfig(object):
 
     def __init__(self, path):
         self.tilerConfig = TilerConfig(path)
 
-    def AddMergedDisturbanceLayers(self, layerData, inventory_workspace, rollback_end_year, historic_end_year):
+    def AddMergedDisturbanceLayers(self, layerData, inventory_workspace, first_year, last_year):
 
         for item in layerData:
-            for year in range(rollback_end_year + 1,
-                              historic_end_year + 1):
+            for year in range(first_year,
+                              last_year+1):
                 self._AddMergedDisturbanceLayer(
                     name = "{0}_{1}".format(item["Name"], year),
                     year = year,
                     inventory_workspace = inventory_workspace,
                     year_field = item["YearField"],
-                    cbmDisturbanceTypeName = item["CBMDisturbanceTypeName"],
+                    cbmDisturbanceTypeName = item["CBM_Disturbance_Type"],
                     layerMeta = layerData["Metadata"])
 
-    def AddHistoricInsectDisturbance(self, name, filename,
+    def AddHistoricInsectLayers(self, layerData, first_year, last_year):
+        for year in range(first_year, last_year+1):
+            filename = layerData["WorkspaceFilter"].replace("*", str(year))
+            filepath = os.path.join(layerData["Workspace"], filename)
+            self.AddHistoricInsectDisturbance(
+                name = "{0}_{1}".format(layerData["Name"], year),
+                path=filepath,
+                year = year,
+                attribute = layerData["Attribute"],
+                attribute_lookup = layerData["Attribute_Lookup"])
+
+    def AddHistoricInsectDisturbance(self, name, path,
                                         year, attribute, attribute_lookup,
                                         layerMeta):
         attributeConfig = self.tilerConfig.CreateConfigItem(
@@ -29,7 +40,7 @@ class HistoricTilerConfig(object):
         vectorlayerConfig = self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name = name,
-            path = filename,
+            path = path,
             attributes = attributeConfig)
 
         transitionRuleConfig = self.tilerConfig.CreateConfigItem(

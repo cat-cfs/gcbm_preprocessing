@@ -1,6 +1,7 @@
 from loghelper import *
 from preprocess_tools.licensemanager import *
 import argparse
+from configuration.historicconfig import HistoricConfig
 from historic.historic_tiler_config import HistoricTilerConfig
 from historic.generate_historic_slashburn import GenerateSlashburn
 class Historic(object):
@@ -8,25 +9,32 @@ class Historic(object):
     computes historic slashburn as a proportion of the historical harvest
     appends to tiler configuration with the historical layers
     """
-    def __init__(self, tilerConfigPath):
-        self.tilerConfig = HistoricTilerConfig(tilerConfigPath)
+    def __init__(self, historicConfig):
+        self.historicConfig = historicConfig
 
-    def ProcessHistoric(self, config):
-        self.tilerConfig.AddMergedDisturbanceLayers(
-            layerData = config["MergedLayerData"],
-            inventory_workspace = config["InventoryWorkspace"],
-            rollback_end_year = "",
-            historic_end_year = "")
-        
-        self.tilerConfig.AddHistoricInsectDisturbance(
-            name = "",
-            filename = "",
-            year = "",
-            attribute = "",
-            attribute_lookup = "",
-            layerMeta = "")
 
-        self.tilerConfig.AddSlashburn(
+    def Process(self, region_path):
+        tilerConfig = HistoricTilerConfig(
+            historicConfig.GetHistoricTilerConfigPath(region_path))
+
+        tilerConfig.AddMergedDisturbanceLayers(
+            layerData = self.historicConfig.GetRollbackDisturbances(),
+            inventory_workspace = self.historicConfig.GetInventoryWorkspace(region_path),
+            rollback_end_year = self.historicConfig.GetRollbackRange()["End_Year"] + 1,
+            historic_end_year = self.historicConfig.GetHistoricRange()["End_Year"])
+
+        tilerConfig.AddHistoricInsectLayers(
+            layerData, first_year, last_year)
+
+        self.GenerateHistoricSlashBurn(
+            inventory_workspace = self.historicConfig.GetInventoryWorkspace(),
+            inventory_disturbance_year_fieldname = self.historicConfig.GetInventoryField("age"),
+            harvest_shp = harvest_shp,
+            harvest_shp_year_field = harvest_shp_year_field,
+            year_range = year_range,
+            sb_percent = sb_percent)
+
+        tilerConfig.AddSlashburn(
             year = "",
             path = "",
             yearField = "",
@@ -35,15 +43,18 @@ class Historic(object):
             cbmDisturbanceTypeName = "",
             layerMeta = "")
 
-    def GenerateHistoricSlashBurn(self):
-        g = GenerateSlashBurn()
+    def GenerateHistoricSlashBurn(self, inventory_workspace,
+                                  inventory_disturbance_year_fieldname,
+                                  harvest_shp, harvest_shp_year_field,
+                                  year_range, sb_percent):
+        g = GenerateSlashburn()
         g.generateSlashburn(
-            inventory_workspace = "",
-            inventory_disturbance_year_fieldname = "",
-            harvest_shp = "",
-            harvest_shp_year_field = "",
-            year_range = "",
-            sb_percent = "")
+            inventory_workspace = inventory_workspace,
+            inventory_disturbance_year_fieldname = inventory_disturbance_year_fieldname,
+            harvest_shp = harvest_shp,
+            harvest_shp_year_field = harvest_shp_year_field,
+            year_range = year_range,
+            sb_percent = sb_percent)
 
 def main():
     parser = argparse.ArgumentParser(description="historic processor: processes inputs for the tiler for the historic portion of simulations")
@@ -61,24 +72,21 @@ def main():
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         historicConfig = HistoricConfig(os.path.abspath(args.historicConfig),
                                         pathRegistry)
+        
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
         subRegionNames = args.subRegionNames.split(",") \
             if args.subRegionNames else None
 
-        r = Rollback(historicConfig)
-        r.Process(subRegionConfig, subRegionNames)
+        r = Historic(historicConfig)
+
+        regions = subRegionConfig.GetRegions() if subRegionNames is None \
+            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
+
+        for r in regions:
+            region_path = r["PathName"]
+            r.Process(region_path)
+
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)
-
-
-
-
-
-
-
-
-
-
-

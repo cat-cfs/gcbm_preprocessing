@@ -32,7 +32,9 @@ class Rollback(object):
                 inventoryMeta = inventoryMeta,
                 resolution = self.config.GetResolution(),
                 rollback_disturbances_path=rollbackDisturbancePath,
-                rollback_range=self.config.GetRollbackRange(),
+                rollback_range=[
+                    self.config.GetRollbackRange()["Start_Year"],
+                    self.config.GetRollbackRange()["End_Year"]],
                 dist_lookup=self.config.GetRollbackDisturbances(region_path))
 
     def RunRollback(self, region_path):
@@ -40,7 +42,9 @@ class Rollback(object):
         inventory_year = int(self.config.GetInventoryYear())
         inventory_field_names = self.config.GetInventoryFieldNames()
         inventory_classifiers = self.config.GetInventoryClassifiers()
-        rollback_range = self.config.GetRollbackRange()
+        rollback_range = [
+                    self.config.GetRollbackRange()["Start_Year"],
+                    self.config.GetRollbackRange()["End_Year"]]
         harvest_year_field = self.config.GetHistoricHarvestYearField()
         inventory_raster_output_dir = self.config.GetInventoryRasterOutputDir(region_path)
         rollback_disturbances_output = self.config.GetRollbackDisturbancesOutput(region_path)

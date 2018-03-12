@@ -38,8 +38,10 @@ class HistoricConfig(object):
         return self.config["Reporting_Classifiers"]
 
     def GetRollbackRange(self):
-        return [self.config["Rollback_Range"]["StartYear"],
-                self.config["Rollback_Range"]["EndYear"]]
+        return self.config["Rollback_Range"]
+
+    def GetHistoricRange(self):
+        return self.config["Historic_Range"]
 
     def GetHistoricHarvestYearField(self):
         return self.config["HistoricHarvestYearField"]
@@ -60,9 +62,15 @@ class HistoricConfig(object):
         return x
 
     def GetRollbackDisturbances(self, region_path):
-        x = self.config["RollbackDisturbances"]
+        return self.GetDisturbanceLayers(region_path, self.config["Rollback_Disturbance_Names"])
+
+    def GetDisturbanceLayers(self, region_path, name_filter=None):
+        x = self.config["DisturbanceLayers"]
         result = []
         for dist in x:
+            if name_filter is not None:
+                if dist["Name"] not in name_filter:
+                    continue
             result.append({
                 "Code": dist["Code"],
                 "Name": dist["Name"],
