@@ -41,7 +41,7 @@ class RollbackTilerConfig(object):
                                        year,
                                        dist["Code"],
                                        dist["Name"],
-                                       dist["CBM_Disturbance_Type"])
+                                       dist["DisturbanceMapping"]["CBM_Disturbance_Type"])
 
     def _AddRollbackDisturbance(self, rollback_disturbances_path,
                                year, dist_code, name,
