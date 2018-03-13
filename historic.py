@@ -24,34 +24,42 @@ class Historic(object):
             historic_end_year = self.historicConfig.GetHistoricRange()["End_Year"])
 
         tilerConfig.AddHistoricInsectLayers(
-            layerData, first_year, last_year)
+           layerData = self.historicConfig.GetDisturbanceLayers(region_path, ["insect"]), 
+           first_year = self.historicConfig.GetHistoricRange()["StartYear"],
+           last_year = self.historicConfig.GetHistoricRange()["EndYear"] + 1)
 
-        self.GenerateHistoricSlashBurn(
-            inventory_workspace = self.historicConfig.GetInventoryWorkspace(),
-            inventory_disturbance_year_fieldname = self.historicConfig.GetInventoryField("age"),
-            harvest_shp = harvest_shp,
-            harvest_shp_year_field = harvest_shp_year_field,
-            year_range = year_range,
-            sb_percent = sb_percent)
 
-        tilerConfig.AddSlashburn(
-            year = "",
-            path = "",
-            yearField = "",
-            name_filter = "",
-            name = "",
-            cbmDisturbanceTypeName = "",
-            layerMeta = "")
+        slashburn_year_range = range(self.historicConfig.GetRollbackRange()["End_Year"] + 1,
+                                     self.historicConfig.GetHistoricRange()["End_Year"] + 1)
+
+        if(slashburn_year_range):
+            slashburn_path = self.GenerateHistoricSlashBurn(
+                inventory_workspace = self.historicConfig.GetInventoryWorkspace(),
+                inventory_disturbance_year_fieldname = self.historicConfig.GetInventoryField("age"),
+                harvestLayer = self.historicConfig.GetDisturbanceLayers(region_path, ["harvest"]),
+                year_range = slashburn_year_range,
+                sb_percent = self.historicConfig.GetSlashBurnPercent())
+
+            for year in slashburn_year_range:
+                tilerConfig.AddSlashburn(
+                    year = year,
+                    path = slashburn_path,
+                    yearField = self.historicConfig.GetDisturbanceLayers,
+                    name_filter = "",
+                    name = "",
+                    cbmDisturbanceTypeName = "",
+                    layerMeta = "")
 
     def GenerateHistoricSlashBurn(self, inventory_workspace,
                                   inventory_disturbance_year_fieldname,
-                                  harvest_shp, harvest_shp_year_field,
-                                  year_range, sb_percent):
+                                  harvestLayer, year_range, sb_percent):
+
+
         g = GenerateSlashburn()
-        g.generateSlashburn(
+        return g.generateSlashburn(
             inventory_workspace = inventory_workspace,
             inventory_disturbance_year_fieldname = inventory_disturbance_year_fieldname,
-            harvest_shp = harvest_shp,
+            harvest_shp = harvestLayer,
             harvest_shp_year_field = harvest_shp_year_field,
             year_range = year_range,
             sb_percent = sb_percent)

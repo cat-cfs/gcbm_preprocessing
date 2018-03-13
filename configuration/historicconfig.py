@@ -76,8 +76,7 @@ class HistoricConfig(object):
                 "Name": dist["Name"],
                 "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
-                "YearField": dist["YearField"],
-                "CBM_Disturbance_Type": dist["CBM_Disturbance_Type"]
+                "DisturbanceMapping": dist["DisturbanceMapping"],
             })
         return result
 
