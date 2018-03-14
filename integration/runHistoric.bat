@@ -1,0 +1,1 @@
+python ..\historic.py --pathRegistry .\pathRegistry.json --historicConfig .\historicConfig.json --subRegionConfig .\subRegions.json
