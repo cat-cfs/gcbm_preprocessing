@@ -28,6 +28,19 @@ class Rollback(object):
             tilerPath = self.config.GetHistoricTilerConfigPath(region_path = region_path)
             rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutput(region_path)
             tilerConfig = RollbackTilerConfig()
+            dist_lookup = [
+                {
+                    "Code": x["Code"],
+                    "Name": x["Name"],
+                    "CBM_Disturbance_Type": x["CBM_Disturbance_Type"]
+                } for x in  self.config.GetRollbackInputLayers(region_path)]
+
+            sbInfo = self.config.GetSlashBurnInfo()
+            dist_lookup.append({
+                    "Code": sbInfo["Code"],
+                    "Name": sbInfo["Name"],
+                    "CBM_Disturbance_Type": sbInfo["CBM_Disturbance_Type"]
+                })
             tilerConfig.Generate(outPath=tilerPath,
                 inventoryMeta = inventoryMeta,
                 resolution = self.config.GetResolution(),
@@ -35,7 +48,7 @@ class Rollback(object):
                 rollback_range=[
                     self.config.GetRollbackRange()["StartYear"],
                     self.config.GetRollbackRange()["EndYear"]],
-                dist_lookup=self.config.GetRollbackDisturbances(region_path))
+                dist_lookup=dist_lookup)
 
     def RunRollback(self, region_path):
         inventory_workspace = self.config.GetInventoryWorkspace(region_path)
@@ -49,9 +62,9 @@ class Rollback(object):
         inventory_raster_output_dir = self.config.GetInventoryRasterOutputDir(region_path)
         rollback_disturbances_output = self.config.GetRollbackDisturbancesOutput(region_path)
         resolution = self.config.GetResolution()
-        slashburnpercent = self.config.GetSlashBurnPercent()
+        slashburnpercent = self.config.GetSlashBurnInfo()["Percent"]
         reportingclassifiers = self.config.GetReportingClassifiers()
-        disturbances = self.config.GetRollbackDisturbances(region_path)
+        disturbances = self.config.GetRollbackInputLayers(region_path)
 
         with arc_license(Products.ARC) as arcpy:
             mergeDist = MergeDisturbances(arcpy, inventory_workspace, disturbances)

@@ -49,9 +49,9 @@ class MergeDisturbances(object):
                 for fc in fcs1:
                     fms.addTable(fc)
                     if "NBAC" in fc:
-                        fm_year.addInputField(fc, dist["DisturbanceMapping"]["YearField"], 0, 3)
+                        fm_year.addInputField(fc, dist["YearField"], 0, 3)
                     else:
-                        fm_year.addInputField(fc, dist["DisturbanceMapping"]["YearField"])
+                        fm_year.addInputField(fc, dist["YearField"])
                     vTab.addRow(fc)
         # Set the merge rule to find the First value of all fields in the
         # FieldMap object

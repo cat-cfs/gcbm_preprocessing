@@ -18,7 +18,7 @@ class Historic(object):
             historicConfig.GetHistoricTilerConfigPath(region_path))
 
         tilerConfig.AddMergedDisturbanceLayers(
-            layerData = self.historicConfig.GetRollbackDisturbances(),
+            layerData = self.historicConfig.GetRollbackInputLayers(),
             inventory_workspace = self.historicConfig.GetInventoryWorkspace(region_path),
             rollback_end_year = self.historicConfig.GetRollbackRange()["End_Year"] + 1,
             historic_end_year = self.historicConfig.GetHistoricRange()["End_Year"])
@@ -27,7 +27,6 @@ class Historic(object):
            layerData = self.historicConfig.GetDisturbanceLayers(region_path, ["insect"])[0], 
            first_year = self.historicConfig.GetHistoricRange()["StartYear"],
            last_year = self.historicConfig.GetHistoricRange()["EndYear"] + 1)
-
 
         slashburn_year_range = range(self.historicConfig.GetRollbackRange()["End_Year"] + 1,
                                      self.historicConfig.GetHistoricRange()["End_Year"] + 1)

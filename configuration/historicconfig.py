@@ -54,29 +54,25 @@ class HistoricConfig(object):
         x = self.config["RollBackDisturbancesOutput"]
         return self.pathRegistry.UnpackPath(x, region_path)
 
-    def GetSlashBurnPercent(self):
-        x = float(self.config["SlashburnPercent"])
+    def GetSlashBurnInfo(self):
+        info = self.config["SlashBurnInfo"]
+        x = info["Percent"]
         if x<0 or x >100:
             raise ValueError("configuration slashburn percent out of range." \
                 + "expected 0<=x<=100, got: {}".format(x))
-        return x
+        return info
 
-    def GetRollbackDisturbances(self, region_path):
-        return self.GetDisturbanceLayers(region_path, self.config["Rollback_Disturbance_Layer_Names"])
-
-    def GetDisturbanceLayers(self, region_path, name_filter=None):
-        x = self.config["DisturbanceLayers"]
+    def GetRollbackInputLayers(self, region_path):
+        x = self.config["RollbackInputLayers"]
         result = []
         for dist in x:
-            if name_filter is not None:
-                if dist["Name"] not in name_filter:
-                    continue
             result.append({
                 "Code": dist["Code"],
                 "Name": dist["Name"],
                 "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
-                "DisturbanceMapping": dist["DisturbanceMapping"],
+                "YearField": dist["YearField"],
+                "CBM_Disturbance_Type": dist["CBM_Disturbance_Type"],
             })
         return result
 

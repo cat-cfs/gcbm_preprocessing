@@ -35,54 +35,36 @@
   "HistoricHarvestYearField": "HARV_YR",
   "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
   "RollBackDisturbancesOutput": "${RollbackDisturbancesOutput}",
-  "SlashburnPercent": 100,
-  "Rollback_Disturbance_Layer_Names": [ "fire", "harvest" ],
-  "DisturbanceLayers": [
+  "SlashBurnInfo": {
+    "Code": 13,
+    "Name": "slashburn",
+    "Percent": 100,
+    "CBM_Disturbance_Type": "SlashBurning"
+  },
+  "RollbackInputLayers": [
     {
+      "Code": 1,
       "Name": "fire",
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
-      "DisturbanceMapping": {
-        "YearField": "YEAR_",
-        "CBM_Disturbance_Type": "Wild Fires"
-      }
+      "YearField": "YEAR_",
+      "CBM_Disturbance_Type": "Wild Fires"
     },
     {
+      "Code": 1,
       "Name": "fire",
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NBAC*.shp",
-      "DisturbanceMapping": {
-        "YearField": "EDATE",
-        "CBM_Disturbance_Type": "Wild Fires"
-      }
+      "YearField": "EDATE",
+      "CBM_Disturbance_Type": "Wild Fires"
     },
     {
+      "Code": 2,
       "Name": "harvest",
       "Workspace": "${Clipped_Historic_Harvest_Path}",
       "WorkspaceFilter": "BC_cutblocks90_15.shp",
-      "DisturbanceMapping": {
-        "YearField": "HARV_YR",
-        "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
-      }
-    },
-    {
-      "Code": null,
-      "Name": "insect",
-      "Workspace": "${Historic_Insect_Dir}",
-      "WorkspaceFilter": "mpb*.shp",
-      "DisturbanceMapping": {
-        "DisturbanceTypeField": "Severity",
-        "CBM_DisturbanceType_Lookup": {
-          "V": "Mountain Pine Beetle - Very Severe Impact",
-          "S": "Mountain Pine Beetle - Severe Impact",
-          "M": "Mountain Pine Beetle - Moderate Impact",
-          "L": "Mountain Pine Beetle - Low Impact",
-          "4": "Mountain Pine Beetle - Very Severe Impact",
-          "3": "Mountain Pine Beetle - Severe Impact",
-          "2": "Mountain Pine Beetle - Moderate Impact",
-          "1": "Mountain Pine Beetle - Low Impact"
-        }
-      }
+      "YearField": "HARV_YR",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
     }
   ]
 }
