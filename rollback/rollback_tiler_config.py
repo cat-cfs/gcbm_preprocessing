@@ -6,17 +6,17 @@ class RollbackTilerConfig(object):
 
     def Generate(self, outPath, inventoryMeta, resolution,
                  rollback_disturbances_path, rollback_range, dist_lookup):
-        self._AddInventory(inventoryMeta, resolution)
+        self._AddInventory(inventoryMeta, resolution, outPath)
         self._AddRollbackDisturbances(rollback_disturbances_path,
-                                      rollback_range, dist_lookup)
+                                      rollback_range, dist_lookup, outPath)
         self._WriteTilerConfig(outPath)
 
-    def _AddInventory(self, inventoryMeta, resolution):
+    def _AddInventory(self, inventoryMeta, resolution, config_path):
 
         t = self.tilerConfig
         inventoryLayers = [
             t.CreateConfigItem(typeName="RasterLayer",
-                               path=x["file_path"],
+                               path=self.tilerConfig.CreateRelativePath(config_path, x["file_path"]),
                                attributes=[x["attribute"]],
                                attribute_table=x["attribute_table"])
             for x in inventoryMeta]
@@ -33,7 +33,7 @@ class RollbackTilerConfig(object):
             t.AppendLayer("inventory", i)
 
     def _AddRollbackDisturbances(self, rollback_disturbances_path,
-                                rollback_range, dist_lookup):
+                                rollback_range, dist_lookup, config_path):
 
         for year in range(rollback_range[0], rollback_range[1] + 1):
             for dist in dist_lookup:
@@ -41,11 +41,12 @@ class RollbackTilerConfig(object):
                                        year,
                                        dist["Code"],
                                        dist["Name"],
-                                       dist["CBM_Disturbance_Type"])
+                                       dist["CBM_Disturbance_Type"],
+                                       config_path)
 
     def _AddRollbackDisturbance(self, rollback_disturbances_path,
                                year, dist_code, name,
-                               cbm_disturbance_type_name):
+                               cbm_disturbance_type_name, config_path):
 
         t = self.tilerConfig
         
@@ -76,7 +77,7 @@ class RollbackTilerConfig(object):
         vectorLayerConfig =  t.CreateConfigItem(
             "VectorLayer",
             name = "rollback_{}_{}".format(name, year),
-            path = rollback_disturbances_path,
+            path = self.tilerConfig.CreateRelativePath(config_path,rollback_disturbances_path) ,
             attributes = attributeList)
 
         transitionConfig = t.CreateConfigItem(

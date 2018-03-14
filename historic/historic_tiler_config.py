@@ -3,6 +3,7 @@ import os
 class HistoricTilerConfig(object):
 
     def __init__(self, path):
+        self.config_path = path
         self.tilerConfig = TilerConfig(path)
 
     def Save(self, outPath):
@@ -44,7 +45,7 @@ class HistoricTilerConfig(object):
         vectorlayerConfig = self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name = name,
-            path = path,
+            path = self.tilerConfig.CreateRelativePath(self.config_path, path),
             attributes = attributeConfig)
 
         transitionRuleConfig = self.tilerConfig.CreateConfigItem(
@@ -87,7 +88,7 @@ class HistoricTilerConfig(object):
         vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name=name,
-            path=inventory_workspace,
+            path= self.tilerConfig.CreateRelativePath(self.config_path, inventory_workspace),
             attributes=attributeConfig,
             layer="MergedDisturbances")
 
@@ -121,7 +122,7 @@ class HistoricTilerConfig(object):
         vectorLayerConfig = self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name = name,
-            path = path,
+            path = self.tilerConfig.CreateRelativePath(self.config_path, path),
             attributes=attributeConfig)
 
         transitionConfig = self.tilerConfig.CreateConfigItem(

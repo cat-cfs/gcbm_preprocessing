@@ -53,7 +53,8 @@ class Future(object):
             tilerConfig.CreateConfigItem(
                 "DisturbanceLayer",
                 lyr=tilerConfig.CreateConfigItem(
-                    "RasterLayer", 
+                    "RasterLayer",
+                    path=tilerConfig.CreateRelativePath(baseTilerConfigPath, item["Path"]),
                     attributes="event",
                     attribute_table={1: [1]}),
                 year=item["Year"],

@@ -17,7 +17,7 @@ class Rollback(object):
     def __init__(self, config):
         self.config = config
 
-    def Process(self, subRegionConfig, resolution, subRegionNames=None):
+    def Process(self, subRegionConfig, subRegionNames=None):
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
@@ -73,6 +73,7 @@ class Rollback(object):
                                                        inventory_year, 
                                                        inventory_field_names,
                                                        rollback_range[0])
+
             calcDistDEdiff = CalculateDistDEdifference(arcpy,
                                                        inventory_workspace,
                                                        inventory_year,
@@ -83,6 +84,7 @@ class Rollback(object):
                                                inventory_field_names,
                                                rollback_range[0],harvest_year_field,
                                                self.config.GetDistAgeProportionFilePath())
+
             updateInv = updateInvRollback(arcpy, inventory_workspace,
                                           inventory_year,
                                           inventory_field_names,

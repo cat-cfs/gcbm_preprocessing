@@ -1,4 +1,4 @@
-import json
+import json, os
 from pydoc import locate
 
 class TilerConfig(object):
@@ -23,6 +23,13 @@ class TilerConfig(object):
            for layer in self.config["Layers"]:
                self.UpdateMetaIndex(layer["Metadata"],
                                    layer["LayerConfig"])
+
+    def CreateRelativePath(self, config_path, tiler_path):
+        """
+        creates a path relative to the configuration path
+        """
+
+        return os.path.relpath(tiler_path, os.path.dirname(config_path))
 
     def GetFullyQualifiedTypeName(self, typename):
         if not typeName in self.typeRegistry:
