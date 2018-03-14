@@ -35,15 +35,16 @@ class RegionGridder(object):
 def main():
 
     create_script_log(sys.argv[0])
-    parser = argparse.ArgumentParser(description="region preprocessor")
-    parser.add_argument("--pathRegistry", help="path to file registry data")
-    parser.add_argument("--historicConfig", help="path to historic configuration")
-    parser.add_argument("--subRegionConfig", help="path to sub region data")
-    parser.add_argument("--subRegionNames", help="optional comma delimited "+
-                        "string of sub region names (as defined in "+
-                        "subRegionConfig) to process, if unspecified all "+
-                        "regions will be processed")
     try:
+        parser = argparse.ArgumentParser(description="region preprocessor")
+        parser.add_argument("--pathRegistry", help="path to file registry data")
+        parser.add_argument("--historicConfig", help="path to historic configuration")
+        parser.add_argument("--subRegionConfig", help="path to sub region data")
+        parser.add_argument("--subRegionNames", help="optional comma delimited "+
+                            "string of sub region names (as defined in "+
+                            "subRegionConfig) to process, if unspecified all "+
+                            "regions will be processed")
+
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))

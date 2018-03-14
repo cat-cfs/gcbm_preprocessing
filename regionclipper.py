@@ -94,19 +94,20 @@ class RegionClipper(object):
 def main():
 
     create_script_log(sys.argv[0])
-    parser = argparse.ArgumentParser(description="region clipper. clips, and "+
-                                     "copys spatial data: clips the "+ 
-                                     "subregions defined in subRegionConfig "+
-                                     "with each of the tasks defined in "+
-                                     "subRegionNames")
-    parser.add_argument("--pathRegistry", help="path to file registry data")
-    parser.add_argument("--regionClipperConfig", help="path to clip tasks data")
-    parser.add_argument("--subRegionConfig", help="path to sub region data")
-    parser.add_argument("--subRegionNames", help="optional comma delimited "+
-                        "string of sub region names (as defined in "+
-                        "subRegionConfig) to process, if unspecified all "+
-                        "regions will be processed")
     try:
+        parser = argparse.ArgumentParser(description="region clipper. clips, and "+
+                                         "copys spatial data: clips the "+ 
+                                         "subregions defined in subRegionConfig "+
+                                         "with each of the tasks defined in "+
+                                         "subRegionNames")
+        parser.add_argument("--pathRegistry", help="path to file registry data")
+        parser.add_argument("--regionClipperConfig", help="path to clip tasks data")
+        parser.add_argument("--subRegionConfig", help="path to sub region data")
+        parser.add_argument("--subRegionNames", help="optional comma delimited "+
+                            "string of sub region names (as defined in "+
+                            "subRegionConfig) to process, if unspecified all "+
+                            "regions will be processed")
+
         args = parser.parse_args()
         subRegionNames = args.subRegionNames.split(",") \
             if args.subRegionNames else None
