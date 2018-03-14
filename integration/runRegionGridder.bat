@@ -1,1 +1,1 @@
-python ..\regiongridder.py --pathRegistry .\pathRegistry.json --regionGridderConfig .\regionGridderConfig.json --subRegionConfig .\subRegions.json
+python ..\regiongridder.py --pathRegistry .\pathRegistry.json --historicConfig .\historicConfig.json --subRegionConfig .\subRegions.json

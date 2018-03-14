@@ -14,9 +14,9 @@ class HistoricTilerConfig(object):
                     name = "{0}_{1}".format(item["Name"], year),
                     year = year,
                     inventory_workspace = inventory_workspace,
-                    year_field = item["DisturbanceMapping"]["YearField"],
-                    cbmDisturbanceTypeName = item["DisturbanceMapping"]["CBM_Disturbance_Type"],
-                    layerMeta = layerData["Metadata"])
+                    year_field = item["YearField"],
+                    cbmDisturbanceTypeName = item["CBM_Disturbance_Type"],
+                    layerMeta = "historic_{}".format(item["Name"]))
 
     def AddHistoricInsectLayers(self, layerData, first_year, last_year):
         for year in range(first_year, last_year+1):
@@ -26,8 +26,9 @@ class HistoricTilerConfig(object):
                 name = "{0}_{1}".format(layerData["Name"], year),
                 path=filepath,
                 year = year,
-                attribute = layerData["DisturbanceMapping"]["DisturbanceTypeField"],
-                attribute_lookup = layerData["DisturbanceMapping"]["CBM_DisturbanceType_Lookup"])
+                attribute = layerData["DisturbanceTypeField"],
+                attribute_lookup = layerData["CBM_DisturbanceType_Lookup"],
+                layerData="historic_{}".format(layerData["Name"]))
 
     def AddHistoricInsectDisturbance(self, name, path,
                                         year, attribute, attribute_lookup,

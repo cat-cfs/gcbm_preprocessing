@@ -66,5 +66,21 @@
       "YearField": "HARV_YR",
       "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
     }
-  ]
+  ],
+  "InsectDisturbances": {
+    "Name": "insect",
+    "Workspace": "${Historic_Insect_Dir}",
+    "WorkspaceFilter": "mpb*.shp",
+    "DisturbanceTypeField": "Severity",
+    "CBM_DisturbanceType_Lookup": {
+      "V": "Mountain Pine Beetle - Very Severe Impact",
+      "S": "Mountain Pine Beetle - Severe Impact",
+      "M": "Mountain Pine Beetle - Moderate Impact",
+      "L": "Mountain Pine Beetle - Low Impact",
+      "4": "Mountain Pine Beetle - Very Severe Impact",
+      "3": "Mountain Pine Beetle - Severe Impact",
+      "2": "Mountain Pine Beetle - Moderate Impact",
+      "1": "Mountain Pine Beetle - Low Impact"
+    }
+  }
 }

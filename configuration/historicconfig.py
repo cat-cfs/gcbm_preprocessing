@@ -76,6 +76,16 @@ class HistoricConfig(object):
             })
         return result
 
+    def GetInsectDisturbances(self, region_path):
+        item = self.config["InsectDisturbances"]
+        return {
+            "Name": item["Name"],
+            "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
+            "WorkspaceFilter": item["WorkspaceFilter"],
+            "DisturbanceTypeField": item["DisturbanceTypeField"],
+            "CBM_DisturbanceType_Lookup": item["CBM_DisturbanceType_Lookup"]
+        }
+
     def GetDistAgeProportionFilePath(self):
         return self.pathRegistry.UnpackPath(
             self.config["DistAgeProportionFilePath"])
