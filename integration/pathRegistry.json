@@ -24,5 +24,6 @@
   "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs" ],
   "InventoryRasterOutputDir": [ "${Pretiled_Layers}", "02_inventory" ],
   "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
+  "RollbackTilerConfigPath": [ "${Pretiled_Layers}", "rollback_tiler_config.json" ],
   "HistoricTilerConfigPath": [ "${Pretiled_Layers}", "historic_tiler_config.json" ]
 }

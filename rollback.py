@@ -25,7 +25,7 @@ class Rollback(object):
             region_path = r["PathName"]
             inventoryMeta = self.RunRollback(region_path = region_path)
 
-            tilerPath = self.config.GetHistoricTilerConfigPath(region_path = region_path)
+            tilerPath = self.config.GetRollbackTilerConfigPath(region_path = region_path)
             rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutput(region_path)
             tilerConfig = RollbackTilerConfig()
             dist_lookup = [
@@ -125,6 +125,7 @@ def main():
 
         r = Rollback(historicConfig)
         r.Process(subRegionConfig, subRegionNames)
+
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)

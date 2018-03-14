@@ -1,5 +1,5 @@
 import numpy as np
-
+import logging, os, random
 class GenerateSlashburn(object):
     
     def __init__(self, arcpy):
@@ -32,12 +32,12 @@ class GenerateSlashburn(object):
         # Create SB records for each timestep
         for year in year_range:
             # Select only records corresponding to the current year being processed
-            expression2 = '{} = {}'.format(self.arcpy.AddFieldDelimiters("temp_harvest", year_field), year)
+            expression2 = '{} = {}'.format(self.arcpy.AddFieldDelimiters("temp_harvest", harvest_shp_year_field), year)
             self.arcpy.SelectLayerByAttribute_management("temp_harvest", "NEW_SELECTION", expression2)
             # Select only records that intersect with the inventory and are harvest disturbances
             # Note assumption: Harvest disturbance if the harvest year field value = disturbance year field value
             # This assumption is used in the rollback update_inventory as well
-            filter = "CELL_ID > 0 AND {} = {}".format(year_field, inventory_disturbance_year_fieldname)
+            filter = "CELL_ID > 0 AND {} = {}".format(harvest_shp_year_field, inventory_disturbance_year_fieldname)
             self.arcpy.SelectLayerByAttribute_management("temp_harvest", "SUBSET_SELECTION", filter)
             if int(self.arcpy.GetCount_management("temp_harvest").getOutput(0)) > 0:
                 number_features = [row[0] for row in self.arcpy.da.SearchCursor("temp_harvest", "OBJECTID")]
@@ -51,7 +51,6 @@ class GenerateSlashburn(object):
                 self.arcpy.CalculateField_management("temp_SB", "DistType", 13, "PYTHON", "")
                 self.arcpy.Append_management("temp_SB", "slashburn")
             self.arcpy.SelectLayerByAttribute_management("temp_harvest", "CLEAR_SELECTION")
-            pp.updateProgressP()
 
         sb_shp = os.path.join(os.path.dirname(harvest_shp), "slashburn.shp")
         if self.arcpy.Exists(sb_shp):

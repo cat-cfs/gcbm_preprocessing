@@ -14,10 +14,10 @@ class Historic(object):
     def __init__(self, historicConfig):
         self.historicConfig = historicConfig
 
-
     def Process(self, region_path):
+        #load the rollback tiler config path. We will append to a copy of this.
         tilerConfig = HistoricTilerConfig(
-            self.historicConfig.GetHistoricTilerConfigPath(region_path))
+            self.historicConfig.GetRollbackTilerConfigPath(region_path))
 
         tilerConfig.AddMergedDisturbanceLayers(
             layerData = self.historicConfig.GetRollbackInputLayers(region_path),
@@ -43,15 +43,15 @@ class Historic(object):
             harvest_shp = os.path.join(harvestLayer[0]["Workspace"], harvestLayer[0]["WorkspaceFilter"])
             harvest_shp_year_field = harvestLayer[0]["YearField"]
             sb_info = self.historicConfig.GetSlashBurnInfo()
-            
-            g = GenerateSlashburn()
-            slashburn_path = g.generateSlashburn(
-                inventory_workspace = self.historicConfig.GetInventoryWorkspace(),
-                inventory_disturbance_year_fieldname = self.historicConfig.GetInventoryField("age"),
-                harvest_shp = harvest_shp,
-                harvest_shp_year_field = harvest_shp_year_field,
-                year_range = year_range,
-                sb_percent = sb_info["Percent"])
+            with arc_license(Products.ARC) as arcpy:
+                g = GenerateSlashburn(arcpy)
+                slashburn_path = g.generateSlashburn(
+                    inventory_workspace = self.historicConfig.GetInventoryWorkspace(region_path),
+                    inventory_disturbance_year_fieldname = self.historicConfig.GetInventoryField("disturbance_yr"),
+                    harvest_shp = harvest_shp,
+                    harvest_shp_year_field = harvest_shp_year_field,
+                    year_range = slashburn_year_range,
+                    sb_percent = sb_info["Percent"])
 
             for year in slashburn_year_range:
                 tilerConfig.AddSlashburn(
@@ -62,6 +62,7 @@ class Historic(object):
                     cbmDisturbanceTypeName = sb_info["CBM_Disturbance_Type"],
                     layerMeta = "historic_{}".format(sb_info["Name"]))
 
+        tilerConfig.Save(self.historicConfig.GetHistoricTilerConfigPath(region_path))
 def main():
 
     create_script_log(sys.argv[0])
@@ -99,6 +100,7 @@ def main():
         logging.exception("error")
         sys.exit(1)
 
+    logging.info("all historic tasks finished")
 
 if __name__ == "__main__":
     main()

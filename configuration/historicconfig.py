@@ -80,7 +80,7 @@ class HistoricConfig(object):
         item = self.config["InsectDisturbances"]
         return {
             "Name": item["Name"],
-            "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
+            "Workspace": self.pathRegistry.UnpackPath(item["Workspace"], region_path),
             "WorkspaceFilter": item["WorkspaceFilter"],
             "DisturbanceTypeField": item["DisturbanceTypeField"],
             "CBM_DisturbanceType_Lookup": item["CBM_DisturbanceType_Lookup"]
@@ -89,6 +89,10 @@ class HistoricConfig(object):
     def GetDistAgeProportionFilePath(self):
         return self.pathRegistry.UnpackPath(
             self.config["DistAgeProportionFilePath"])
+
+    def GetRollbackTilerConfigPath(self, region_path):
+        return self.pathRegistry.GetPath(
+            "RollbackTilerConfigPath", region_path)
 
     def GetHistoricTilerConfigPath(self, region_path):
         return self.pathRegistry.GetPath(

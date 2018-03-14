@@ -5,12 +5,15 @@ class HistoricTilerConfig(object):
     def __init__(self, path):
         self.tilerConfig = TilerConfig(path)
 
+    def Save(self, outPath):
+        self.tilerConfig.writeJson(outPath)
+
     def AddMergedDisturbanceLayers(self, layerData, inventory_workspace, first_year, last_year):
 
         for item in layerData:
             for year in range(first_year,
                               last_year+1):
-                self._AddMergedDisturbanceLayer(
+                self.AddMergedDisturbanceLayer(
                     name = "{0}_{1}".format(item["Name"], year),
                     year = year,
                     inventory_workspace = inventory_workspace,
@@ -22,15 +25,15 @@ class HistoricTilerConfig(object):
         for year in range(first_year, last_year+1):
             filename = layerData["WorkspaceFilter"].replace("*", str(year))
             filepath = os.path.join(layerData["Workspace"], filename)
-            self.AddHistoricInsectDisturbance(
+            self.AddHistoricInsectLayer(
                 name = "{0}_{1}".format(layerData["Name"], year),
                 path=filepath,
                 year = year,
                 attribute = layerData["DisturbanceTypeField"],
                 attribute_lookup = layerData["CBM_DisturbanceType_Lookup"],
-                layerData="historic_{}".format(layerData["Name"]))
+                layerMeta="historic_{}".format(layerData["Name"]))
 
-    def AddHistoricInsectDisturbance(self, name, path,
+    def AddHistoricInsectLayer(self, name, path,
                                         year, attribute, attribute_lookup,
                                         layerMeta):
         attributeConfig = self.tilerConfig.CreateConfigItem(
@@ -122,6 +125,7 @@ class HistoricTilerConfig(object):
             attributes=attributeConfig)
 
         transitionConfig = self.tilerConfig.CreateConfigItem(
+            "TransitionRule",
             regen_delay=0,
             age_after=0)
 

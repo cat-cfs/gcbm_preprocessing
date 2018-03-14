@@ -19,8 +19,8 @@ class TilerConfig(object):
         self.layerMetaIndex = {}
         self.config = {}
         if path is not None:
-           config = self.loadJson(path)
-           for layer in config["Layers"]:
+           self.config = self.loadJson(path)
+           for layer in self.config["Layers"]:
                self.UpdateMetaIndex(layer["Metadata"],
                                    layer["LayerConfig"])
 
