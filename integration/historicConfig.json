@@ -36,10 +36,9 @@
   "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
   "RollBackDisturbancesOutput": "${RollbackDisturbancesOutput}",
   "SlashburnPercent": 100,
-  "Rollback_Disturbance_Names": [ "fire", "harvest" ],
+  "Rollback_Disturbance_Layer_Names": [ "fire", "harvest" ],
   "DisturbanceLayers": [
     {
-      "Code": 1,
       "Name": "fire",
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
@@ -49,23 +48,21 @@
       }
     },
     {
-      "Code": 2,
       "Name": "fire",
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NBAC*.shp",
       "DisturbanceMapping": {
         "YearField": "EDATE",
-        "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
+        "CBM_Disturbance_Type": "Wild Fires"
       }
     },
     {
-      "Code": 13,
       "Name": "harvest",
       "Workspace": "${Clipped_Historic_Harvest_Path}",
       "WorkspaceFilter": "BC_cutblocks90_15.shp",
       "DisturbanceMapping": {
         "YearField": "HARV_YR",
-        "CBM_Disturbance_Type": "SlashBurning"
+        "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
       }
     },
     {

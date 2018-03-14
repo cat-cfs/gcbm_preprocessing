@@ -24,7 +24,7 @@ class Historic(object):
             historic_end_year = self.historicConfig.GetHistoricRange()["End_Year"])
 
         tilerConfig.AddHistoricInsectLayers(
-           layerData = self.historicConfig.GetDisturbanceLayers(region_path, ["insect"]), 
+           layerData = self.historicConfig.GetDisturbanceLayers(region_path, ["insect"])[0], 
            first_year = self.historicConfig.GetHistoricRange()["StartYear"],
            last_year = self.historicConfig.GetHistoricRange()["EndYear"] + 1)
 
@@ -33,10 +33,11 @@ class Historic(object):
                                      self.historicConfig.GetHistoricRange()["End_Year"] + 1)
 
         if(slashburn_year_range):
+            harvestLayer = self.historicConfig.GetDisturbanceLayers(region_path, ["harvest"])[0]
             slashburn_path = self.GenerateHistoricSlashBurn(
                 inventory_workspace = self.historicConfig.GetInventoryWorkspace(),
                 inventory_disturbance_year_fieldname = self.historicConfig.GetInventoryField("age"),
-                harvestLayer = self.historicConfig.GetDisturbanceLayers(region_path, ["harvest"]),
+                harvestLayer = harvestLayer,
                 year_range = slashburn_year_range,
                 sb_percent = self.historicConfig.GetSlashBurnPercent())
 
@@ -44,8 +45,7 @@ class Historic(object):
                 tilerConfig.AddSlashburn(
                     year = year,
                     path = slashburn_path,
-                    yearField = self.historicConfig.GetDisturbanceLayers,
-                    name_filter = "",
+                    yearField = harvestLayer["DisturbanceMapping"]["YearField"], # uses same field as the harvest layer for now
                     name = "",
                     cbmDisturbanceTypeName = "",
                     layerMeta = "")

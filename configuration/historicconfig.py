@@ -62,7 +62,7 @@ class HistoricConfig(object):
         return x
 
     def GetRollbackDisturbances(self, region_path):
-        return self.GetDisturbanceLayers(region_path, self.config["Rollback_Disturbance_Names"])
+        return self.GetDisturbanceLayers(region_path, self.config["Rollback_Disturbance_Layer_Names"])
 
     def GetDisturbanceLayers(self, region_path, name_filter=None):
         x = self.config["DisturbanceLayers"]

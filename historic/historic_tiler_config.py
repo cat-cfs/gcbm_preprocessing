@@ -102,7 +102,7 @@ class HistoricTilerConfig(object):
         self.tilerConfig.AppendLayer(layerMeta,
                                      disturbanceLayerConfig)
 
-    def AddSlashburn(self, year, path, yearField, name_filter, name,
+    def AddSlashburn(self, year, path, yearField, name,
                       cbmDisturbanceTypeName, layerMeta):
         valueFilterConfig = self.tilerConfig.CreateConfigItem(
             "ValueFilter",
