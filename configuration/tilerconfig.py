@@ -59,7 +59,11 @@ class TilerConfig(object):
                 args[k] = v
         type = locate(self.GetFullyQualifiedTypeName(config["tiler_type"]))
         if config["tiler_type"] in objectArgInjections:
-            args.update(objectArgInjections[config["tiler_type"]])
+            for arg_name, arg_injection in objectArgInjections[config["tiler_type"]].items():
+                if arg_name in args:
+                    args[arg_name] = arg_injection(args[arg_name])
+                else:
+                    args[arg_name] = arg_injection()
         if not type:
             raise ValueError("specified tiler type not found: '{}'."
                              .format(config["tiler_type"]))
@@ -71,7 +75,7 @@ class TilerConfig(object):
             raise RuntimeError(ex, "unable to create object of tiler type '{0}', specified arguments are '{1}'"
                                .format(config["tiler_type"], **args))
 
-    def AssembleTiler(self, tiler_output_path, objectArgInjections):
+    def AssembleTiler(self, objectArgInjections):
         tilerConfig = self.config["TilerConfig"]
         tiler = self.AssembleTilerObject(tilerConfig, objectArgInjections)
         return tiler
