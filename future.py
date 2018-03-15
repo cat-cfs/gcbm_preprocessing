@@ -1,5 +1,5 @@
-from future.future_raster_processor import FutureRasterProcessor
-from future.random_raster_subset import RandomRasterSubset
+from futureprocessing.future_raster_processor import FutureRasterProcessor
+from futureprocessing.random_raster_subset import RandomRasterSubset
 
 from configuration.tilerconfig import TilerConfig
 from configuration.futureconfig import FutureConfig

@@ -38,7 +38,7 @@ class TilerConfig(object):
         else:
             return "{0}.{1}".format(self.typeRegistry[typename], typename)
 
-    def AssembleTilerObject(self, config):
+    def AssembleTilerObject(self, config, objectArgInjections):
         args = {}
         for k,v in config["args"].items():
             if isinstance(v, dict) and "tiler_type" in v:
@@ -47,10 +47,13 @@ class TilerConfig(object):
             else:
                 args[k] = v
         type = locate(self.GetFullyQualifiedTypeName(config["tiler_type"]))
+        if config["tiler_type"] in objectArgInjections:
+            args.update(objectArgInjections[config["tiler_type"]])
         if not type:
             raise ValueError("specified tiler type not found: '{}'."
                              .format(config["tiler_type"]))
         try:
+
             inst = type(**args)
             return inst
         except:
