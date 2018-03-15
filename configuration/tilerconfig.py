@@ -32,18 +32,29 @@ class TilerConfig(object):
         return os.path.relpath(tiler_path, os.path.dirname(config_path))
 
     def GetFullyQualifiedTypeName(self, typename):
-        if not typeName in self.typeRegistry:
+        if not typename in self.typeRegistry:
             raise ValueError("specified type unknown/unsupported {0}"
                              .format(typeName))
         else:
             return "{0}.{1}".format(self.typeRegistry[typename], typename)
 
+    def AssembleTilerObjectList(self, config, objectArgInjections):
+        argsList = []
+        for arg in config["argsList"]:
+            argsList.append(
+                self.AssembleTilerObject(
+                    { "args": arg, "tiler_type": config["tiler_type"] },
+                    objectArgInjections))
+
+        return argsList
     def AssembleTilerObject(self, config, objectArgInjections):
         args = {}
+        if "argsList" in config:
+            return self.AssembleTilerObjectList(config, objectArgInjections)
+
         for k,v in config["args"].items():
             if isinstance(v, dict) and "tiler_type" in v:
-
-                args[k] = self.AssembleTilerObject(v)
+                args[k] = self.AssembleTilerObject(v, objectArgInjections)
             else:
                 args[k] = v
         type = locate(self.GetFullyQualifiedTypeName(config["tiler_type"]))
@@ -56,20 +67,22 @@ class TilerConfig(object):
 
             inst = type(**args)
             return inst
-        except:
-            raise RuntimeError("unable to create tiler type '{0}', specified arguments are '{1}'"
+        except Exception as ex:
+            raise RuntimeError(ex, "unable to create object of tiler type '{0}', specified arguments are '{1}'"
                                .format(config["tiler_type"], **args))
 
-    def AssembleTiler(self):
+    def AssembleTiler(self, tiler_output_path, objectArgInjections):
         tilerConfig = self.config["TilerConfig"]
-        tiler = AssembleTilerObject(tilerConfig)
+        tiler = self.AssembleTilerObject(tilerConfig, objectArgInjections)
+        return tiler
 
-    def AssembleLayers(self):
+    def AssembleLayers(self, objectArgInjections):
         layers = []
         for layerConfig in self.config["Layers"]:
             config = layerConfig["LayerConfig"]
-            layer = self.AssembleTilerObject(config)
+            layer = self.AssembleTilerObject(config, objectArgInjections)
             layers.append(layer)
+        return layers
 
     def UpdateMetaIndex(self, layerMeta, layerConfig):
         if layerMeta in self.layerMetaIndex:

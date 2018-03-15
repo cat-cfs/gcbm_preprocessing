@@ -59,7 +59,7 @@ class RollbackTilerConfig(object):
             "Attribute",
             layer_name="DistType",
             filter=t.CreateConfigItem("ValueFilter",target_val=dist_code),
-            substitution={dist_code: cbm_disturbance_type_name})
+            substitutions={dist_code: cbm_disturbance_type_name})
         
         RegenDelayAttributeConfig = t.CreateConfigItem(
             "Attribute", 

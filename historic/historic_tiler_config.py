@@ -1,5 +1,5 @@
 from configuration.tilerconfig import TilerConfig
-import os
+import os, logging
 class HistoricTilerConfig(object):
 
     def __init__(self, path):
@@ -26,6 +26,9 @@ class HistoricTilerConfig(object):
         for year in range(first_year, last_year+1):
             filename = layerData["WorkspaceFilter"].replace("*", str(year))
             filepath = os.path.join(layerData["Workspace"], filename)
+            if not os.path.exists(filepath):
+                logging.warn("insect path does not exist '{}'".format(filepath))
+                continue
             self.AddHistoricInsectLayer(
                 name = "{0}_{1}".format(layerData["Name"], year),
                 path=filepath,
