@@ -9,6 +9,29 @@ class HistoricTilerConfig(object):
     def Save(self, outPath):
         self.tilerConfig.writeJson(outPath)
 
+
+    def AddAdminEcoLayers(self, spatial_boundaries_path, 
+            attributes={
+                "Admin": "AdminBou_1",
+                "Eco": "EcoBound_1"
+            }):
+        for attribute_name, attribute_value in attributes.items():
+            attributeConfig = self.tilerConfig.CreateConfigItem(
+                "Attribute",
+                layer_name=attribute_value)
+
+            vectorLayerConfig = self.tilerConfig.CreateConfigItem(
+                "VectorLayer",
+                layer_name = attribute_name,
+                path = spatial_boundaries_path,
+                attributes=attributeConfig)
+
+    def AddClimateLayer(self, climateLayerPath, nodata_value):
+        self.tilerConfig.CreateConfigItem(
+            "RasterLayer",
+            path=climateLayerPath,
+            nodata_value=nodata_value)
+
     def AddMergedDisturbanceLayers(self, layerData, inventory_workspace, first_year, last_year):
 
         for item in layerData:
