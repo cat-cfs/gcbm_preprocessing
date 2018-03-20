@@ -21,11 +21,12 @@ class Historic(object):
 
         defaultSpatialBoundaries = self.preprocessorConfig.GetDefaultSpatialBoundaries(region_path)
         tilerConfig.AddAdminEcoLayers(
-            spatial_boundaries_path= defaultSpatialBoundaries["Layer"],
+            spatial_boundaries_path= defaultSpatialBoundaries["Path"],
             attributes = defaultSpatialBoundaries["Attributes"])
 
-        tilerConfig.AddClimateLayer(
-            climateLayerPath=self.preprocessorConfig.GetMeanAnnualTempPath(region_path), )
+        mat = climateLayerPath=self.preprocessorConfig.GetMeanAnnualTemp(region_path)
+        tilerConfig.AddClimateLayer(mat["Path"], mat["Nodata_Value"])
+
         tilerConfig.AddMergedDisturbanceLayers(
             layerData = self.preprocessorConfig.GetRollbackInputLayers(region_path),
             inventory_workspace = self.preprocessorConfig.GetInventoryWorkspace(region_path),
@@ -86,7 +87,7 @@ def main():
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        preprocessorConfig = PreprocessorConfig(os.path.abspath(args.historicConfig),
+        preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),
                                         pathRegistry)
         
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))

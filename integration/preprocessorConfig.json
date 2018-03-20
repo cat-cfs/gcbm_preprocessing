@@ -25,7 +25,7 @@
   },
   "SpatialBoundaries": {
     "Path": "${Default_Spatial_Boundaries_Layer}",
-    "Attributes=": {
+    "Attributes": {
       "Admin": "AdminBou_1",
       "Eco": "EcoBound_1"
     }

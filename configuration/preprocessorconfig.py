@@ -101,7 +101,7 @@ class PreprocessorConfig(object):
     def GetDefaultSpatialBoundaries(self, region_path):
 
         layer = self.pathRegistry.UnpackPath(
-            self.config["SpatialBoundaries"]["Path"])
+            self.config["SpatialBoundaries"]["Path"], region_path)
 
         return {
             "Path": layer,
@@ -110,9 +110,10 @@ class PreprocessorConfig(object):
 
     def GetMeanAnnualTemp(self, region_path):
         path = self.pathRegistry.UnpackPath(
-            self.config["MeanAnnualTemp"]["Path"])
+            self.config["MeanAnnualTemp"]["Path"],
+            region_path)
 
         return {
             "Path": path,
-            "NoData_Value": self.config["MeanAnnualTemp"]["Nodata_Value"]
+            "Nodata_Value": self.config["MeanAnnualTemp"]["Nodata_Value"]
         }
