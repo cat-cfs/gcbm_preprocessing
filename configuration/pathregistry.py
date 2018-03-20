@@ -42,7 +42,7 @@ class PathRegistry(object):
         self.Paths={}
         for k,v in PathTokens.items():
             self.Paths[k] = os.path.join(*v)
-            logging.info("{k}: '{v}'".format(k=k, v= self.Paths[k]))
+            logging.debug("{k}: '{v}'".format(k=k, v= self.Paths[k]))
 
     def loadJson(self, path):
         with open(path) as json_data:

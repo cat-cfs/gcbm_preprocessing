@@ -297,7 +297,11 @@ class updateInvRollback(object):
     def exportRollbackDisturbances(self):
 
         #Export rollback disturbances
+
         logging.info('Exporting rollback disturbances to {}'.format(self.rollbackDisturbanceOutput))
+        dirname =  os.path.dirname(self.rollbackDisturbanceOutput)
+        if not os.path.exists(dirname):
+            os.makedirs(dirname)
         dissolveFields = [self.dist_type_field, self.new_disturbance_field,self.regen_delay_field, self.CELL_ID]
         selectClause =  "{} IS NOT NULL".format(self.new_disturbance_field)
 
@@ -322,6 +326,8 @@ class updateInvRollback(object):
             else:
                 raise KeyError("duplicated reporting classifier: '{}'".format(classifierName))
 
+        if not os.path.exists(self.rasterOutput):
+            os.makedirs(self.rasterOutput)
         for classifier_name, classifier_attribute in self.inventory_classifiers.items():
             logging.info('Exporting classifer {} from {}'.format(classifier_name, os.path.join(self.inventory_workspace,self.RolledBackInventory)))
             field_name = classifier_attribute

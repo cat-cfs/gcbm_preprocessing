@@ -4,7 +4,7 @@ from grid.grid_inventory import GridInventory
 from preprocess_tools.licensemanager import *
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-from configuration.historicconfig import HistoricConfig
+from configuration.preprocessorconfig import PreprocessorConfig
 
 import os, sys, argparse
 
@@ -38,7 +38,7 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="region preprocessor")
         parser.add_argument("--pathRegistry", help="path to file registry data")
-        parser.add_argument("--historicConfig", help="path to historic configuration")
+        parser.add_argument("--preprocessorConfig", help="path to preprocessor configuration")
         parser.add_argument("--subRegionConfig", help="path to sub region data")
         parser.add_argument("--subRegionNames", help="optional comma delimited "+
                             "string of sub region names (as defined in "+
@@ -48,14 +48,16 @@ def main():
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        historicConfig = HistoricConfig(os.path.abspath(args.historicConfig),pathRegistry)
+        preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),pathRegistry)
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
         with arc_license(Products.ARC) as arcpy:
-            fishnet = Fishnet(arcpy, historicConfig.GetResolution())
-            gridInventory = GridInventory(arcpy, historicConfig.GetAreaMajorityRule())
+            resolution = preprocessorConfig.GetResolution()
+            logging.info("run region gridder at resolution {}".format(resolution))
+            fishnet = Fishnet(arcpy, resolution)
+            gridInventory = GridInventory(arcpy, preprocessorConfig.GetAreaMajorityRule())
 
             p = RegionGridder(
-                config = historicConfig,
+                config = preprocessorConfig,
                 pathRegistry = pathRegistry,
                 fishnet = fishnet,
                 gridInventory = gridInventory)

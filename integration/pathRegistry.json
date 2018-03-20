@@ -1,7 +1,9 @@
 {
-  "Working_Dir": [ "F:/", "GCBM", "17_BC_ON_1ha", "05_working_BC" ],
-  "External_Spatial_Dir": [ "${Working_Dir}", "00_external_data", "01_spatial" ],
-  "External_Aspatial_Dir": [ "${Working_Dir}", "00_external_data", "02_aspatial" ],
+  "Source_External_Spatial_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "00_external_data" ],
+  "Working_Dir": [ "C:/", "dev", "Scott", "gcbm_test_dir", "05_working_BC" ],
+  "External_Data_Dir": [ "${Working_Dir}", "00_external_data" ],
+  "External_Spatial_Dir": [ "${External_Data_Dir}", "01_spatial" ],
+  "External_Aspatial_Dir": [ "${External_Data_Dir}", "02_aspatial" ],
   "Disturbance_Age_Proportions": [ "${External_Aspatial_Dir}", "03_disturbance_age_proportion", "DistAgeProp.csv" ],
   "Spatial_Boundaries": [ "${External_Spatial_Dir}", "01_spatial_reference" ],
   "Clip_Feature": [ "${Spatial_Boundaries}", "PSPUS_2016_FINAL_1_Reprojected.shp" ],

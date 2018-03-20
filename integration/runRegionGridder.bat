@@ -1,1 +1,1 @@
-python ..\regiongridder.py --pathRegistry .\pathRegistry.json --historicConfig .\historicConfig.json --subRegionConfig .\subRegions.json
+python ..\regiongridder.py --pathRegistry .\pathRegistry.json --preprocessorConfig .\preprocessorConfig.json --subRegionConfig .\subRegions.json --subRegionNames "Boundary"
