@@ -23,6 +23,17 @@
   "Reporting_Classifiers": {
     "THLB": "THLB"
   },
+  "SpatialBoundaries": {
+    "Path": "${Default_Spatial_Boundaries_Layer}",
+    "Attributes=": {
+      "Admin": "AdminBou_1",
+      "Eco": "EcoBound_1"
+    }
+  },
+  "MeanAnnualTemp": {
+    "Path": "${MeanAnnualTempPath}",
+    "Nodata_Value": 1.0e38
+  },
   "DistAgeProportionFilePath": "${Disturbance_Age_Proportions}",
   "Rollback_Range": {
     "StartYear": 1990,

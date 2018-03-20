@@ -19,6 +19,13 @@ class Historic(object):
         tilerConfig = HistoricTilerConfig(
             self.historicConfig.GetRollbackTilerConfigPath(region_path))
 
+        defaultSpatialBoundaries = self.historicConfig.GetDefaultSpatialBoundaries(region_path)
+        tilerConfig.AddAdminEcoLayers(
+            spatial_boundaries_path= defaultSpatialBoundaries["Layer"],
+            attributes = defaultSpatialBoundaries["Attributes"])
+
+        tilerConfig.AddClimateLayer(
+            climateLayerPath=self.historicConfig.GetMeanAnnualTempPath(region_path), )
         tilerConfig.AddMergedDisturbanceLayers(
             layerData = self.historicConfig.GetRollbackInputLayers(region_path),
             inventory_workspace = self.historicConfig.GetInventoryWorkspace(region_path),
@@ -35,7 +42,7 @@ class Historic(object):
 
         if(slashburn_year_range):
             harvestLayer = [x for x in 
-                            self.historicConfig.GetRollbackInputLayers(region_path) 
+                            self.historicConfig.GetRollbackInputLayers(region_path)
                             if x["Name"] == "harvest"]
             if len(harvestLayer) != 1:
                 raise ValueError("expected a single harvest layer")

@@ -39,7 +39,7 @@
     "task": "copy",
     "workspace": "${Spatial_Boundaries}",
     "workspace_filter": "*.shp",
-    "new_workspace": "${Copied_Environment_Dir}"
+    "new_workspace": "${Copied_Spatial_Boundaries_Dir}"
   }
 ]
 

@@ -98,3 +98,21 @@ class HistoricConfig(object):
         return self.pathRegistry.GetPath(
             "HistoricTilerConfigPath", region_path)
 
+    def GetDefaultSpatialBoundaries(self, region_path):
+
+        layer = self.pathRegistry.UnpackPath(
+            self.config["SpatialBoundaries"]["Path"])
+
+        return {
+            "Path": layer,
+            "Attributes": self.config["SpatialBoundaries"]["Attributes"]
+        }
+
+    def GetMeanAnnualTemp(self, region_path):
+        path = self.pathRegistry.UnpackPath(
+            self.config["MeanAnnualTemp"]["Path"])
+
+        return {
+            "Path": path,
+            "NoData_Value": self.config["MeanAnnualTemp"]["Nodata_Value"]
+        }

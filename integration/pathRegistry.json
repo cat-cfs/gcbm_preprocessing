@@ -17,6 +17,7 @@
   "HistoricTilerConfigPath": [ "${Pretiled_Layers}", "historic_tiler_config.json" ],
   "Clipped_Inventory_Path": [ "${Pretiled_Layers}", "00_Workspace.gdb" ],
   "Copied_Spatial_Boundaries_Dir": [ "${Pretiled_Layers}", "01_spatial_reference" ],
+  "Default_Spatial_Boundaries_Layer": [ "${Copied_Spatial_Boundaries_Dir}", "PSPUS_2016_FINAL_1_Reprojected.shp" ],
   "InventoryRasterOutputDir": [ "${Pretiled_Layers}", "02_inventory" ],
   "Pretiled_Disturbances": [ "${Pretiled_Layers}", "03_disturbances" ],
   "Copied_Environment_Dir": [ "${Pretiled_Layers}", "04_environment" ],
@@ -26,5 +27,6 @@
   "Clipped_Historic_Insect_Path": [ "${Clipped_Historic_Disturbance_Path}", "03_insect_filtered" ],
   "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs", "base" ],
   "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs" ],
-  "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ]
+  "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
+  "MeanAnnualTempPath": [ "${Copied_Environment_Dir}", "NAmerica_MAT_1971_2000.tif" ]
 }
