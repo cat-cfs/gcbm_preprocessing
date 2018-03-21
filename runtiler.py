@@ -1,4 +1,5 @@
-import os
+import os, argparse
+from loghelper import *
 from mojadata.layer.gcbm.transitionrulemanager import SharedTransitionRuleManager
 from configuration.tilerconfig import TilerConfig
 
@@ -30,10 +31,24 @@ class RunTiler(object):
         tiler.tile(layers)
 
 def main():
-    r = RunTiler()
-    r.launch(config_path = r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\historic_tiler_config.json",
-             tiler_output_path = r"F:\GCBM\17_BC_ON_1ha\05_working_BC\TSA_2_Boundary\01b_tiled_layers\test_output",
-             transitionRulesPath = "transitionRules.csv")
+
+    create_script_log(sys.argv[0])
+    try:
+        parser = argparse.ArgumentParser(description="rollback")
+        parser.add_argument("--tilerConfig", help="path to file registry data")
+        parser.add_argument("--outputPath", help="path to preprocessor configuration")
+        parser.add_argument("--transitionRulesOutPath", help="path to sub region data")
+
+        r = RunTiler()
+        r.launch(
+            config_path = r"C:\Dev\Scott\gcbm_test_dir\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\historic_tiler_config.json",
+            tiler_output_path = r"C:\Dev\Scott\gcbm_test_dir\05_working_BC\TSA_2_Boundary\tiled_layers\test_output",
+            transitionRulesPath = "transitionRules.csv")
+    except Exception as ex:
+        logging.exception("error")
+        sys.exit(1)
+
+    logging.info("all tiler tasks finished")
 
 
 if __name__ == "__main__":

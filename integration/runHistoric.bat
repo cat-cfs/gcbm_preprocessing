@@ -1,1 +1,0 @@
-python ..\historicprocessor.py --pathRegistry .\pathRegistry.json --preprocessorConfig .\preprocessorConfig.json --subRegionConfig .\subRegions.json --subRegionNames "Boundary"

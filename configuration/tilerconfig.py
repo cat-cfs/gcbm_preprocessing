@@ -73,7 +73,7 @@ class TilerConfig(object):
             return inst
         except Exception as ex:
             raise RuntimeError(ex, "unable to create object of tiler type '{0}', specified arguments are '{1}'"
-                               .format(config["tiler_type"], **args))
+                               .format(config["tiler_type"], args))
 
     def AssembleTiler(self, objectArgInjections):
         tilerConfig = self.config["TilerConfig"]

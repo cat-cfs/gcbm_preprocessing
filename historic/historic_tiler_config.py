@@ -18,15 +18,18 @@ class HistoricTilerConfig(object):
 
             vectorLayerConfig = self.tilerConfig.CreateConfigItem(
                 "VectorLayer",
-                layer_name = attribute_name,
+                name = attribute_name,
                 path = spatial_boundaries_path,
                 attributes=attributeConfig)
+            self.tilerConfig.AppendLayer("admin_eco", vectorLayerConfig)
 
     def AddClimateLayer(self, climateLayerPath, nodata_value):
-        self.tilerConfig.CreateConfigItem(
-            "RasterLayer",
-            path=climateLayerPath,
-            nodata_value=nodata_value)
+        self.tilerConfig.AppendLayer(
+            "climate",
+            self.tilerConfig.CreateConfigItem(
+                "RasterLayer",
+                path=climateLayerPath,
+                nodata_value=nodata_value))
 
     def AddMergedDisturbanceLayers(self, layerData, inventory_workspace,
                                    first_year, last_year):
@@ -144,7 +147,7 @@ class HistoricTilerConfig(object):
 
         vectorLayerConfig = self.tilerConfig.CreateConfigItem(
             "VectorLayer",
-            name = name,
+            name = "{0}_{1}".format(name,year),
             path = self.tilerConfig.CreateRelativePath(self.config_path, path),
             attributes=attributeConfig)
 
