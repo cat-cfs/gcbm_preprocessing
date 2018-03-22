@@ -20,6 +20,9 @@ class RunTiler(object):
             },
             "RasterLayer": {
                 "path": absPathInjection
+            },
+            "Attribute":{ # unicode no supported for attribute names
+                "layer_name": lambda name : name.encode("ascii","ignore")
             }
         }
         if not os.path.exists(tiler_output_path):
