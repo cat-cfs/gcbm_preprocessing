@@ -1,48 +1,48 @@
-    {
-      "Base_Raster_Dir": "${Future_Dist_Input_Dir}",
-      "Raster_Output_Dir": "${Future_Dist_Output_Dir}",
-      "TilerConfigInputPath": "${HistoricTilerConfigPath}",
-      "Start_Year": 2015,
-      "End_Year": 2070,
-      "Disturbance_Types": [
-        {
-          "Name": "fire",
-          "Path_Format": "projected_fire_{}.tif"
-        },
-        {
-          "Name": "harvest",
-          "Path_Format": "projected_harvest_{}.tif"
-        },
-        {
-          "Name": "slashburn",
-          "Path_Format": "projected_slashburn_{}.tif"
+  {
+    "Base_Raster_Dir": "${Future_Dist_Input_Dir}",
+    "Raster_Output_Dir": "${Future_Dist_Output_Dir}",
+    "TilerConfigInputPath": "${HistoricTilerConfigPath}",
+    "Start_Year": 2015,
+    "End_Year": 2070,
+    "Disturbance_Types": [
+      {
+        "Name": "fire",
+        "Path_Format": "projected_fire_{}.tif"
+      },
+      {
+        "Name": "harvest",
+        "Path_Format": "projected_harvest_{}.tif"
+      },
+      {
+        "Name": "slashburn",
+        "Path_Format": "projected_slashburn_{}.tif"
+      }
+    ],
+    "Scenarios": [
+      {
+        "Name": "base",
+        "Activity_Start_Year": -1,
+        "Slashburn_Percent": 50,
+        "Slashburn_Activity_Percent": 50,
+        "Harvest_Activity_Percent": 50,
+        "CBM_Disturbance_Type_Map": {
+          "fire": "Wild Fires",
+          "harvest": "BASE CC",
+          "slashburn": "SlashBurning"
         }
-      ],
-      "Scenarios": [
-        {
-          "Name": "base",
-          "Activity_Start_Year": -1,
-          "Slashburn_Percent": 50,
-          "Slashburn_Activity_Percent": 50,
-          "Harvest_Activity_Percent": 50,
-          "CBM_Disturbance_Type_Map": {
-            "fire": "Wild Fires",
-            "harvest": "BASE CC",
-            "slashburn": "SlashBurning"
-          }
-        },
-        {
-          "Name": "A",
-          "Activity_Start_Year": -1,
-          "Slashburn_Percent": 51,
-          "Slashburn_Activity_Percent": 50,
-          "Harvest_Activity_Percent": 50,
-          "CBM_Disturbance_Type_Map": {
-            "fire": "Wild Fires",
-            "harvest": "CBM_A CC",
-            "slashburn": "SlashBurning"
-          }
+      },
+      {
+        "Name": "A",
+        "Activity_Start_Year": -1,
+        "Slashburn_Percent": 51,
+        "Slashburn_Activity_Percent": 50,
+        "Harvest_Activity_Percent": 50,
+        "CBM_Disturbance_Type_Map": {
+          "fire": "Wild Fires",
+          "harvest": "CBM_A CC",
+          "slashburn": "SlashBurning"
         }
-      ]
+      }
+    ]
 
-    }
+  }

@@ -1,5 +1,6 @@
 import json
 
+
 class SubRegionConfig(object):
     def __init__(self, configPath):
         self.config = self.loadJson(configPath)

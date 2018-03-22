@@ -7,7 +7,7 @@ class RunTiler(object):
     def launch(self, config_path, tiler_output_path, transitionRulesPath):
         mgr = SharedTransitionRuleManager()
         mgr.start()
-        rule_manager = mgr.TransitionRuleManager(transitionRulesPath) #"transition_rules.csv")
+        rule_manager = mgr.TransitionRuleManager(transitionRulesPath)
 
         absPathInjection = lambda relpath : os.path.abspath(os.path.join(os.path.dirname(config_path), relpath))
 
@@ -42,11 +42,17 @@ def main():
         parser.add_argument("--outputPath", help="path to preprocessor configuration")
         parser.add_argument("--transitionRulesOutPath", help="path to sub region data")
 
+        args = parser.parse_args()
+        config_path = os.path.abspath(args.tilerConfig)
+        tiler_output_path = os.path.abspath(args.outputPath)
+        transitionRulesPath = os.path.abspath(args.transitionRulesOutPath)
         r = RunTiler()
+
         r.launch(
-            config_path = r"C:\Dev\Scott\gcbm_test_dir\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\historic_tiler_config.json",
-            tiler_output_path = r"C:\Dev\Scott\gcbm_test_dir\05_working_BC\TSA_2_Boundary\tiled_layers\test_output",
-            transitionRulesPath = "transitionRules.csv")
+            config_path = config_path,
+            tiler_output_path = tiler_output_path,
+            transitionRulesPath = transitionRulesPath)
+
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)
