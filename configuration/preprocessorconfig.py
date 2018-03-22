@@ -50,31 +50,46 @@ class PreprocessorConfig(object):
         x = self.config["InventoryRasterOutputDir"]
         return self.pathRegistry.UnpackPath(x, region_path)
 
-    def GetRollbackDisturbancesOutput(self, region_path):
-        x = self.config["RollBackDisturbancesOutput"]
+    def GetRollbackDisturbancesOutputDir(self, region_path):
+        x = self.config["RollbackDisturbancesOutputDir"]
         return self.pathRegistry.UnpackPath(x, region_path)
 
-    def GetSlashBurnInfo(self):
-        info = self.config["SlashBurnInfo"]
-        x = info["Percent"]
+    def GetSlashBurnPercent(self):
+        x = float(self.config["SlashburnPercent"])
         if x<0 or x >100:
             raise ValueError("configuration slashburn percent out of range." \
                 + "expected 0<=x<=100, got: {}".format(x))
-        return info
+        return x
 
     def GetRollbackInputLayers(self, region_path):
         x = self.config["RollbackInputLayers"]
         result = []
         for dist in x:
             result.append({
-                "Code": dist["Code"],
-                "Name": dist["Name"],
                 "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
                 "YearField": dist["YearField"],
-                "CBM_Disturbance_Type": dist["CBM_Disturbance_Type"],
             })
         return result
+
+    def GetHistoricMergedDisturbanceLayers(self):
+        return self.config["HistoricMergedDisturbanceLayers"]
+
+    def GetHistoricSlashburnInput(self, region_path):
+         x = self.config["HistoricSlashburnInput"]
+         harvestLayer = x["HarvestLayer"]
+         return {
+            "Name": x["Name"],
+            "CBM_Disturbance_Type": x["CBM_Disturbance_Type"],
+            "HarvestLayer":{
+                "Workspace": self.pathRegistry.UnpackPath(harvestLayer["Workspace"], region_path),
+                "WorkspaceFilter": harvestLayer["WorkspaceFilter"],
+                "YearField": harvestLayer["YearField"],
+            }
+          }
+
+    def GetRollbackOutputDisturbanceTypes(self):
+        return self.config["RollbackOutputDisturbanceTypes"]
 
     def GetInsectDisturbances(self, region_path):
         item = self.config["InsectDisturbances"]

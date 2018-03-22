@@ -28,7 +28,7 @@ class Historic(object):
         tilerConfig.AddClimateLayer(mat["Path"], mat["Nodata_Value"])
 
         tilerConfig.AddMergedDisturbanceLayers(
-            layerData = self.preprocessorConfig.GetRollbackInputLayers(region_path),
+            layerData = self.preprocessorConfig.GetHistoricMergedDisturbanceLayers(),
             inventory_workspace = self.preprocessorConfig.GetInventoryWorkspace(region_path),
             first_year = self.preprocessorConfig.GetRollbackRange()["EndYear"] + 1,
             last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"])
@@ -42,15 +42,11 @@ class Historic(object):
                                      self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1)
 
         if(slashburn_year_range):
-            harvestLayer = [x for x in 
-                            self.preprocessorConfig.GetRollbackInputLayers(region_path)
-                            if x["Name"] == "harvest"]
-            if len(harvestLayer) != 1:
-                raise ValueError("expected a single harvest layer")
-
-            harvest_shp = os.path.join(harvestLayer[0]["Workspace"], harvestLayer[0]["WorkspaceFilter"])
-            harvest_shp_year_field = harvestLayer[0]["YearField"]
-            sb_info = self.preprocessorConfig.GetSlashBurnInfo()
+            sbInput = self.preprocessorConfig.GetHistoricSlashburnInput(region_path)
+            harvestLayer = sbInput["HarvestLayer"]
+            harvest_shp = os.path.join(harvestLayer["Workspace"], harvestLayer["WorkspaceFilter"])
+            harvest_shp_year_field = harvestLayer["YearField"]
+            sb_percent = self.preprocessorConfig.GetSlashBurnPercent()
             with arc_license(Products.ARC) as arcpy:
                 g = GenerateSlashburn(arcpy)
                 slashburn_path = g.generateSlashburn(
@@ -59,16 +55,16 @@ class Historic(object):
                     harvest_shp = harvest_shp,
                     harvest_shp_year_field = harvest_shp_year_field,
                     year_range = slashburn_year_range,
-                    sb_percent = sb_info["Percent"])
+                    sb_percent = sb_percent)
 
             for year in slashburn_year_range:
                 tilerConfig.AddSlashburn(
                     year = year,
                     path = slashburn_path,
                     yearField = harvest_shp_year_field,
-                    name = sb_info["Name"],
-                    cbmDisturbanceTypeName = sb_info["CBM_Disturbance_Type"],
-                    layerMeta = "historic_{}".format(sb_info["Name"]))
+                    name = sbInput["Name"],
+                    cbmDisturbanceTypeName = sbInput["CBM_Disturbance_Type"],
+                    layerMeta = "historic_{}".format(sbInput["Name"]))
 
         tilerConfig.Save(self.preprocessorConfig.GetHistoricTilerConfigPath(region_path))
 def main():

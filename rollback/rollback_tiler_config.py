@@ -89,7 +89,7 @@ class RollbackTilerConfig(object):
             "DisturbanceLayer",
             lyr = vectorLayerConfig,
             year = year,
-            disturbance_type = DistTypeAttributeConfig,
+            disturbance_type = t.CreateConfigItem("Attribute", layer_name="DistType"),
             transition = transitionConfig)
         
         t.AppendLayer("rollback_{}".format(name),

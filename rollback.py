@@ -26,21 +26,10 @@ class Rollback(object):
             inventoryMeta = self.RunRollback(region_path = region_path)
 
             tilerPath = self.config.GetRollbackTilerConfigPath(region_path = region_path)
-            rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutput(region_path)
+            rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutputDir(region_path)
             tilerConfig = RollbackTilerConfig()
-            dist_lookup = [
-                {
-                    "Code": x["Code"],
-                    "Name": x["Name"],
-                    "CBM_Disturbance_Type": x["CBM_Disturbance_Type"]
-                } for x in  self.config.GetRollbackInputLayers(region_path)]
+            dist_lookup = self.config.GetRollbackOutputDisturbanceTypes()
 
-            sbInfo = self.config.GetSlashBurnInfo()
-            dist_lookup.append({
-                    "Code": sbInfo["Code"],
-                    "Name": sbInfo["Name"],
-                    "CBM_Disturbance_Type": sbInfo["CBM_Disturbance_Type"]
-                })
             tilerConfig.Generate(outPath=tilerPath,
                 inventoryMeta = inventoryMeta,
                 resolution = self.config.GetResolution(),
@@ -60,9 +49,9 @@ class Rollback(object):
                     self.config.GetRollbackRange()["EndYear"]]
         harvest_year_field = self.config.GetHistoricHarvestYearField()
         inventory_raster_output_dir = self.config.GetInventoryRasterOutputDir(region_path)
-        rollback_disturbances_output = self.config.GetRollbackDisturbancesOutput(region_path)
+        rollback_disturbances_output = self.config.GetRollbackDisturbancesOutputDir(region_path)
         resolution = self.config.GetResolution()
-        slashburnpercent = self.config.GetSlashBurnInfo()["Percent"]
+        slashburnpercent = self.config.GetSlashBurnPercent()
         reportingclassifiers = self.config.GetReportingClassifiers()
         disturbances = self.config.GetRollbackInputLayers(region_path)
 

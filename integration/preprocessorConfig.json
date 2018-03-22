@@ -45,39 +45,46 @@
   },
   "HistoricHarvestYearField": "HARV_YR",
   "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
-  "RollBackDisturbancesOutput": "${RollbackDisturbancesOutput}",
-  "SlashBurnInfo": {
-    "Code": 13,
-    "Name": "slashburn",
-    "Percent": 100,
-    "CBM_Disturbance_Type": "SlashBurning"
-  },
+  "RollbackDisturbancesOutputDir": "${RollbackDisturbancesOutput}",
+  "SlashburnPercent": 100,
   "RollbackInputLayers": [
     {
-      "Code": 1,
-      "Name": "fire",
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
-      "YearField": "YEAR_",
-      "CBM_Disturbance_Type": "Wild Fires"
+      "YearField": "YEAR_"
     },
     {
-      "Code": 1,
-      "Name": "fire",
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NBAC*.shp",
+      "YearField": "EDATE"
+    },
+    {
+      "Workspace": "${Clipped_Historic_Harvest_Path}",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
+      "YearField": "HARV_YR"
+    }
+  ],
+  "HistoricMergedDisturbanceLayers": [
+    {
+      "Name": "fire",
       "YearField": "EDATE",
       "CBM_Disturbance_Type": "Wild Fires"
     },
     {
-      "Code": 2,
       "Name": "harvest",
-      "Workspace": "${Clipped_Historic_Harvest_Path}",
-      "WorkspaceFilter": "BC_cutblocks90_15.shp",
       "YearField": "HARV_YR",
       "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
     }
   ],
+  "HistoricSlashburnInput": {
+    "Name": "slashburn",
+    "CBM_Disturbance_Type": "SlashBurning",
+    "HarvestLayer": {
+      "Workspace": "${Clipped_Historic_Harvest_Path}",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
+      "YearField": "HARV_YR"
+    }
+  },
   "InsectDisturbances": {
     "Name": "insect",
     "Workspace": "${Clipped_Historic_Insect_Path}",
@@ -93,5 +100,22 @@
       "2": "Mountain Pine Beetle - Moderate Impact",
       "1": "Mountain Pine Beetle - Low Impact"
     }
-  }
+  },
+  "RollbackOutputDisturbanceTypes": [
+    {
+      "Code": 1,
+      "Name": "fire",
+      "CBM_Disturbance_Type": "Wild Fires"
+    },
+    {
+      "Code": 2,
+      "Name": "harvest",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
+    },
+    {
+      "Code": 13,
+      "Name": "slashburn",
+      "CBM_Disturbance_Type": "SlashBurning"
+    }
+  ]
 }
