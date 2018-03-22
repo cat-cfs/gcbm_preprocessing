@@ -113,8 +113,8 @@ def main():
             if args.subRegionNames else None
         with arc_license(Products.ARC) as arcpy:
             gdbFunctions = GDBFunctions(arcpy)
-            pathRegistry = PathRegistry(args.pathRegistry)
-            subRegionConfig = SubRegionConfig(args.subRegionConfig)
+            pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+            subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
             r = RegionClipper(configPath = args.regionClipperConfig,
                               gdbfunctions = gdbFunctions,

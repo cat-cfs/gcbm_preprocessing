@@ -11,7 +11,7 @@ def main():
 
         args = parser.parse_args()
 
-        pathRegistry = PathRegistry(args.pathRegistry)
+        pathRegistry = PathRegistry(os.path.abspath( args.pathRegistry))
         src = pathRegistry.GetPath("Source_External_Spatial_Dir")
         dst = pathRegistry.GetPath("External_Data_Dir")
         logging.info("copying external data to local working directory")

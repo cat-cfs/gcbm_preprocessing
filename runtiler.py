@@ -21,7 +21,7 @@ class RunTiler(object):
             "RasterLayer": {
                 "path": absPathInjection
             },
-            "Attribute":{ # unicode no supported for attribute names
+            "Attribute": { # unicode not supported for attribute names
                 "layer_name": lambda name : name.encode("ascii","ignore")
             }
         }
@@ -38,7 +38,7 @@ def main():
     create_script_log(sys.argv[0])
     try:
         parser = argparse.ArgumentParser(description="rollback")
-        parser.add_argument("--tilerConfig", help="path to file registry data")
+        parser.add_argument("--tilerConfig", help="path to a tiler config json file")
         parser.add_argument("--outputPath", help="path to preprocessor configuration")
         parser.add_argument("--transitionRulesOutPath", help="path to sub region data")
 

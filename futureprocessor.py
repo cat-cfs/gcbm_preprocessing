@@ -84,9 +84,9 @@ def main():
         subRegionNames = args.subRegionNames.split(",") \
             if args.subRegionNames else None
 
-        pathRegistry = PathRegistry(args.pathRegistry)
-        subRegionConfig = SubRegionConfig(args.subRegionConfig)
-        futureConfig = FutureConfig(args.futureConfig, pathRegistry)
+        pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
         future = Future(futureConfig)
 
         regionsToProcess = subRegionConfig.GetRegions() if subRegionNames is None \
