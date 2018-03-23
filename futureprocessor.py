@@ -15,12 +15,12 @@ class Future(object):
         self.config = config
 
     def Process(self, region_name, scenario):
-        baseTilerConfigPath = self.config.GetHistoricTilerConfigPath(
+        baseTilerConfigPath = self.config.GetBaseTilerConfigPath(
             region_name)
-        tilerConfig = TilerConfig(baseTilerConfig)
+        tilerConfig = TilerConfig(baseTilerConfigPath)
 
         logging.info("processing future scenario '{0}' for region '{1}'"
-                     .format(scenario_name,region_name))
+                     .format(scenario["Name"],region_name))
         f = FutureRasterProcessor(
             self.config.GetBaseRasterDir(region_name),
             list(range(self.config.GetStartYear(),
@@ -93,8 +93,8 @@ def main():
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
         for region in regionsToProcess:
-            for scenario in self.config.GetScenarios():
-                future.Process(region["Name"], scenario)
+            for scenario in futureConfig.GetScenarios():
+                future.Process(region["PathName"], scenario)
 
     except Exception as ex:
         logging.exception("error")

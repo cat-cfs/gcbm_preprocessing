@@ -9,10 +9,10 @@ class FutureConfig(object):
         if len(self.disturbances) != len(self.config["Disturbance_Types"]):
             raise ValueError("duplicate disturbance name detected")
 
-        self.scenarios = {x["Name"]: x for x in 
+        self.scenariosbyName = {x["Name"]: x for x in 
                           self.config["Scenarios"]}
 
-        if len(self.scenarios) != len(self.config["Scenarios"]):
+        if len(self.scenariosbyName) != len(self.config["Scenarios"]):
             raise ValueError("duplicate scenario name detected")
 
     def loadJson(self, path):
@@ -33,12 +33,12 @@ class FutureConfig(object):
 
     def GetRasterOutputDir(self, region_name):
         return self.pathRegistry.UnpackPath(
-            self.config["Future_Dist_Output_Dir"],
+            self.config["Raster_Output_Dir"],
             region_name)
 
-    def GetHistoricTilerConfigPath(self, region_name):
+    def GetBaseTilerConfigPath(self, region_name):
         return self.pathRegistry.UnpackPath(
-            self.config["HistoricTilerConfigPath"],
+            self.config["BaseTilerConfigPath"],
             region_name)
 
     def GetPathFormat(self, disturbanceName):
@@ -48,7 +48,7 @@ class FutureConfig(object):
         return self.disturbances[disturbanceName]["CBM_Name"]
 
     def GetScenario(self, scenario_name):
-        return self.scenarios[scenario_name]
+        return self.scenariosbyName[scenario_name]
 
     def GetScenarios(self):
-        return self.scenarios
+        return self.config["Scenarios"]

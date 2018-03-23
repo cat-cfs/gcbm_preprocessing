@@ -82,7 +82,7 @@ class RollbackTilerConfig(object):
         vectorLayerConfig =  t.CreateConfigItem(
             "VectorLayer",
             name = "rollback_{}_{}".format(name, year),
-            path = self.tilerConfig.CreateRelativePath(config_path,rollback_disturbances_path) ,
+            path = self.tilerConfig.CreateRelativePath(config_path,rollback_disturbances_path),
             attributes = attributeList)
 
         transitionConfig = t.CreateConfigItem(
