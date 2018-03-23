@@ -32,7 +32,7 @@ class HistoricTilerConfig(object):
                 nodata_value=nodata_value))
 
     def AddMergedDisturbanceLayers(self, layerData, inventory_workspace,
-                                   first_year, last_year):
+                                   first_year, last_year, classifiers):
 
         for item in layerData:
             for year in range(first_year,
@@ -43,9 +43,10 @@ class HistoricTilerConfig(object):
                     inventory_workspace = inventory_workspace,
                     year_field = item["YearField"],
                     cbmDisturbanceTypeName = item["CBM_Disturbance_Type"],
-                    layerMeta = "historic_{}".format(item["Name"]))
+                    layerMeta = "historic_{}".format(item["Name"]),
+                    classifiers = classifiers)
 
-    def AddHistoricInsectLayers(self, layerData, first_year, last_year):
+    def AddHistoricInsectLayers(self, layerData, first_year, last_year, classifiers):
         for year in range(first_year, last_year+1):
             filename = layerData["WorkspaceFilter"].replace("*", str(year))
             filepath = os.path.join(layerData["Workspace"], filename)
@@ -58,11 +59,13 @@ class HistoricTilerConfig(object):
                 year = year,
                 attribute = layerData["DisturbanceTypeField"],
                 attribute_lookup = layerData["CBM_DisturbanceType_Lookup"],
-                layerMeta="historic_{}".format(layerData["Name"]))
+                layerMeta="historic_{}".format(layerData["Name"]),
+                classifiers=classifiers)
 
     def AddHistoricInsectLayer(self, name, path,
-                                        year, attribute, attribute_lookup,
-                                        layerMeta):
+                                year, attribute, attribute_lookup,
+                                layerMeta,
+                                classifiers):
         attributeConfig = self.tilerConfig.CreateConfigItem(
             "Attribute",
             layer_name=attribute,
@@ -77,7 +80,8 @@ class HistoricTilerConfig(object):
         transitionRuleConfig = self.tilerConfig.CreateConfigItem(
             "TransitionRule",
             regen_delay=0,
-            age_after=-1)
+            age_after=-1,
+            classifiers={x : "?" for x in classifiers})
 
         disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
             "DisturbanceLayer",
@@ -91,7 +95,7 @@ class HistoricTilerConfig(object):
 
     def AddMergedDisturbanceLayer(self, name, year, inventory_workspace, 
                                      year_field, cbmDisturbanceTypeName,
-                                     layerMeta):
+                                     layerMeta, classifiers):
         """
         append a disturbance layer from the inventory gdb layer "merged disturbances"
         @param name the name of the tiled output layer file
@@ -121,7 +125,8 @@ class HistoricTilerConfig(object):
         transitionConfig = self.tilerConfig.CreateConfigItem(
             "TransitionRule",
             regen_delay = 0,
-            age_after = 0)
+            age_after = 0,
+            classifiers={x : "?" for x in classifiers})
 
         disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
             "DisturbanceLayer",
@@ -134,7 +139,8 @@ class HistoricTilerConfig(object):
                                      disturbanceLayerConfig)
 
     def AddSlashburn(self, year, path, yearField, name,
-                      cbmDisturbanceTypeName, layerMeta):
+                      cbmDisturbanceTypeName, layerMeta,
+                      classifiers):
         valueFilterConfig = self.tilerConfig.CreateConfigItem(
             "ValueFilter",
             target_val = year,
@@ -154,7 +160,8 @@ class HistoricTilerConfig(object):
         transitionConfig = self.tilerConfig.CreateConfigItem(
             "TransitionRule",
             regen_delay=0,
-            age_after=0)
+            age_after=0,
+            classifiers={x : "?" for x in classifiers})
 
         disturbanceLayerConfig = self.tilerConfig.CreateConfigItem(
             "DisturbanceLayer",

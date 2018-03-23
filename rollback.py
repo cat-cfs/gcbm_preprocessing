@@ -37,7 +37,8 @@ class Rollback(object):
                 rollback_range=[
                     self.config.GetRollbackRange()["StartYear"],
                     self.config.GetRollbackRange()["EndYear"]],
-                dist_lookup=dist_lookup)
+                dist_lookup=dist_lookup,
+                classifiers = list(self.config.GetInventoryClassifiers().keys()))
 
     def RunRollback(self, region_path):
         inventory_workspace = self.config.GetInventoryWorkspace(region_path)

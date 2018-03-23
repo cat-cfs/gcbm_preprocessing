@@ -5,10 +5,12 @@ class RollbackTilerConfig(object):
         self.tilerConfig = TilerConfig()
 
     def Generate(self, outPath, inventoryMeta, resolution,
-                 rollback_disturbances_path, rollback_range, dist_lookup):
+                 rollback_disturbances_path, rollback_range, dist_lookup,
+                 classifiers):
         self._AddInventory(inventoryMeta, resolution, outPath)
         self._AddRollbackDisturbances(rollback_disturbances_path,
-                                      rollback_range, dist_lookup, outPath)
+                                      rollback_range, dist_lookup, outPath, 
+                                      classifiers)
         self._WriteTilerConfig(outPath)
 
     def _AddInventory(self, inventoryMeta, resolution, config_path):
@@ -33,7 +35,8 @@ class RollbackTilerConfig(object):
             t.AppendLayer("inventory", i)
 
     def _AddRollbackDisturbances(self, rollback_disturbances_path,
-                                rollback_range, dist_lookup, config_path):
+                                rollback_range, dist_lookup, config_path,
+                                classifiers):
 
         for year in range(rollback_range[0], rollback_range[1] + 1):
             for dist in dist_lookup:
@@ -42,11 +45,13 @@ class RollbackTilerConfig(object):
                                        dist["Code"],
                                        dist["Name"],
                                        dist["CBM_Disturbance_Type"],
-                                       config_path)
+                                       config_path,
+                                       classifiers)
 
     def _AddRollbackDisturbance(self, rollback_disturbances_path,
                                year, dist_code, name,
-                               cbm_disturbance_type_name, config_path):
+                               cbm_disturbance_type_name, config_path,
+                               classifiers):
 
         t = self.tilerConfig
         
@@ -83,7 +88,8 @@ class RollbackTilerConfig(object):
         transitionConfig = t.CreateConfigItem(
             "TransitionRule",
             regen_delay = RegenDelayAttributeConfig,
-            age_after = 0)
+            age_after = 0,
+            classifiers={x : "?" for x in classifiers})
 
         disturbanceLayerConfig = t.CreateConfigItem(
             "DisturbanceLayer",

@@ -6,6 +6,8 @@ from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 from historic.historic_tiler_config import HistoricTilerConfig
 from historic.generate_historic_slashburn import GenerateSlashburn
+
+from runtiler import RunTiler
 class Historic(object):
     """
     computes historic slashburn as a proportion of the historical harvest
@@ -19,6 +21,8 @@ class Historic(object):
         tilerConfig = HistoricTilerConfig(
             self.preprocessorConfig.GetRollbackTilerConfigPath(region_path))
 
+        classifiers = list(self.preprocessorConfig.GetInventoryClassifiers().keys())
+
         defaultSpatialBoundaries = self.preprocessorConfig.GetDefaultSpatialBoundaries(region_path)
         tilerConfig.AddAdminEcoLayers(
             spatial_boundaries_path= defaultSpatialBoundaries["Path"],
@@ -31,12 +35,14 @@ class Historic(object):
             layerData = self.preprocessorConfig.GetHistoricMergedDisturbanceLayers(),
             inventory_workspace = self.preprocessorConfig.GetInventoryWorkspace(region_path),
             first_year = self.preprocessorConfig.GetRollbackRange()["EndYear"] + 1,
-            last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"])
+            last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"],
+            classifiers=classifiers)
 
         tilerConfig.AddHistoricInsectLayers(
            layerData = self.preprocessorConfig.GetInsectDisturbances(region_path),
            first_year = self.preprocessorConfig.GetHistoricRange()["StartYear"],
-           last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1)
+           last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1,
+           classifiers=classifiers)
 
         slashburn_year_range = range(self.preprocessorConfig.GetRollbackRange()["EndYear"] + 1,
                                      self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1)
@@ -64,10 +70,13 @@ class Historic(object):
                     yearField = harvest_shp_year_field,
                     name = sbInput["Name"],
                     cbmDisturbanceTypeName = sbInput["CBM_Disturbance_Type"],
-                    layerMeta = "historic_{}".format(sbInput["Name"]))
+                    layerMeta = "historic_{}".format(sbInput["Name"]),
+                    classifiers=classifiers)
+        tilerConfigPath = self.preprocessorConfig.GetHistoricTilerConfigPath(region_path)
+        tilerConfig.Save(tilerConfigPath)
+        return tilerConfigPath
 
-        tilerConfig.Save(self.preprocessorConfig.GetHistoricTilerConfigPath(region_path))
-def main():
+def main(): 
 
     create_script_log(sys.argv[0])
     try:
@@ -79,6 +88,8 @@ def main():
                             "string of sub region names (as defined in "+
                             "subRegionConfig) to process, if unspecified all "+
                             "regions will be processed")
+        parser.add_argument("--runtiler", dest="runtiler", action="store_true")
+        parser.set_defaults(runtiler=False)
 
         args = parser.parse_args()
 
@@ -96,9 +107,18 @@ def main():
         regions = subRegionConfig.GetRegions() if subRegionNames is None \
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
+
         for r in regions:
             region_path = r["PathName"]
-            historic.Process(region_path)
+
+            tilerConfigPath = historic.Process(region_path)
+            if args.runtiler:
+
+                t = RunTiler()
+                outpath = pathRegistry.GetPath(
+                    "HistoricTiledLayersDir", region_path)
+                t.launch(config_path = tilerConfigPath,
+                         tiler_output_path = outpath)
 
     except Exception as ex:
         logging.exception("error")
