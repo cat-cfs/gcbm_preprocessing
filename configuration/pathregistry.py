@@ -8,13 +8,17 @@ class Node:
         self.edges.append(node)
 
 class PathRegistry(object):
-    def __init__(self, configPath):
+    def __init__(self, configPath, path_variables=[]):
         config = self.loadJson(configPath)
-        self.region_name_placeholder = "{region_name}"
-        if "Region_Name" in config:
-            raise ValueError("Region_name is a reserved path item")
-        config["Region_Name"] = [self.region_name_placeholder]
 
+        for variable in path_variables:
+            if variable in config:
+                raise ValueError("variable and config duplicates not allowed")
+            placeHolder = "{" + variable + "}"
+            if placeHolder.format(**{variable: ""}) == "":
+                raise ValueError("invalid variable name {}".format(variable))
+            config[variable] = [placeHolder]
+            
         nodes = {}
         for k,v in config.items():
             nodes[k] = Node(k)
@@ -48,22 +52,20 @@ class PathRegistry(object):
         with open(path) as json_data:
             return json.load(json_data)
 
-    def GetPath(self, name, region_path_name = None):
+    def GetPath(self, name, **kwargs):
         if not name in self.Paths:
             raise ValueError("registered path '{0}' not present".format(name))
         path = self.Paths[name]
-        if self.region_name_placeholder in path:
-            if region_path_name is None:
-                raise ValueError("region name must be specified for '{0}'".format(name))
-            return path.format(region_name=region_path_name)
+        if kwargs:
+            return path.format(**kwargs)
         else:
             return path
 
-    def UnpackPath(self, path, region_path_name = None):
+    def UnpackPath(self, path, **kwargs):
         if self.is_dependent_token(path):
             return self.GetPath(
                self.strip_dependent_token(path),
-               region_path_name)
+               **kwargs)
         else:
             return path
 
