@@ -1,4 +1,5 @@
 {
+  "External_Raster_Dir": "${Source_External_Future_Dir}",
   "Base_Raster_Dir": "${Future_Dist_Input_Dir}",
   "Raster_Output_Dir": "${Future_Dist_Output_Dir}",
   "BaseTilerConfigPath": "${HistoricTilerConfigPath}",

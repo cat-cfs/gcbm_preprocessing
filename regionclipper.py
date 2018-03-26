@@ -34,10 +34,6 @@ class RegionClipper(object):
                           workspace_filter=workspace_filter,
                           new_workspace=new_workspace)
 
-    def createConfiguration(self, regionPath):
-        return RegionClipperConfig(self.configPath,
-                                   self.path_registry,
-                                   regionPath)
 
     def ProcessSubRegion(self, region_path, clipConfig, clipFeature, clipFeatureFilter):
         '''
@@ -85,11 +81,15 @@ class RegionClipper(object):
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
         for r in regions:
-            region_path = r["PathName"]
-            clipFeature = self.path_registry.GetPath("Clip_Feature", region_path)
+            clipFeature = self.path_registry.GetPath("Clip_Feature")
             clipFeatureFilter = r["ClipFeatureFilter"]
-            clipConfig = self.createConfiguration(region_path)
-            self.ProcessSubRegion(region_path, clipConfig, clipFeature, clipFeatureFilter)
+            clipConfig = RegionClipperConfig(
+                self.configPath,
+                self.path_registry)
+            self.ProcessSubRegion(r["PathName"],
+                                 clipConfig, 
+                                 clipFeature,
+                                 clipFeatureFilter)
 
 def main():
 

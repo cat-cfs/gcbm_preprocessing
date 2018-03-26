@@ -14,22 +14,30 @@ class Future(object):
     def __init__(self, config):
         self.config = config
 
-    def Process(self, region_name, scenario):
+    def Process(self, region_name, future_subregion_name, scenario):
         baseTilerConfigPath = self.config.GetBaseTilerConfigPath(
             region_name)
         tilerConfig = TilerConfig(baseTilerConfigPath)
 
         logging.info("processing future scenario '{0}' for region '{1}'"
                      .format(scenario["Name"],region_name))
+
+        external_raster_dir = self.config.GetExternalRasterDir(
+            future_subregion_name)
+        baseRasterDir = self.config.GetBaseRasterDir(region_name)
+        future_range = list(range(self.config.GetStartYear(),
+                       self.config.GetEndYear()))
+        output_dir = self.config.GetRasterOutputDir(region_name)
         f = FutureRasterProcessor(
-            self.config.GetBaseRasterDir(region_name),
-            list(range(self.config.GetStartYear(),
-                       self.config.GetEndYear())),
-            self.config.GetRasterOutputDir(region_name),
-            "fire", "harvest", "slashburn",
-            self.config.GetPathFormat("fire"),
-            self.config.GetPathFormat("harvest"),
-            self.config.GetPathFormat("slashburn"))
+            base_raster_dir=baseRasterDir,
+            years = future_range,
+            output_dir = output_dir,
+            fire_name = "fire",
+            harvest_name = "harvest",
+            slashburn_name = "slashburn",
+            fire_format = self.config.GetPathFormat("fire"),
+            harvest_format = self.config.GetPathFormat("harvest"),
+            slashburn_format = self.config.GetPathFormat("slashburn"))
 
         result = []
 
@@ -85,6 +93,7 @@ def main():
             if args.subRegionNames else None
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+                                    
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
         future = Future(futureConfig)

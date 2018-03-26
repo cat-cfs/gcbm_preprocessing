@@ -17,7 +17,7 @@ class PreprocessorConfig(object):
 
     def GetInventoryWorkspace(self, region_path):
         return self.pathRegistry.UnpackPath(
-            self.config["Inventory_Workspace"], region_path)
+            self.config["Inventory_Workspace"], region_path=region_path)
 
     def GetInventoryYear(self):
         return self.config["Inventory_Year"]
@@ -48,11 +48,11 @@ class PreprocessorConfig(object):
 
     def GetInventoryRasterOutputDir(self, region_path):
         x = self.config["InventoryRasterOutputDir"]
-        return self.pathRegistry.UnpackPath(x, region_path)
+        return self.pathRegistry.UnpackPath(x, region_path=region_path)
 
     def GetRollbackDisturbancesOutputDir(self, region_path):
         x = self.config["RollbackDisturbancesOutputDir"]
-        return self.pathRegistry.UnpackPath(x, region_path)
+        return self.pathRegistry.UnpackPath(x, region_path=region_path)
 
     def GetSlashBurnPercent(self):
         x = float(self.config["SlashburnPercent"])
@@ -66,7 +66,7 @@ class PreprocessorConfig(object):
         result = []
         for dist in x:
             result.append({
-                "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
+                "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path=region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
                 "YearField": dist["YearField"],
             })
@@ -82,7 +82,7 @@ class PreprocessorConfig(object):
             "Name": x["Name"],
             "CBM_Disturbance_Type": x["CBM_Disturbance_Type"],
             "HarvestLayer":{
-                "Workspace": self.pathRegistry.UnpackPath(harvestLayer["Workspace"], region_path),
+                "Workspace": self.pathRegistry.UnpackPath(harvestLayer["Workspace"], region_path=region_path),
                 "WorkspaceFilter": harvestLayer["WorkspaceFilter"],
                 "YearField": harvestLayer["YearField"],
             }
@@ -95,7 +95,7 @@ class PreprocessorConfig(object):
         item = self.config["InsectDisturbances"]
         return {
             "Name": item["Name"],
-            "Workspace": self.pathRegistry.UnpackPath(item["Workspace"], region_path),
+            "Workspace": self.pathRegistry.UnpackPath(item["Workspace"], region_path=region_path),
             "WorkspaceFilter": item["WorkspaceFilter"],
             "DisturbanceTypeField": item["DisturbanceTypeField"],
             "CBM_DisturbanceType_Lookup": item["CBM_DisturbanceType_Lookup"]
@@ -107,16 +107,16 @@ class PreprocessorConfig(object):
 
     def GetRollbackTilerConfigPath(self, region_path):
         return self.pathRegistry.GetPath(
-            "RollbackTilerConfigPath", region_path)
+            "RollbackTilerConfigPath", region_path=region_path)
 
     def GetHistoricTilerConfigPath(self, region_path):
         return self.pathRegistry.GetPath(
-            "HistoricTilerConfigPath", region_path)
+            "HistoricTilerConfigPath", region_path=region_path)
 
     def GetDefaultSpatialBoundaries(self, region_path):
 
         layer = self.pathRegistry.UnpackPath(
-            self.config["SpatialBoundaries"]["Path"], region_path)
+            self.config["SpatialBoundaries"]["Path"], region_path=region_path)
 
         return {
             "Path": layer,
@@ -126,7 +126,7 @@ class PreprocessorConfig(object):
     def GetMeanAnnualTemp(self, region_path):
         path = self.pathRegistry.UnpackPath(
             self.config["MeanAnnualTemp"]["Path"],
-            region_path)
+            region_path=region_path)
 
         return {
             "Path": path,

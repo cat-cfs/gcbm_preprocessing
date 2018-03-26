@@ -8,31 +8,36 @@ class Node:
         self.edges.append(node)
 
 class PathRegistry(object):
-    def __init__(self, configPath, path_variables=[]):
+    def __init__(self, configPath):
         config = self.loadJson(configPath)
+        path_variables = config["Path_Variables"]
+        path_map = config["Paths"]
 
         for variable in path_variables:
-            if variable in config:
+            if variable in path_map:
                 raise ValueError("variable and config duplicates not allowed")
             placeHolder = "{" + variable + "}"
-            if placeHolder.format(**{variable: ""}) == "":
+            if not placeHolder.format(**{variable: ""}) == "":
                 raise ValueError("invalid variable name {}".format(variable))
-            config[variable] = [placeHolder]
+            path_map[variable] = [placeHolder]
             
         nodes = {}
-        for k,v in config.items():
+        for k,v in path_map.items():
             nodes[k] = Node(k)
 
-        for k,v in config.items():
+        for k,v in path_map.items():
             for d in self.get_dependent_paths(v):
-                if not k in nodes or not d in nodes:
+                if not k in nodes:
                     raise ValueError("specified path reference not found '{}'"
                                      .format(k))
+                if not d in nodes:
+                    raise ValueError("specified path reference not found '{}'"
+                                     .format(d))
 
                 nodes[k].addEdge(nodes[d])
 
         PathTokens = {}
-        for k,v in config.items():
+        for k,v in path_map.items():
             if not k in PathTokens:
                 resolved = []
                 unresolved = []
@@ -40,7 +45,7 @@ class PathRegistry(object):
                 for a in resolved:
                     if a.name in PathTokens:
                         continue
-                    tokens = self.sub_dependent_paths(config[a.name], PathTokens)
+                    tokens = self.sub_dependent_paths(path_map[a.name], PathTokens)
                     PathTokens[a.name] = tokens
 
         self.Paths={}
