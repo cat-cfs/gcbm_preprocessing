@@ -3,7 +3,7 @@
     "Header": true,
     "IncrementStartCol": 3,
     "IncrementEndCol": 38,
-    "Path": "${YieldTable}",
+    "Path": "",
     "Interval": 10,
     "Page": 0,
     "SpeciesCol": 2,
@@ -18,7 +18,7 @@
       }
     ]
   },
-  "OutputPath": "F:\\GCBM\\17_BC_ON_1ha\\05_working_BC\\TSA_1_Arrow\\02b_recliner2GCBM_output\\GCBMinput.db",
+  "OutputPath": "",
   "TransitionRules": {
     "NameCol": 0,
     "Classifiers": [
@@ -33,22 +33,22 @@
     ],
     "Header": true,
     "DelayCol": 1,
-    "Path": "F:\\GCBM\\17_BC_ON_1ha\\05_working_BC\\TSA_1_Arrow\\02a_recliner2GCBM_input\\transition_rules.csv",
+    "Path": "",
     "Page": 0,
     "AgeCol": 2
   },
-  "AIDBPath": "F:\\GCBM\\17_BC_ON_1ha\\05_working_BC\\TSA_1_Arrow\\02a_recliner2GCBM_input\\ArchiveIndex_Beta_Install_BASE.mdb",
+  "AIDBPath": "",
   "ClassifierSet": [
     {
       "Column": 0,
-      "Path": "${YieldTable}",
+      "Path": "",
       "Header": true,
       "Name": "AU",
       "Page": 0
     },
     {
       "Column": 1,
-      "Path": "${YieldTable}",
+      "Path": "",
       "Header": true,
       "Name": "LdSpp",
       "Page": 0

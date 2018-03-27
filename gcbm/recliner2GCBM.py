@@ -2,8 +2,6 @@ from configuration.pathregistry import PathRegistry
 
 class Recliner2GCBM(object):
     def __init__(self, config_dir, output_path, exe_path=None):
-        logging.info("Initializing class {}".format(self.__class__.__name__))
-        self.ProgressPrinter = ProgressPrinter
         self.exe_paths = [exe_path] or [
             os.path.join("M:", "Spatially_explicit", "03_Tools", "Recliner2GCBM-{}".format(platform), "Recliner2GCBM.exe")
             for platform in ("x64", "x86")]
@@ -29,31 +27,21 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="sets up external data in working directory for subsequent processes")
         parser.add_argument("--pathRegistry", help="path to file registry data")
-
+        parser.add_argument("--futureConfig", help="path to configuration")
+        parser.add_argument("--subRegionConfig", help="path to sub region data")
+        parser.add_argument("--subRegionNames", help="optional comma delimited "+
+                            "string of sub region names (as defined in "+
+                            "subRegionConfig) to process, if unspecified all "+
+                            "regions will be processed")
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        
-        if not args.spatial and not args.aspatial:
-            logging.error("nothing to do")
-
-        if args.spatial:
-            src = pathRegistry.GetPath("Source_External_Spatial_Dir")
-            dst = pathRegistry.GetPath("External_Spatial_Dir")
-            logging.info("copying external spatial data to local working directory")
-            shutil.copytree(src=src, dst=dst)
-
-        if args.aspatial:
-            src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
-            dst = pathRegistry.GetPath("External_Aspatial_Dir")
-            logging.info("copying external aspatial data to local working directory")
-            shutil.copytree(src=src, dst=dst)
 
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)
 
-    logging.info("all setup tasks finished")
+    logging.info("all recliner2GCBM tasks finished")
 
 if __name__ == "__main__":
     main()

@@ -1,5 +1,5 @@
 {
-  "Path_Variables": [ "region_path", "future_subregion_dir" ],
+  "Path_Variables": [ "region_path", "future_subregion_dir", "scenario_name" ],
   "Paths": {
     "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "00_external_data" ],
     "Source_External_Spatial_Dir": [ "${Source_Dir}", "01_spatial" ],
@@ -36,11 +36,10 @@
     "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs" ],
     "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
     "MeanAnnualTempPath": [ "${Copied_Environment_Dir}", "NAmerica_MAT_1971_2000.tif" ],
-    "TiledLayersDir": [ "${SubRegionDir}", "01b_tiled_layers" ],
-    "HistoricTiledLayersDir": [ "${TiledLayersDir}", "historic" ],
-    "FutureTiledLayersDir": [ "${TiledLayersDir}", "future" ],
+    "TiledLayersDir": [ "${SubRegionDir}", "01b_tiled_layers", "${scenario_name}" ],
+    "TransitionRulesPath": [ "${TiledLayersDir}", "transition_rules.csv" ],
     "ArchiveIndex": [ "${External_Aspatial_Dir}", "01_AIDB", "ArchiveIndex_Beta_Install_BASE.mdb" ],
-    "YieldTable": [ "${External_Aspatial_Dir}", "02_yield_table", "yield.csv" ]
-
+    "YieldTable": [ "${External_Aspatial_Dir}", "02_yield_table", "yield.csv" ],
+    "Recliner2GCBMOutpath": [ "${SubRegionDir}", "02b_recliner2GCBM_output", "GCBMinput.db" ]
   }
 }

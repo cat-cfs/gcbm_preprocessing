@@ -136,7 +136,9 @@ def main():
 
                 t = RunTiler()
                 futureTileLayerDir = pathRegistry.GetPath(
-                    "FutureTiledLayersDir", region_path=region["PathName"])
+                    "TiledLayersDir", 
+                    region_path=region["PathName"],
+                    scenario_name=scenario["Name"])
                 outpath = os.path.join(futureTileLayerDir,
                                        scenario["Name"])
                 t.launch(config_path = tilerConfig,

@@ -117,7 +117,9 @@ def main():
 
                 t = RunTiler()
                 outpath = pathRegistry.GetPath(
-                    "HistoricTiledLayersDir", region_path=region_path)
+                    "TransitionRulesPath", 
+                    region_path=region_path,
+                    scenario_name="historic")
                 t.launch(config_path = tilerConfigPath,
                          tiler_output_path = outpath)
 
