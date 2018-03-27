@@ -6,7 +6,8 @@ from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 
-import sys
+from runtiler import RunTiler
+import sys, shutil
 from loghelper import *
 import argparse, logging
 
@@ -14,20 +15,57 @@ class Future(object):
     def __init__(self, config):
         self.config = config
 
-    def Process(self, region_name, future_subregion_name, scenario):
+    def CreateTilerConfig(self, processedRasterResult, scenario, region_name):
+
         baseTilerConfigPath = self.config.GetBaseTilerConfigPath(
             region_name)
         tilerConfig = TilerConfig(baseTilerConfigPath)
+
+        for item in processedRasterResult:
+            disturbanceType = item["DisturbanceName"]
+            cbm_type = scenario["CBM_Disturbance_Type_Map"][disturbanceType]
+
+            layer = tilerConfig.CreateConfigItem(
+                "DisturbanceLayer",
+                lyr=tilerConfig.CreateConfigItem(
+                    "RasterLayer",
+                    path=tilerConfig.CreateRelativePath(
+                        baseTilerConfigPath, item["Path"]),
+                    attributes="event",
+                    attribute_table={1: [1]}),
+                year=item["Year"],
+                disturbance_type=cbm_type)
+            tilerConfig.AppendLayer("future_{}".format(disturbanceType), layer)
+
+        outputTilerConfigPath = os.path.join(
+            os.path.dirname(baseTilerConfigPath),
+            "{}_tiler_config.json".format(scenario["Name"]))
+        tilerConfig.writeJson(outputTilerConfigPath)
+        return outputTilerConfigPath
+
+    def Process(self, region_name, future_subregion_name, scenario):
 
         logging.info("processing future scenario '{0}' for region '{1}'"
                      .format(scenario["Name"],region_name))
 
         external_raster_dir = self.config.GetExternalRasterDir(
             future_subregion_name)
+
         baseRasterDir = self.config.GetBaseRasterDir(region_name)
+        if not os.path.exists(baseRasterDir):
+            os.makedirs(os.path.dirname(baseRasterDir))
+            shutil.copytree(src=external_raster_dir, dst=baseRasterDir)
+
+        
         future_range = list(range(self.config.GetStartYear(),
                        self.config.GetEndYear()))
-        output_dir = self.config.GetRasterOutputDir(region_name)
+
+        output_dir = os.path.join(
+           self.config.GetRasterOutputDir(region_name),
+           scenario["Name"])
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         f = FutureRasterProcessor(
             base_raster_dir=baseRasterDir,
             years = future_range,
@@ -54,24 +92,7 @@ class Future(object):
             scenario["Slashburn_Activity_Percent"],
             RandomRasterSubset()))
 
-        for item in result:
-            cbm_type = config.GetCBMDisturbanceType(
-                item["DisturbanceName"])
-
-            tilerConfig.CreateConfigItem(
-                "DisturbanceLayer",
-                lyr=tilerConfig.CreateConfigItem(
-                    "RasterLayer",
-                    path=tilerConfig.CreateRelativePath(baseTilerConfigPath, item["Path"]),
-                    attributes="event",
-                    attribute_table={1: [1]}),
-                year=item["Year"],
-                disturbance_type=cbm_type)
-
-        outputTilerConfigPath = os.path.join(
-            os.path.dirname(baseTilerConfigPath),
-            "{}_tiler_config.json".format(scenario_name))
-        tilerConfig.writeJson(outputTilerConfigPath)
+        return result
 
 def main():
     create_script_log(sys.argv[0])
@@ -103,7 +124,24 @@ def main():
 
         for region in regionsToProcess:
             for scenario in futureConfig.GetScenarios():
-                future.Process(region["PathName"], scenario)
+                result = future.Process(
+                    region["PathName"],
+                    region["FutureDir"],
+                    scenario)
+
+                tilerConfig = future.CreateTilerConfig(
+                    result,
+                    scenario,
+                    region["PathName"])
+
+                t = RunTiler()
+                futureTileLayerDir = pathRegistry.GetPath(
+                    "FutureTiledLayersDir", region_path=region["PathName"])
+                outpath = os.path.join(futureTileLayerDir,
+                                       scenario["Name"])
+                t.launch(config_path = tilerConfig,
+                         tiler_output_path = outpath)
+
 
     except Exception as ex:
         logging.exception("error")

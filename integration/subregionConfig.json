@@ -4,13 +4,15 @@
     "Region_Number": 1,
     "PathName": "TSA_1_Arrow",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'",
-    "InventoryName": "tsa1"
+    "InventoryName": "tsa1",
+    "FutureDir": "TSA01/Base"
   },
   {
     "Name": "Boundary",
     "Region_Number": 2,
     "PathName": "TSA_2_Boundary",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
-    "InventoryName": "tsa2"
+    "InventoryName": "tsa2",
+    "FutureDir": "TSA02/Base"
   }
 ]

@@ -49,9 +49,6 @@ class FutureConfig(object):
     def GetPathFormat(self, disturbanceName):
         return self.disturbances[disturbanceName]["Path_Format"]
 
-    def GetCBMDisturbanceType(self, disturbanceName):
-        return self.disturbances[disturbanceName]["CBM_Name"]
-
     def GetScenario(self, scenario_name):
         return self.scenariosbyName[scenario_name]
 
