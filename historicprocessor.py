@@ -88,7 +88,8 @@ def main():
                             "string of sub region names (as defined in "+
                             "subRegionConfig) to process, if unspecified all "+
                             "regions will be processed")
-        parser.add_argument("--runtiler", dest="runtiler", action="store_true")
+        parser.add_argument("--runtiler", dest="runtiler", action="store_true",
+                           help="if specified the tiler will be run imediately after processing the historic spatial layers")
         parser.set_defaults(runtiler=False)
 
         args = parser.parse_args()
