@@ -117,11 +117,16 @@ def main():
 
                 t = RunTiler()
                 outpath = pathRegistry.GetPath(
+                    "TiledLayersDir", 
+                    region_path=region_path,
+                    scenario_name="historic")
+                transitionRulesOutPath = pathRegistry.GetPath(
                     "TransitionRulesPath", 
                     region_path=region_path,
                     scenario_name="historic")
                 t.launch(config_path = tilerConfigPath,
-                         tiler_output_path = outpath)
+                         tiler_output_path = outpath,
+                         transitionRulesPath = transitionRulesOutPath)
 
     except Exception as ex:
         logging.exception("error")

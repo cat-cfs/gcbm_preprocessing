@@ -114,7 +114,6 @@ def main():
             if args.subRegionNames else None
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-                                    
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
         future = Future(futureConfig)
@@ -139,10 +138,8 @@ def main():
                     "TiledLayersDir", 
                     region_path=region["PathName"],
                     scenario_name=scenario["Name"])
-                outpath = os.path.join(futureTileLayerDir,
-                                       scenario["Name"])
                 t.launch(config_path = tilerConfig,
-                         tiler_output_path = outpath)
+                         tiler_output_path = futureTileLayerDir)
 
 
     except Exception as ex:
