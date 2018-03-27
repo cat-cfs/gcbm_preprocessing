@@ -1,12 +1,21 @@
 {
   "Path_Variables": [ "region_path", "future_subregion_dir", "scenario_name" ],
   "Paths": {
-    "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "00_external_data" ],
-    "Source_External_Spatial_Dir": [ "${Source_Dir}", "01_spatial" ],
-    "Source_External_Aspatial_Dir": [ "${Source_Dir}", "02_aspatial" ],
-    "Source_External_Future_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "SHA", "${future_subregion_dir}" ],
-    "Working_Dir": [ "C:/", "dev", "Scott", "gcbm_test_dir", "05_working_BC" ],
-    "External_Data_Dir": [ "${Working_Dir}", "00_external_data" ],
+    "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC" ],
+    "Source_External_Data_Dir": [ "${Source_Dir}", "00_external_data" ],
+    "Source_External_Future_Dir": [ "${Source_Dir}", "SHA", "${future_subregion_dir}" ],
+    "Source_External_Spatial_Dir": [ "${Source_External_Data_Dir}", "01_spatial" ],
+    "Source_External_Aspatial_Dir": [ "${Source_External_Data_Dir}", "02_aspatial" ],
+    "Source_Tools_Dir": [ "M:/", "Spatially_explicit", "03_Tools" ],
+    "Source_Recliner2GCBM-x64_Dir": [ "${Source_Tools_Dir}", "Recliner2GCBM-x64" ],
+    "Source_Recliner2GCBM-x86_Dir": [ "${Source_Tools_Dir}", "Recliner2GCBM-x86" ],
+    "Source_GCBM_Dir": [ "${Source_Tools_Dir}", "GCBMBuilds", "2017_12_13" ],
+    "Local_Working_Dir": [ "C:/", "dev", "Scott", "gcbm_test_dir", "05_working_BC" ],
+    "Local_Tools_Dir": [ "C:/", "dev", "Scott", "gcbm_test_dir", "tools" ],
+    "Local_Recliner2GCBM-x64_Dir": [ "${Local_Tools_Dir}", "Recliner2GCBM-x64" ],
+    "Local_Recliner2GCBM-x86_Dir": [ "${Local_Tools_Dir}", "Recliner2GCBM-x86" ],
+    "Local_GCBM_Dir": [ "${Local_Tools_Dir}", "GCBMBuilds", "2017_12_13" ],
+    "External_Data_Dir": [ "${Local_Working_Dir}", "00_external_data" ],
     "External_Spatial_Dir": [ "${External_Data_Dir}", "01_spatial" ],
     "External_Aspatial_Dir": [ "${External_Data_Dir}", "02_aspatial" ],
     "Disturbance_Age_Proportions": [ "${External_Aspatial_Dir}", "03_disturbance_age_proportion", "DistAgeProp.csv" ],
@@ -18,7 +27,7 @@
     "Historic_Harvest_Dir": [ "${External_Historic_Dist}", "02_harvest" ],
     "Historic_Insect_Dir": [ "${External_Historic_Dist}", "03_insect_filtered_30" ],
     "Environment_Dir": [ "${External_Spatial_Dir}", "04_environment" ],
-    "SubRegionDir": [ "${Working_Dir}", "${region_path}" ],
+    "SubRegionDir": [ "${Local_Working_Dir}", "${region_path}" ],
     "Pretiled_Layers": [ "${SubRegionDir}", "01a_pretiled_layers" ],
     "RollbackTilerConfigPath": [ "${Pretiled_Layers}", "rollback_tiler_config.json" ],
     "HistoricTilerConfigPath": [ "${Pretiled_Layers}", "historic_tiler_config.json" ],
@@ -40,6 +49,6 @@
     "TransitionRulesPath": [ "${TiledLayersDir}", "transition_rules.csv" ],
     "ArchiveIndex": [ "${External_Aspatial_Dir}", "01_AIDB", "ArchiveIndex_Beta_Install_BASE.mdb" ],
     "YieldTable": [ "${External_Aspatial_Dir}", "02_yield_table", "yield.csv" ],
-    "Recliner2GCBMOutpath": [ "${SubRegionDir}", "02b_recliner2GCBM_output", "GCBMinput.db" ]
+    "Recliner2GCBMOutpath": [ "${SubRegionDir}", "02b_recliner2GCBM_output", "${scenario_name}", "GCBMinput.db" ]
   }
 }
