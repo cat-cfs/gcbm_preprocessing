@@ -1,8 +1,10 @@
 {
   "Path_Variables": [ "region_path", "future_subregion_dir" ],
   "Paths": {
-    "Source_External_Spatial_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "00_external_data" ],
-    "Source_External_Future_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "SHA", "${sha_subregion_dir}" ],
+    "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "00_external_data" ],
+    "Source_External_Spatial_Dir": [ "${Source_Dir}", "01_spatial" ],
+    "Source_External_Aspatial_Dir": [ "${Source_Dir}", "02_aspatial" ],
+    "Source_External_Future_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "SHA", "${future_subregion_dir}" ],
     "Working_Dir": [ "C:/", "dev", "Scott", "gcbm_test_dir", "05_working_BC" ],
     "External_Data_Dir": [ "${Working_Dir}", "00_external_data" ],
     "External_Spatial_Dir": [ "${External_Data_Dir}", "01_spatial" ],
@@ -35,6 +37,10 @@
     "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
     "MeanAnnualTempPath": [ "${Copied_Environment_Dir}", "NAmerica_MAT_1971_2000.tif" ],
     "TiledLayersDir": [ "${SubRegionDir}", "01b_tiled_layers" ],
-    "HistoricTiledLayersDir": [ "${TiledLayersDir}", "historic" ]
+    "HistoricTiledLayersDir": [ "${TiledLayersDir}", "historic" ],
+    "FutureTiledLayersDir": [ "${TiledLayersDir}", "future" ],
+    "ArchiveIndex": [ "${External_Aspatial_Dir}", "01_AIDB", "ArchiveIndex_Beta_Install_BASE.mdb" ],
+    "YieldTable": [ "${External_Aspatial_Dir}", "02_yield_table", "yield.csv" ]
+
   }
 }

@@ -1,0 +1,61 @@
+{
+  "GrowthCurves": {
+    "Header": true,
+    "IncrementStartCol": 3,
+    "IncrementEndCol": 38,
+    "Path": "${YieldTable}",
+    "Interval": 10,
+    "Page": 0,
+    "SpeciesCol": 2,
+    "Classifiers": [
+      {
+        "Column": 0,
+        "Name": "AU"
+      },
+      {
+        "Column": 1,
+        "Name": "LdSpp"
+      }
+    ]
+  },
+  "OutputPath": "F:\\GCBM\\17_BC_ON_1ha\\05_working_BC\\TSA_1_Arrow\\02b_recliner2GCBM_output\\GCBMinput.db",
+  "TransitionRules": {
+    "NameCol": 0,
+    "Classifiers": [
+      {
+        "Column": 3,
+        "Name": "AU"
+      },
+      {
+        "Column": 4,
+        "Name": "LdSpp"
+      }
+    ],
+    "Header": true,
+    "DelayCol": 1,
+    "Path": "F:\\GCBM\\17_BC_ON_1ha\\05_working_BC\\TSA_1_Arrow\\02a_recliner2GCBM_input\\transition_rules.csv",
+    "Page": 0,
+    "AgeCol": 2
+  },
+  "AIDBPath": "F:\\GCBM\\17_BC_ON_1ha\\05_working_BC\\TSA_1_Arrow\\02a_recliner2GCBM_input\\ArchiveIndex_Beta_Install_BASE.mdb",
+  "ClassifierSet": [
+    {
+      "Column": 0,
+      "Path": "${YieldTable}",
+      "Header": true,
+      "Name": "AU",
+      "Page": 0
+    },
+    {
+      "Column": 1,
+      "Path": "${YieldTable}",
+      "Header": true,
+      "Name": "LdSpp",
+      "Page": 0
+    }
+  ],
+  "Project": {
+    "Configuration": 0,
+    "Mode": 0
+  }
+}
