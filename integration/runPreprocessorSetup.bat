@@ -1,1 +1,1 @@
-python ..\preprocessorsetup.py --pathRegistry .\pathRegistry.json
+python ..\preprocessorsetup.py --pathRegistry .\pathRegistry.json --tools

@@ -25,16 +25,29 @@ def main():
             src = pathRegistry.GetPath("Source_External_Spatial_Dir")
             dst = pathRegistry.GetPath("External_Spatial_Dir")
             logging.info("copying external spatial data to local working directory")
+            logging.info("source: {}".format(src))
+            logging.info("destination: {}".format(dst))
             shutil.copytree(src=src, dst=dst)
 
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
             dst = pathRegistry.GetPath("External_Aspatial_Dir")
             logging.info("copying external aspatial data to local working directory")
+            logging.info("source: {}".format(src))
+            logging.info("destination: {}".format(dst))
             shutil.copytree(src=src, dst=dst)
 
         if args.tools:
-            pass
+            toolPathPairs = [("Source_GCBM_Dir", "Local_GCBM_Dir"),
+                             ("Source_Recliner2GCBM-x64_Dir", "Local_Recliner2GCBM-x64_Dir"),
+                             ("Source_Recliner2GCBM-x86_Dir", "Local_Recliner2GCBM-x86_Dir")]
+            for pair in toolPathPairs:
+                src = pathRegistry.GetPath(pair[0])
+                dst = pathRegistry.GetPath(pair[1])
+                logging.info("copying external tool from {} to {}".format(pair[0],pair[1]))
+                logging.info("source: {}".format(src))
+                logging.info("destination: {}".format(dst))
+                shutil.copytree(src=src,dst=dst)
 
     except Exception as ex:
         logging.exception("error")
