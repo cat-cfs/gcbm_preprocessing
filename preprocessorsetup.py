@@ -8,9 +8,9 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="sets up external data in working directory for subsequent processes")
         parser.add_argument("--pathRegistry", help="path to file registry data")
-        parser.add_argument("--spatial", dest="spatial", help="copy spatial files to the working dir")
-        parser.add_argument("--aspatial", dest="aspatial", help="copy aspatial files to the working dir")
-        parser.add_argument("--tools", dest="tools", help="copy tools to the working dir")
+        parser.add_argument("--spatial", action="store_true", dest="spatial", help="copy spatial files to the working dir")
+        parser.add_argument("--aspatial", action="store_true", dest="aspatial", help="copy aspatial files to the working dir")
+        parser.add_argument("--tools", action="store_true", dest="tools", help="copy tools to the working dir")
         parser.set_defaults(spatial=False)
         parser.set_defaults(aspatial=False)
         parser.set_defaults(tools=False)
