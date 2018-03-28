@@ -2,7 +2,8 @@ from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.recliner2GCBMConfig import Recliner2GCBMConfig
-import os
+import os, argparse, subprocess
+from loghelper import *
 class Recliner2GCBM(object):
     def __init__(self, exe_paths, configTemplatePath, outputPath,
                  archiveIndexPath, growthCurvePath, transitionRulesPath):
@@ -13,7 +14,11 @@ class Recliner2GCBM(object):
         config.setArchiveIndexPath(archiveIndexPath)
         config.setGrowthCurvePath(growthCurvePath)
         config.setTransitionRulesPath(transitionRulesPath)
-        self.config_path = os.path.join(outputPath, "recliner2GCBMConfig.json")
+        outputDir = os.path.dirname(outputPath)
+        self.config_path = os.path.join(outputDir, "recliner2GCBMConfig.json")
+        if not os.path.exists(outputDir):
+            os.makedirs(outputDir)
+
         config.save(self.config_path)
 
     def run(self):
@@ -30,8 +35,8 @@ def main():
     create_script_log(sys.argv[0])
     try:
         parser = argparse.ArgumentParser(description="sets up external data in working directory for subsequent processes")
-        parser.add_argument("--pathRegistry", help="path to file registry data")
         parser.add_argument("--configTemplatePath", help="path to a recliner2GCBM configuration template")
+        parser.add_argument("--pathRegistry", help="path to file registry data")
         parser.add_argument("--futureConfig", help="path to configuration")
         parser.add_argument("--subRegionConfig", help="path to sub region data")
         parser.add_argument("--subRegionNames", help="optional comma delimited "+
@@ -45,10 +50,12 @@ def main():
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
 
         exe_paths = [
-            pathRegistry.GetPath("Local_Recliner2GCBM-x64_Dir"),
-            pathRegistry.GetPath("Local_Recliner2GCBM-x86_Dir")
+            os.path.join(pathRegistry.GetPath("Local_Recliner2GCBM-x64_Dir"),"Recliner2GCBM.exe"),
+            os.path.join(pathRegistry.GetPath("Local_Recliner2GCBM-x86_Dir"),"Recliner2GCBM.exe")
         ]
 
+        subRegionNames = args.subRegionNames.split(",") \
+            if args.subRegionNames else None
         regionsToProcess = subRegionConfig.GetRegions() if subRegionNames is None \
             else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
@@ -64,7 +71,10 @@ def main():
                 transitionRulesPath = pathRegistry.GetPath("TransitionRulesPath",
                                                            region_path=region["PathName"],
                                                            scenario_name=scenario["Name"])
-
+                r = Recliner2GCBM(exe_paths, configTemplatePath, outputPath,
+                                  archiveIndexPath, yeildTablePath,
+                                  transitionRulesPath)
+                r.run()
 
     except Exception as ex:
         logging.exception("error")
