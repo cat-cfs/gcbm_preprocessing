@@ -61,7 +61,11 @@ class SpatialInputs(object):
                 raise Exception('Invalid clip feature. No selection from filter')
             for layer in self.scan_for_layers():
                 arcpy.MakeFeatureLayer_management(layer, 'clip')
-                arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
+                # arcgis 10.1 has one less arg for selectbylocation
+                if arcpy.GetInstallInfo()['Version'] == '10.1':
+                    arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION")
+                else:
+                    arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
                 if name==None:
                     logging.info('Clipping {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace,os.path.basename(layer))))
                     arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
