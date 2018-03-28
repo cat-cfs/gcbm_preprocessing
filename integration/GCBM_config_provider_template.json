@@ -1,0 +1,18 @@
+{
+  "Providers": {
+    "SQLite": {
+        "type": "SQLite",
+        "path": "$input_db"
+    },
+    "RasterTiled": {
+      "type": "RasterTiled",
+      "tileLatSize": 1.0,
+      "tileLonSize": 1.0,
+      "blockLatSize": 0.1,
+      "blockLonSize": 0.1,
+      "cellLatSize": "$resolution",
+      "cellLonSize": "$resolution",
+      "layers": "$layers"
+    }
+  }
+}

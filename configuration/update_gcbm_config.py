@@ -1,0 +1,154 @@
+#author: Max Fellows
+
+import os
+import simplejson as json
+import argparse
+import logging
+import sys
+from future.utils import viewitems
+from argparse import ArgumentParser
+from glob import glob
+
+def scan_for_layers(layer_root):
+    provider_layers = []
+    layers = glob(os.path.join(layer_root, "*_moja.zip"))
+    for layer in layers:
+        logging.debug("Found layer: {}".format(layer))
+        layer_prefix, _ = os.path.splitext(os.path.basename(layer))
+        layer_path = os.path.join(layer_root, layer_prefix)
+        layer_name, _ = layer_prefix.split("_moja")
+        provider_layers.append({
+            "name"  : layer_name,
+            "type"  : None,
+            "path"  : layer_path,
+            "prefix": layer_prefix
+        })
+        
+    return provider_layers
+
+def update_provider_config(provider_config_path, study_area, layer_root):
+    logging.info("Updating {} with layers in {}".format(provider_config_path, layer_root))
+
+    with open(provider_config_path, "r") as provider_config_file:
+        provider_config = json.load(provider_config_file)
+    
+    provider_section = provider_config["Providers"]
+    layer_config = None
+    for provider, config in viewitems(provider_section):
+        if "layers" in config:
+            spatial_provider_config = config
+            break
+
+    spatial_provider_config["tileLatSize"]  = study_area["tile_size"]
+    spatial_provider_config["tileLonSize"]  = study_area["tile_size"]
+    spatial_provider_config["blockLatSize"] = study_area["block_size"]
+    spatial_provider_config["blockLonSize"] = study_area["block_size"]
+    spatial_provider_config["cellLatSize"]  = study_area["pixel_size"]
+    spatial_provider_config["cellLonSize"]  = study_area["pixel_size"]
+            
+    provider_layers = []
+    relative_layer_root = os.path.relpath(layer_root, os.path.dirname(provider_config_path))
+    for layer in study_area["layers"]:
+        logging.debug("Added {} to provider configuration".format(layer))
+        provider_layers.append({
+            "name"        : layer["name"],
+            "layer_path"  : os.path.join(relative_layer_root, layer["path"]),
+            "layer_prefix": layer["prefix"]
+        })
+        
+    layer_config = spatial_provider_config["layers"] = provider_layers
+   
+    with open(provider_config_path, "w") as provider_config_file:
+        provider_config_file.write(json.dumps(provider_config, indent=4, ensure_ascii=False))
+        
+    logging.info("Provider configuration updated")
+    
+def update_gcbm_config(gcbm_config_path, study_area):
+    logging.info("Updating {}".format(gcbm_config_path))
+    
+    with open(gcbm_config_path, "r") as gcbm_config_file:
+        gcbm_config = json.load(gcbm_config_file)
+    
+    tile_size    = study_area["tile_size"]
+    pixel_size   = study_area["pixel_size"]
+    tile_size_px = int(tile_size / pixel_size)
+    
+    landscape_config = gcbm_config["LocalDomain"]["landscape"]
+    landscape_config["tile_size_x"] = tile_size
+    landscape_config["tile_size_y"] = tile_size
+    landscape_config["x_pixels"]    = tile_size_px
+    landscape_config["y_pixels"]    = tile_size_px
+    landscape_config["tiles"]       = study_area["tiles"]
+    
+    disturbance_listener_config = gcbm_config["Modules"]["CBMDisturbanceListener"]
+    if not "settings" in disturbance_listener_config:
+        disturbance_listener_config["settings"] = {}
+
+    disturbance_listener_config["settings"]["vars"] = []
+    disturbance_layers = disturbance_listener_config["settings"]["vars"]
+    
+    variable_config = gcbm_config["Variables"]
+    variable_names = [var_name.lower() for var_name in variable_config]
+    for layer in study_area["layers"]:
+        layer_name = layer["name"]
+        if layer.get("type") == "DisturbanceLayer":
+            disturbance_layers.append(layer_name)
+            
+        if layer_name.lower() in variable_names:
+            logging.debug("Variable {} already present in config - skipping update".format(layer_name))
+            continue
+        
+        variable_config[layer_name] = {
+            "transform": {
+                "library" : "internal.flint",
+                "type"    : "LocationIdxFromFlintDataTransform",
+                "provider": "RasterTiled",
+                "data_id" : layer_name
+            }
+        }
+        
+    with open(gcbm_config_path, "w") as gcbm_config_file:
+        gcbm_config_file.write(json.dumps(gcbm_config, indent=4, ensure_ascii=False))
+    
+    logging.info("GCBM configuration updated")
+    
+def get_study_area(layer_root):
+    study_area = {
+        "tile_size" : 1.0,
+        "block_size": 0.1,
+        "pixel_size": 0.00025,
+        "tiles"     : [],
+        "layers"    : []
+    }
+    
+    study_area_path = os.path.join(layer_root, "study_area.json")
+    if os.path.exists(study_area_path):
+        with open(study_area_path, "r") as study_area_file:
+            study_area.update(json.load(study_area_file))
+
+    # Find all of the layers for the simulation physically present on disk, then
+    # add any extra metadata available from the tiler's study area output.
+    layers = scan_for_layers(layer_root)
+    study_area_layers = study_area.get("layers")
+    if study_area_layers:
+        for layer in layers:
+            for layer_metadata \
+            in filter(lambda l: l.get("name") == layer.get("name"), study_area_layers):
+                layer.update(layer_metadata)
+    
+    study_area["layers"] = layers
+   
+    return study_area
+
+if __name__ == "__main__":
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+    parser = ArgumentParser(description="Update GCBM spatial provider configuration.")
+    parser.add_argument("--layer_root", help="path to the spatial output root directory", required=True)
+    parser.add_argument("--gcbm_config", help="path to the main GCBM config file", required=True)
+    parser.add_argument("--provider_config", help="path to the GCBM provider config file", required=True)
+    args = parser.parse_args()
+    
+    study_area = get_study_area(args.layer_root)
+    update_gcbm_config(args.gcbm_config, study_area)
+    update_provider_config(args.provider_config, study_area, args.layer_root)

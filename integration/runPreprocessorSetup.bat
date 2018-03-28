@@ -1,1 +1,1 @@
-python ..\preprocessorsetup.py --pathRegistry .\pathRegistry.json --tools
+python ..\preprocessorsetup.py --pathRegistry .\pathRegistry.json --tools --aspatial

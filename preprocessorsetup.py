@@ -21,14 +21,6 @@ def main():
         if not args.spatial and not args.aspatial and not args.tools:
             logging.error("nothing to do")
 
-        if args.spatial:
-            src = pathRegistry.GetPath("Source_External_Spatial_Dir")
-            dst = pathRegistry.GetPath("External_Spatial_Dir")
-            logging.info("copying external spatial data to local working directory")
-            logging.info("source: {}".format(src))
-            logging.info("destination: {}".format(dst))
-            shutil.copytree(src=src, dst=dst)
-
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
             dst = pathRegistry.GetPath("External_Aspatial_Dir")
@@ -48,6 +40,14 @@ def main():
                 logging.info("source: {}".format(src))
                 logging.info("destination: {}".format(dst))
                 shutil.copytree(src=src,dst=dst)
+
+        if args.spatial:
+            src = pathRegistry.GetPath("Source_External_Spatial_Dir")
+            dst = pathRegistry.GetPath("External_Spatial_Dir")
+            logging.info("copying external spatial data to local working directory")
+            logging.info("source: {}".format(src))
+            logging.info("destination: {}".format(dst))
+            shutil.copytree(src=src, dst=dst)
 
     except Exception as ex:
         logging.exception("error")
