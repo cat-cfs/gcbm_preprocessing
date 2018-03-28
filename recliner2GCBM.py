@@ -34,8 +34,7 @@ def main():
 
     create_script_log(sys.argv[0])
     try:
-        parser = argparse.ArgumentParser(description="sets up external data in working directory for subsequent processes")
-        parser.add_argument("--configTemplatePath", help="path to a recliner2GCBM configuration template")
+        parser = argparse.ArgumentParser(description="prepare gcbm input database")
         parser.add_argument("--pathRegistry", help="path to file registry data")
         parser.add_argument("--futureConfig", help="path to configuration")
         parser.add_argument("--subRegionConfig", help="path to sub region data")
@@ -65,7 +64,7 @@ def main():
                 outputPath = pathRegistry.GetPath("Recliner2GCBMOutpath",
                                                     region_path=region["PathName"],
                                                     scenario_name=scenario["Name"])
-                configTemplatePath = args.configTemplatePath
+                configTemplatePath = pathRegistry.GetPath("Recliner2GCBMConfigTemplate")
                 archiveIndexPath = pathRegistry.GetPath("ArchiveIndex")
                 yeildTablePath = pathRegistry.GetPath("YieldTable")
                 transitionRulesPath = pathRegistry.GetPath("TransitionRulesPath",
