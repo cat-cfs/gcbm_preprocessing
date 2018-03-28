@@ -1,1 +1,1 @@
-python ..\recliner2GCBM.py --configTemplatePath .\recliner2GCBMConfigTemplate.json --pathRegistry .\pathRegistry.json --futureConfig .\futureConfig.json --subRegionConfig .\subRegionConfig.json --subRegionNames "Boundary" 
+python ..\recliner2GCBM.py --pathRegistry .\pathRegistry.json --futureConfig .\futureConfig.json --subRegionConfig .\subRegionConfig.json --subRegionNames "Boundary" 

@@ -50,6 +50,9 @@
     "ArchiveIndex": [ "${External_Aspatial_Dir}", "01_AIDB", "ArchiveIndex_Beta_Install_BASE.mdb" ],
     "YieldTable": [ "${External_Aspatial_Dir}", "02_yield_table", "yield.csv" ],
     "Recliner2GCBMConfigTemplate": [ "${External_Aspatial_Dir}", "04_configuration_templates", "recliner2GCBMConfigTemplate.json" ],
-    "Recliner2GCBMOutpath": [ "${SubRegionDir}", "02b_recliner2GCBM_output", "${scenario_name}", "GCBMinput.db" ]
+    "GCBM_config_provider_template": [ "${External_Aspatial_Dir}", "04_configuration_templates", "GCBM_config_provider_template.json" ],
+    "GCBM_config_template": [ "${External_Aspatial_Dir}", "04_configuration_templates", "GCBM_config_template.json" ],
+    "Recliner2GCBMOutpath": [ "${SubRegionDir}", "02b_recliner2GCBM_output", "${scenario_name}", "GCBMinput.db" ],
+    "GCBM_Run_Dir": [ "${SubRegionDir}", "04_Run_GCBM", "${scenario_name}" ]
   }
 }

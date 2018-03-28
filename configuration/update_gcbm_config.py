@@ -26,7 +26,8 @@ def scan_for_layers(layer_root):
         
     return provider_layers
 
-def update_provider_config(provider_config_path, study_area, layer_root):
+def update_provider_config(provider_config_path, study_area, layer_root,
+                          dbpath, use_relpaths=True):
     logging.info("Updating {} with layers in {}".format(provider_config_path, layer_root))
 
     with open(provider_config_path, "r") as provider_config_file:
@@ -50,14 +51,16 @@ def update_provider_config(provider_config_path, study_area, layer_root):
     relative_layer_root = os.path.relpath(layer_root, os.path.dirname(provider_config_path))
     for layer in study_area["layers"]:
         logging.debug("Added {} to provider configuration".format(layer))
+  
         provider_layers.append({
             "name"        : layer["name"],
-            "layer_path"  : os.path.join(relative_layer_root, layer["path"]),
+            "layer_path"  : os.path.join(relative_layer_root, os.path.basename(layer["path"])),
             "layer_prefix": layer["prefix"]
         })
         
     layer_config = spatial_provider_config["layers"] = provider_layers
-   
+    relative_db_path = os.path.relpath(os.path.dirname(dbpath), os.path.dirname(provider_config_path))
+    provider_section["SQLite"]["path"] = os.path.join(relative_db_path, os.path.basename(dbpath))
     with open(provider_config_path, "w") as provider_config_file:
         provider_config_file.write(json.dumps(provider_config, indent=4, ensure_ascii=False))
         

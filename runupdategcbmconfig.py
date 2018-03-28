@@ -4,7 +4,7 @@ from configuration.pathregistry import PathRegistry
 from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-import os, argparse
+import os, argparse, shutil
 from loghelper import *
 def main():
 
@@ -33,14 +33,33 @@ def main():
                 tiledLayersDir = pathRegistry.GetPath("TiledLayersDir", 
                                      region_path=region["PathName"],
                                      scenario_name=scenario["Name"])
+
+                gcbm_provider_template = pathRegistry.GetPath("GCBM_config_provider_template")
+                gcbm_config_template = pathRegistry.GetPath("GCBM_config_template")
+                outputDir = pathRegistry.GetPath("GCBM_Run_Dir",
+                                                 region_path=region["PathName"],
+                                                 scenario_name=scenario["Name"])
+                gcbm_input_db_path= pathRegistry.GetPath("Recliner2GCBMOutpath",
+                                                 region_path=region["PathName"],
+                                                 scenario_name=scenario["Name"])
+                if not os.path.exists(outputDir):
+                    os.makedirs(outputDir)
+
+                gcbm_config = os.path.join(outputDir, "GCBM_config.json")
+                gcbm_provider = os.path.join(outputDir, "GCBM_config_provider.json")
+                shutil.copy(gcbm_config_template, gcbm_config)
+                shutil.copy(gcbm_provider_template, gcbm_provider)
+
                 study_area = get_study_area(tiledLayersDir)
-                update_gcbm_config(args.gcbm_config_template, study_area)
-                update_provider_config(args.provider_config_template, study_area, tiledLayersDir)
+                update_gcbm_config(gcbm_config, study_area)
+                update_provider_config(gcbm_provider, study_area,
+                                       tiledLayersDir, gcbm_input_db_path)
+
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)
 
-    logging.info("all recliner2GCBM tasks finished")
+    logging.info("all update gcbm config tasks finished")
 
 if __name__ == "__main__":
     main()
