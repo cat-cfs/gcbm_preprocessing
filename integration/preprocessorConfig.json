@@ -26,8 +26,8 @@
   "SpatialBoundaries": {
     "Path": "${Default_Spatial_Boundaries_Layer}",
     "Attributes": {
-      "Admin": "AdminBou_1",
-      "Eco": "EcoBound_1"
+      "admin_boundary": "ProvinceNa",
+      "eco_boundary": "EcoBound_1"
     }
   },
   "MeanAnnualTemp": {
