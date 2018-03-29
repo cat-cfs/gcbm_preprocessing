@@ -1,4 +1,5 @@
 -- Modified from:
+-- https://raw.githubusercontent.com/CartoDB/cartodb-postgresql/master/scripts-available/CDB_RectangleGrid.sql
 
 -- Copyright (c) 2014, Vizzuality
 -- All rights reserved.
@@ -29,6 +30,19 @@
 -- OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+--
+-- Fill given extent with rectangles
+--
+-- @param ext Extent to fill. All rectangles within the bounding box of the extent
+--            will be returned. The returned rectangles will have the same SRID
+--            as this extent.
+--
+-- @param width Width of each rectangle
+--
+-- @param height Height of each rectangle
+--
+--
+--
 CREATE OR REPLACE FUNCTION ST_Fishnet(ext GEOMETRY, width FLOAT8, height FLOAT8)
 RETURNS SETOF GEOMETRY
 AS $$
@@ -36,14 +50,10 @@ DECLARE
   h GEOMETRY; -- rectangle cell
   hstep FLOAT8; -- horizontal step
   vstep FLOAT8; -- vertical step
-  hw FLOAT8; -- half width
-  hh FLOAT8; -- half height
   vstart FLOAT8;
   hstart FLOAT8;
   hend FLOAT8;
   vend FLOAT8;
-  xgrd FLOAT8;
-  ygrd FLOAT8;
   x FLOAT8;
   y FLOAT8;
   srid INTEGER;
@@ -51,27 +61,25 @@ BEGIN
 
   srid := ST_SRID(ext);
 
-  hw := width/2.0;
-  hh := height/2.0;
-
-  xgrd := hw;
-  ygrd := hh;
-
   hstep := width;
   vstep := height;
 
-  -- round off the min coords
+  -- Round xmin/ymin
   hstart := floor(ST_XMin(ext)/hstep)*hstep;
-  vstart := floor((ST_Ymin(ext))/vstep)*vstep;
+  vstart := floor(ST_Ymin(ext)/vstep)*vstep;
+  --RAISE DEBUG 'hstart: %', hstart;
+  --RAISE DEBUG 'vstart: %', vstart;
 
-  -- round off the max coords
-  hend := ceil((ST_Xmax(ext))/hstep)*hstep;
-  vend := ceil((ST_Ymax(ext))/vstep)*vstep;
+  -- Round xmax/ymax
+  hend := ceil(ST_XMax(ext)/hstep)*hstep;
+  vend := ceil(ST_YMax(ext)/vstep)*vstep;
+  --RAISE DEBUG 'hend: %', hend;
+  --RAISE DEBUG 'vend: %', vend;
 
   x := hstart;
   WHILE x < hend LOOP -- over X
     y := vstart;
-    h := ST_MakeEnvelope(x-hw, y-hh, x+hw, y+hh, srid);
+    h := ST_MakeEnvelope(x, y, x+width, y+height, srid);
     WHILE y < vend LOOP -- over Y
       RETURN NEXT h;
       h := ST_Translate(h, 0, vstep);
