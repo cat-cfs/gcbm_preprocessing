@@ -31,8 +31,8 @@ class RollbackTilerConfig(object):
                              bounding_box=boundingbox,
                              use_bounding_box_resolution=True))
 
-        for i in inventoryLayers:
-            t.AppendLayer("inventory", i)
+        for i in range(len(inventoryLayers)):
+            t.AppendLayer(inventoryMeta[i]["metadata"], inventoryLayers[i])
 
     def _AddRollbackDisturbances(self, rollback_disturbances_path,
                                 rollback_range, dist_lookup, config_path,

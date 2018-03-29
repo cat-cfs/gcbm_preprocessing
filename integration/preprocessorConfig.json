@@ -46,7 +46,7 @@
   "HistoricHarvestYearField": "HARV_YR",
   "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
   "RollbackDisturbancesOutputDir": "${RollbackDisturbancesOutput}",
-  "SlashburnPercent": 100,
+  "SlashburnPercent": 50,
   "RollbackInputLayers": [
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",

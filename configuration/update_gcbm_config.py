@@ -69,7 +69,8 @@ def update_provider_config(provider_config_path, study_area, layer_root,
     logging.info("Provider configuration updated")
 
 def update_gcbm_config(gcbm_config_path, study_area,
-                       start_year, end_year, output_db_path,
+                       start_year, end_year, classifiers,
+                       reporting_classifiers, output_db_path,
                        variable_grid_output_dir):
     logging.info("Updating {}".format(gcbm_config_path))
     
@@ -126,6 +127,9 @@ def update_gcbm_config(gcbm_config_path, study_area,
                 "data_id" : layer_name
             }
         }
+
+    variable_config["initial_classifier_set"]["transform"]["vars"] = classifiers
+    variable_config["reporting_classifiers"]["transform"]["vars"].extend(reporting_classifiers)
 
     with open(gcbm_config_path, "w") as gcbm_config_file:
         gcbm_config_file.write(json.dumps(gcbm_config, indent=4, ensure_ascii=False))
