@@ -338,7 +338,8 @@ class updateInvRollback(object):
                 {
                     "file_path": file_path,
                     "attribute": classifier_name,
-                    "attribute_table": self.createAttributeTable(attribute_table_path, field_name)
+                    "attribute_table": self.createAttributeTable(attribute_table_path, field_name),
+                    "metadata": "inventory_classifier"
                 }
             )
         for attr in fields:
@@ -351,7 +352,8 @@ class updateInvRollback(object):
                 {
                     "file_path": file_path,
                     "attribute": attr,
-                    "attribute_table": self.createAttributeTable(attribute_table_path, field_name)
+                    "attribute_table": self.createAttributeTable(attribute_table_path, field_name),
+                    "metadata": "reporting_classifier" if attr in self.reporting_classifiers else attr
                 })
 
         return rasterMeta
