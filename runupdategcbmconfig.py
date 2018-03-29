@@ -51,7 +51,11 @@ def main():
                 shutil.copy(gcbm_provider_template, gcbm_provider)
 
                 study_area = get_study_area(tiledLayersDir)
-                update_gcbm_config(gcbm_config, study_area)
+
+                update_gcbm_config(gcbm_config, study_area,
+                                   start_year = futureConfig.GetStartYear(),
+                                   end_year = futureConfig.GetEndYear())
+
                 update_provider_config(gcbm_provider, study_area,
                                        tiledLayersDir, gcbm_input_db_path)
 

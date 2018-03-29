@@ -1,5 +1,7 @@
 #author: Max Fellows
 
+#edits by Scott Morken in March 2018
+
 import os
 import simplejson as json
 import argparse
@@ -65,8 +67,8 @@ def update_provider_config(provider_config_path, study_area, layer_root,
         provider_config_file.write(json.dumps(provider_config, indent=4, ensure_ascii=False))
         
     logging.info("Provider configuration updated")
-    
-def update_gcbm_config(gcbm_config_path, study_area):
+
+def update_gcbm_config(gcbm_config_path, study_area, start_year, end_year):
     logging.info("Updating {}".format(gcbm_config_path))
     
     with open(gcbm_config_path, "r") as gcbm_config_file:
@@ -76,6 +78,11 @@ def update_gcbm_config(gcbm_config_path, study_area):
     pixel_size   = study_area["pixel_size"]
     tile_size_px = int(tile_size / pixel_size)
     
+    localdomain_config = gcbm_config["LocalDomain"]
+    localdomain_config["start_date"] = "{}/01/01".format(start_year)
+    localdomain_config["end_date"] = "{}/01/01".format(end_year)
+
+
     landscape_config = gcbm_config["LocalDomain"]["landscape"]
     landscape_config["tile_size_x"] = tile_size
     landscape_config["tile_size_y"] = tile_size
