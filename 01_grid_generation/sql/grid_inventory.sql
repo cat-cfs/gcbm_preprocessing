@@ -1,4 +1,4 @@
-CREATE TABLE gridded_inventory_lut AS
+CREATE TABLE inventory_grid_xref AS
 
 WITH intersections AS
 (SELECT
