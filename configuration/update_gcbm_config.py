@@ -29,7 +29,7 @@ def scan_for_layers(layer_root):
     return provider_layers
 
 def update_provider_config(provider_config_path, study_area, layer_root,
-                          dbpath, use_relpaths=True):
+                          dbpath):
     logging.info("Updating {} with layers in {}".format(provider_config_path, layer_root))
 
     with open(provider_config_path, "r") as provider_config_file:
@@ -68,7 +68,9 @@ def update_provider_config(provider_config_path, study_area, layer_root,
         
     logging.info("Provider configuration updated")
 
-def update_gcbm_config(gcbm_config_path, study_area, start_year, end_year):
+def update_gcbm_config(gcbm_config_path, study_area,
+                       start_year, end_year, output_db_path,
+                       variable_grid_output_dir):
     logging.info("Updating {}".format(gcbm_config_path))
     
     with open(gcbm_config_path, "r") as gcbm_config_file:
@@ -96,7 +98,15 @@ def update_gcbm_config(gcbm_config_path, study_area, start_year, end_year):
 
     disturbance_listener_config["settings"]["vars"] = []
     disturbance_layers = disturbance_listener_config["settings"]["vars"]
-    
+
+    relative_db_path = os.path.relpath(output_db_path, os.path.dirname(gcbm_config_path))
+    CBMAggregatorSQLiteWriter_config = gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]
+    CBMAggregatorSQLiteWriter_config["settings"]["databasename"] = relative_db_path
+
+    relative_grid_output_path = os.path.relpath(variable_grid_output_dir, os.path.dirname(gcbm_config_path))
+    WriteVariableGrid_config = gcbm_config["Modules"]["WriteVariableGrid"]
+    WriteVariableGrid_config["settings"]["output_path"] = relative_grid_output_path
+
     variable_config = gcbm_config["Variables"]
     variable_names = [var_name.lower() for var_name in variable_config]
     for layer in study_area["layers"]:
@@ -116,7 +126,7 @@ def update_gcbm_config(gcbm_config_path, study_area, start_year, end_year):
                 "data_id" : layer_name
             }
         }
-        
+
     with open(gcbm_config_path, "w") as gcbm_config_file:
         gcbm_config_file.write(json.dumps(gcbm_config, indent=4, ensure_ascii=False))
     

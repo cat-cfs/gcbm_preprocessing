@@ -50,11 +50,23 @@ def main():
                 shutil.copy(gcbm_config_template, gcbm_config)
                 shutil.copy(gcbm_provider_template, gcbm_provider)
 
+                gcbm_output_db_path = pathRegistry.GetPath(
+                    "GCBM_OutputDB_Path",
+                    region_path=region["PathName"],
+                    scenario_name=scenario["Name"])
+
+                gcbm_output_variable_grid_dir = pathRegistry.GetPath(
+                    "GCBM_Variable_Grid_Output_Dir",
+                    region_path=region["PathName"],
+                    scenario_name=scenario["Name"])
+
                 study_area = get_study_area(tiledLayersDir)
 
                 update_gcbm_config(gcbm_config, study_area,
                                    start_year = futureConfig.GetStartYear(),
-                                   end_year = futureConfig.GetEndYear())
+                                   end_year = futureConfig.GetEndYear(),
+                                   output_db_path = gcbm_output_db_path,
+                                   variable_grid_output_dir = gcbm_output_variable_grid_dir)
 
                 update_provider_config(gcbm_provider, study_area,
                                        tiledLayersDir, gcbm_input_db_path)
