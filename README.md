@@ -16,7 +16,13 @@ To install PostGIS on Windows, use the *PostgreSQL Application Stack Builder*, a
 ![04](img/04_gdal_enabled_drivers.png)
 ![05](img/05_raster_out_of_db.png)
 
-Take care to make sure that the `ogr2ogr` bundled with PostGIS does not get added to your PATH, we want to use the already installed GDAL/OGR. This should not be an issue if selecting **No** to the raster related questions but may need to be confirmed.
+Take care to make sure that the `ogr2ogr` bundled with PostGIS does not get added to your PATH, we want to use the already installed GDAL/OGR. This should not be an issue if selecting **No** to the raster related questions but you should be able to confirm using commands such as these:
+
+    > where ogr2ogr
+    C:\OSGeo4W64\bin\ogr2ogr.exe
+    > ogr2ogr --version
+    GDAL 2.2.4, released 2018/03/19
+    
 
 #### Database setup
 
@@ -25,10 +31,15 @@ All preprocessing is done in:
         database:  postgresql://postgres:postgres@localhost:5432/BC_GCBM_runs
         schema:    preprocessing
 
-Once the `BC_GCBM_runs` database has been created, to set up PostGIS, create the schema and point to this default database, run the provided script at the command prompt where you will be calling the preprocessing scripts:
+Once the `BC_GCBM_runs` database has been created, we need to
 
-        preprocessing_setup.bat
+- enable PostGIS within that db 
+- create the schema 
+- point to this default database
 
+This batch script will do this for you:
+
+        preprocess_tools\preprocessing_setup.bat
 
 
 #### Python interface to PostgreSQL

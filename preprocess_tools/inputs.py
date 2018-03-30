@@ -3,7 +3,12 @@ import glob
 import shutil
 import logging
 import time
+import subprocess
+
+#from osgeo import gdal
+
 from preprocess_tools.licensemanager import *
+
 
 class SpatialInputs(object):
     def __init__(self, workspace, filter):
@@ -143,6 +148,68 @@ class SpatialInputs(object):
 
     def scan_for_files(self, name):
         return sorted(glob.glob(os.path.join(self.getWorkspace(), '{}*'.format(name))), key=os.path.basename)
+
+    def load_to_db(self, out_table=None, where=None):
+        """Just a wrapper around ogr2ogr
+        """
+        # point to input file
+        in_file = self._workspace
+
+        # point to input layer
+        if self._filter:
+            in_layer = self._filter
+        else:
+            in_layer = os.path.splitext(os.path.basename(self._workspace))[0]
+
+        # if output table name not provided, it gets the same name as input
+        if not out_table:
+            out_table = in_layer.lower()
+
+        # define ogr pg connection string
+        pg = '''PG:"host={h} port={p} dbname={db} user={usr} password={pwd}"'''.format(
+                    h=os.environ['PGHOST'],
+                    p=os.environ['PGPORT'],
+                    db=os.environ['PGDATABASE'],
+                    usr=os.environ['PGUSER'],
+                    pwd=os.environ['PGPASSWORD']
+        )
+        if where:
+            where_str = '-where "' + where + '"'
+        options = [where_str]
+        command = [
+            'ogr2ogr',
+            '-f PostgreSQL',
+            pg,
+            '-dim 2',
+            '-nln '+out_table,
+            '-nlt PROMOTE_TO_MULTI',
+            '-lco OVERWRITE=YES',
+            '-lco SCHEMA=preprocessing',
+            '-lco GEOMETRY_NAME=geom',
+            ' '.join(options),
+            in_file,
+            in_layer]
+        logging.info(" ".join(command))
+        subprocess.call(" ".join(command), shell=True)
+        """
+        # rather than calling ogr2ogr via the shell, we could call it directly
+        # (but note that clipping is not supported)
+        # http://gdal.org/python/osgeo.gdal-module.html#VectorTranslate
+        # http://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
+        gdal.VectorTranslate(
+                pg,
+                in_file,
+                format='PostgreSQL',
+                layers=[in_layer],
+                layerName=out_table,
+                where=where,
+                dim='2',
+                geometryType='PROMOTE_TO_MULTI',
+                layerCreationOptions=['OVERWRITE=YES',
+                                      'SCHEMA=preprocessing',
+                                      'GEOMETRY_NAME=geom']
+        )"""
+
 
 class Inventory(SpatialInputs):
     def __init__(self, workspace, filter, year, classifiers_attr, province, field_names=None, reporting_classifiers=None):
@@ -396,6 +463,7 @@ class ReportingIndicators(object):
     def addReportingIndicator(self, indicator):
         self._reporting_indicators.update(indicator)
 
+
 class HistoricDisturbance(SpatialInputs):
     def __init__(self, workspace, filter, year_field):
         self._workspace = workspace
@@ -404,6 +472,7 @@ class HistoricDisturbance(SpatialInputs):
 
     def getYearField(self):
         return self._year_field
+
 
 class ProjectedDisturbance(SpatialInputs):
     def __init__(self, workspace, filter, scenario, lookup_table):
@@ -417,6 +486,7 @@ class ProjectedDisturbance(SpatialInputs):
 
     def getLookupTable(self):
         return self._lookup_table
+
 
 class RollbackDisturbances(object):
     def __init__(self, path):

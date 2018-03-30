@@ -1,6 +1,4 @@
 -- Modified from:
--- https://raw.githubusercontent.com/CartoDB/cartodb-postgresql/master/scripts-available/CDB_RectangleGrid.sql
-
 -- Copyright (c) 2014, Vizzuality
 -- All rights reserved.
 --
@@ -43,6 +41,7 @@
 --
 --
 --
+
 CREATE OR REPLACE FUNCTION ST_Fishnet(ext GEOMETRY, width FLOAT8, height FLOAT8)
 RETURNS SETOF GEOMETRY
 AS $$
@@ -67,14 +66,10 @@ BEGIN
   -- Round xmin/ymin
   hstart := floor(ST_XMin(ext)/hstep)*hstep;
   vstart := floor(ST_Ymin(ext)/vstep)*vstep;
-  --RAISE DEBUG 'hstart: %', hstart;
-  --RAISE DEBUG 'vstart: %', vstart;
 
   -- Round xmax/ymax
   hend := ceil(ST_XMax(ext)/hstep)*hstep;
   vend := ceil(ST_YMax(ext)/vstep)*vstep;
-  --RAISE DEBUG 'hend: %', hend;
-  --RAISE DEBUG 'vend: %', vend;
 
   x := hstart;
   WHILE x < hend LOOP -- over X
