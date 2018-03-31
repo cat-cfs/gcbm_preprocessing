@@ -1,12 +1,9 @@
-
 import logging
 import inspect
 import multiprocessing
 from functools import partial
 
 import pgdata
-
-from preprocess_tools.licensemanager import *
 
 
 def parallel_tiled(db_url, sql, block, n_subs=2):
@@ -28,7 +25,16 @@ def parallel_tiled(db_url, sql, block, n_subs=2):
 
 
 class GridInventory(object):
-    def __init__(self, inventory, resolution, output_dbf_dir, sql_path, ProgressPrinter,  area_majority_rule=True):
+
+    def __init__(
+        self,
+        inventory,
+        resolution,
+        output_dbf_dir,
+        sql_path,
+        ProgressPrinter,
+        area_majority_rule=True,
+    ):
         logging.info("Initializing class {}".format(self.__class__.__name__))
         self.ProgressPrinter = ProgressPrinter
         self.inventory = inventory
@@ -53,21 +59,46 @@ class GridInventory(object):
 
     def create_grid(self):
         """
-        Create grid table, then insert cells by looping through blocks
-        (creating a very large grid with ST_Fishnet will throw errors)
+        Create empty grid table, then insert cells by looping through blocks
+        (creating a very large grid in one step with ST_Fishnet is not supported)
         """
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         self.db['preprocessing.grid'].drop()
-        self.db.execute("""
+        self.db.execute(
+            """
             CREATE TABLE preprocessing.grid
              (grid_id SERIAL PRIMARY KEY,
               block_id integer,
               shape_area_ha float,
-              geom geometry)""")
-        sql = self.db.queries['create_block_grid']
+              geom geometry)"""
+        )
+        sql = self.db.queries['load_grid']
         blocks = [b for b in self.db['preprocessing.blocks'].distinct('block_id')]
         # run the query in several threads
         func = partial(parallel_tiled, self.db.url, sql, n_subs=2)
+        pool = multiprocessing.Pool(self.n_processes)
+        pool.map(func, blocks)
+        pool.close()
+        pool.join()
+        pp.finish()
+
+    def grid_inventory(self):
+        """
+        Create inventoyr_grid_xref table, populate by overlay grid with inventory,
+        block by block
+        """
+        pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
+        self.db['preprocessing.inventory_grid_xref'].drop()
+        self.db.execute(
+            """
+            CREATE TABLE preprocessing.inventory_grid_xref
+             (grid_id integer,
+              objectid integer)"""
+        )
+        sql = self.db.queries['load_inventory_grid_xref']
+        blocks = [b for b in self.db['preprocessing.blocks'].distinct('block_id')]
+        # run the query in several threads
+        func = partial(parallel_tiled, self.db.url, sql, n_subs=1)
         pool = multiprocessing.Pool(self.n_processes)
         pool.map(func, blocks)
         pool.close()

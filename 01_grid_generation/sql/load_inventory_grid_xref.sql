@@ -1,14 +1,15 @@
-CREATE TABLE preprocessing.inventory_grid_xref AS
+INSERT INTO preprocessing.inventory_grid_xref (grid_id, objectid)
 
 WITH intersections AS
 (SELECT
-  f.grid_id,
-  f.geom as geom_f,
+  g.grid_id,
+  g.geom as geom_f,
   i.objectid,
   i.geom as geom_i
-FROM preprocessing.fishnet f
+FROM preprocessing.grid g
 INNER JOIN preprocessing.inventory i
-ON ST_Intersects(f.geom, i.geom)
+ON ST_Intersects(g.geom, i.geom)
+WHERE g.block_id = %s
 ORDER BY grid_id),
 
 count_intersections AS
