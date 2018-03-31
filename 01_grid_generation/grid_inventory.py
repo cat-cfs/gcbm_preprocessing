@@ -60,7 +60,7 @@ class GridInventory(object):
     def create_grid(self):
         """
         Create empty grid table, then insert cells by looping through blocks
-        (creating a very large grid in one step with ST_Fishnet is not supported)
+        May not be any faster than just creating a grid based on an extent.
         """
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         self.db['preprocessing.grid'].drop()
