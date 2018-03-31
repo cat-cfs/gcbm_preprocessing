@@ -5,7 +5,7 @@ WITH cells AS
    -- * note *
    -- Resolution is hard coded at .001 deg, modify and call with
    -- resolution parameters if necessary
-   ST_Fishnet(ST_Envelope(geom), .001, .001) AS geom
+   ST_Fishnet(ST_SetSRID(ST_Extent(geom), 4326), .001, .001) AS geom
  FROM preprocessing.blocks
  WHERE block_id = %s)
 

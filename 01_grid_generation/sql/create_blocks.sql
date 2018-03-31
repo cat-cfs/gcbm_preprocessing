@@ -9,7 +9,7 @@ INSERT INTO preprocessing.blocks (geom)
 
 WITH blocks AS
 (SELECT
-   ST_Fishnet(ST_Envelope(ST_Collect(geom)), .1, .1) AS geom
+   ST_Fishnet(ST_SetSRID(ST_Extent(geom), 4326), .1, .1) AS geom
  FROM preprocessing.inventory)
 
 SELECT DISTINCT
