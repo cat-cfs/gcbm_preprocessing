@@ -84,8 +84,8 @@ class GridInventory(object):
 
     def grid_inventory(self):
         """
-        Create inventoyr_grid_xref table, populate by overlay grid with inventory,
-        block by block
+        Create inventory_grid_xref table
+        Populate xref by overlaying inventory and grid
         """
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         self.db['preprocessing.inventory_grid_xref'].drop()
