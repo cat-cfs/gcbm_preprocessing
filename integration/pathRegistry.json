@@ -1,6 +1,6 @@
 {
-    "Source_External_Spatial_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC", "00_external_data" ],
-    "Working_Dir": [ "C:/", "dev", "Scott", "gcbm_test_dir", "05_working_BC" ],
+    "Source_External_Spatial_Dir": [ "Q:/", "Projects", "cat", "2017_11_preprocessing", "incoming", "00_external_data" ],
+    "Working_Dir": [ "Q:/", "Projects", "cat", "2017_11_preprocessing", "data_working"],
     "External_Data_Dir": [ "${Working_Dir}", "00_external_data" ],
     "External_Spatial_Dir": [ "${External_Data_Dir}", "01_spatial" ],
     "External_Aspatial_Dir": [ "${External_Data_Dir}", "02_aspatial" ],

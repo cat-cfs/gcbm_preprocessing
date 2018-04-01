@@ -12,5 +12,19 @@
     "PathName": "TSA_2_Boundary",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
     "InventoryName": "tsa2"
+  },
+    {
+    "Name": "Revelstoke",
+    "Region_Number": 27,
+    "PathName": "TSA_27_Revelstoke",
+    "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Revelstoke TSA'",
+    "InventoryName": "tsa27"
+  },
+  {
+    "Name": "Prince George",
+    "Region_Number": 24,
+    "PathName": "TSA_24_Prince_George",
+    "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Prince George TSA'",
+    "InventoryName": "tsa24"
   }
 ]
