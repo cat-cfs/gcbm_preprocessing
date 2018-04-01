@@ -3,9 +3,8 @@ import glob
 import shutil
 import logging
 import time
-import subprocess
 
-#from osgeo import gdal
+from osgeo import gdal
 
 from preprocess_tools.licensemanager import *
 
@@ -150,7 +149,7 @@ class SpatialInputs(object):
         return sorted(glob.glob(os.path.join(self.getWorkspace(), '{}*'.format(name))), key=os.path.basename)
 
     def load_to_db(self, out_table=None, where=None):
-        """Just a wrapper around ogr2ogr
+        """Load source to postgis
         """
         # point to input file
         in_file = self._workspace
@@ -166,36 +165,13 @@ class SpatialInputs(object):
             out_table = in_layer.lower()
 
         # define ogr pg connection string
-        pg = '''PG:"host={h} port={p} dbname={db} user={usr} password={pwd}"'''.format(
+        pg = "PG:host='{h}' port='{p}' dbname='{db}' user='{usr}' password='{pwd}'".format(
                     h=os.environ['PGHOST'],
                     p=os.environ['PGPORT'],
                     db=os.environ['PGDATABASE'],
                     usr=os.environ['PGUSER'],
                     pwd=os.environ['PGPASSWORD']
         )
-        if where:
-            where_str = '-where "' + where + '"'
-        options = [where_str]
-        command = [
-            'ogr2ogr',
-            '-f PostgreSQL',
-            pg,
-            '-dim 2',
-            '-nln '+out_table,
-            '-nlt PROMOTE_TO_MULTI',
-            '-lco OVERWRITE=YES',
-            '-lco SCHEMA=preprocessing',
-            '-lco GEOMETRY_NAME=geom',
-            ' '.join(options),
-            in_file,
-            in_layer]
-        logging.info(" ".join(command))
-        subprocess.call(" ".join(command), shell=True)
-        """
-        # rather than calling ogr2ogr via the shell, we could call it directly
-        # (but note that clipping is not supported)
-        # http://gdal.org/python/osgeo.gdal-module.html#VectorTranslate
-        # http://gdal.org/python/osgeo.gdal-module.html#VectorTranslateOptions
         gdal.VectorTranslate(
                 pg,
                 in_file,
@@ -208,7 +184,7 @@ class SpatialInputs(object):
                 layerCreationOptions=['OVERWRITE=YES',
                                       'SCHEMA=preprocessing',
                                       'GEOMETRY_NAME=geom']
-        )"""
+        )
 
 
 class Inventory(SpatialInputs):
