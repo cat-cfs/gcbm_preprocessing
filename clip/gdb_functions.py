@@ -20,7 +20,7 @@ class GDBFunctions(object):
             os.makedirs(new_workspace)
 
     def reproject(self, orig_workspace, new_workspace, name=None):
-        """ 
+        """
         Project the layer at path orig_workspace ( NAD 1983) into the layer at path new_workspace (WGS 1984)
         param orig_workspace path to a GDB in NAD 1983
         param new_workspace path to the new GDB layer created by this function
@@ -30,7 +30,7 @@ class GDBFunctions(object):
             self.createWorkspace(new_workspace)
         if new_workspace==self.getWorkspace() and name==None:
             raise ValueError('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
-        
+
         self.arcpy.env.overwriteOutput = True
         transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
         output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
@@ -66,7 +66,10 @@ class GDBFunctions(object):
             raise Exception('Invalid clip feature. No selection from filter')
         for layer in self.scan_for_layers(workspace, workspace_filter):
             self.arcpy.MakeFeatureLayer_management(layer, 'clip')
-            self.arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
+            if self.arcpy.GetInstallInfo()['Version'] == '10.1':
+                    self.arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION")
+            else:
+                arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
             if name==None:
                 logging.info('Clipping {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace,os.path.basename(layer))))
                 self.arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
