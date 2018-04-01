@@ -1,0 +1,121 @@
+{
+  "Resolution": 0.01,
+  "Area_Majority_Rule": true,
+  "Inventory_Workspace": "${Clipped_Inventory_Path}",
+  "Inventory_Filter": "inventory",
+  "Inventory_Year": 2015,
+  "Inventory_Field_Names": {
+    "age": "Age2015",
+    "species": "LdSpp",
+    "establishment_date": "DE",
+    "dist_date_diff": "Dist_DE_DIFF",
+    "pre_dist_age": "preDistAge",
+    "dist_type": "DistType",
+    "regen_delay": "RegenDelay",
+    "rollback_age": "Age1990",
+    "disturbance_yr": "DistYEAR",
+    "new_disturbance_yr": "DistYEAR_new"
+  },
+  "Inventory_Classifiers": {
+    "LdSpp": "LdSpp",
+    "AU": "AU"
+  },
+  "Reporting_Classifiers": {
+    "THLB": "THLB"
+  },
+  "SpatialBoundaries": {
+    "Path": "${Default_Spatial_Boundaries_Layer}",
+    "Attributes": {
+      "Admin": "AdminBou_1",
+      "Eco": "EcoBound_1"
+    }
+  },
+  "MeanAnnualTemp": {
+    "Path": "${MeanAnnualTempPath}",
+    "Nodata_Value": 1.0e38
+  },
+  "DistAgeProportionFilePath": "${Disturbance_Age_Proportions}",
+  "Rollback_Range": {
+    "StartYear": 1990,
+    "EndYear": 2013
+  },
+  "Historic_Range": {
+    "StartYear": 1990,
+    "EndYear": 2014
+  },
+  "HistoricHarvestYearField": "HARV_YR",
+  "InventoryRasterOutputDir": "${InventoryRasterOutputDir}",
+  "RollbackDisturbancesOutputDir": "${RollbackDisturbancesOutput}",
+  "SlashburnPercent": 100,
+  "RollbackInputLayers": [
+    {
+      "Workspace": "${Clipped_Historic_Disturbance_Path}",
+      "WorkspaceFilter": "NFDB*.shp",
+      "YearField": "YEAR_"
+    },
+    {
+      "Workspace": "${Clipped_Historic_Disturbance_Path}",
+      "WorkspaceFilter": "NBAC*.shp",
+      "YearField": "EDATE"
+    },
+    {
+      "Workspace": "${Clipped_Historic_Harvest_Path}",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
+      "YearField": "HARV_YR"
+    }
+  ],
+  "HistoricMergedDisturbanceLayers": [
+    {
+      "Name": "fire",
+      "YearField": "EDATE",
+      "CBM_Disturbance_Type": "Wild Fires"
+    },
+    {
+      "Name": "harvest",
+      "YearField": "HARV_YR",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
+    }
+  ],
+  "HistoricSlashburnInput": {
+    "Name": "slashburn",
+    "CBM_Disturbance_Type": "SlashBurning",
+    "HarvestLayer": {
+      "Workspace": "${Clipped_Historic_Harvest_Path}",
+      "WorkspaceFilter": "BC_cutblocks90_15.shp",
+      "YearField": "HARV_YR"
+    }
+  },
+  "InsectDisturbances": {
+    "Name": "insect",
+    "Workspace": "${Clipped_Historic_Insect_Path}",
+    "WorkspaceFilter": "mpb*.shp",
+    "DisturbanceTypeField": "Severity",
+    "CBM_DisturbanceType_Lookup": {
+      "V": "Mountain Pine Beetle - Very Severe Impact",
+      "S": "Mountain Pine Beetle - Severe Impact",
+      "M": "Mountain Pine Beetle - Moderate Impact",
+      "L": "Mountain Pine Beetle - Low Impact",
+      "4": "Mountain Pine Beetle - Very Severe Impact",
+      "3": "Mountain Pine Beetle - Severe Impact",
+      "2": "Mountain Pine Beetle - Moderate Impact",
+      "1": "Mountain Pine Beetle - Low Impact"
+    }
+  },
+  "RollbackOutputDisturbanceTypes": [
+    {
+      "Code": 1,
+      "Name": "fire",
+      "CBM_Disturbance_Type": "Wild Fires"
+    },
+    {
+      "Code": 2,
+      "Name": "harvest",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
+    },
+    {
+      "Code": 13,
+      "Name": "slashburn",
+      "CBM_Disturbance_Type": "SlashBurning"
+    }
+  ]
+}

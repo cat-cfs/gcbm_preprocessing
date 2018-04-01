@@ -1,0 +1,1 @@
+python ..\runtiler.py --tilerConfig "C:\Dev\Scott\gcbm_test_dir\05_working_BC\TSA_2_Boundary\01a_pretiled_layers\historic_tiler_config.json" --outputPath "C:\Dev\Scott\gcbm_test_dir\tiled" --transitionRulesOutPath "C:\Dev\Scott\gcbm_test_dir\tiled\transitionrules.csv" 

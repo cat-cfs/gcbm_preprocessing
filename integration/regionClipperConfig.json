@@ -1,0 +1,45 @@
+[
+  {
+    "task": "clipCutPolys",
+    "workspace": "${Inventory_Workspace}",
+    "workspace_filter": "inventory",
+    "new_workspace": "${Clipped_Inventory_Path}"
+  },
+  {
+    "task": "clip",
+    "workspace": "${Historic_Fire_Dir}",
+    "workspace_filter": "NFDB*.shp",
+    "new_workspace": "${Clipped_Historic_Disturbance_Path}"
+  },
+  {
+    "task": "clip",
+    "workspace": "${Historic_Fire_Dir}",
+    "workspace_filter": "NBAC*.shp",
+    "new_workspace": "${Clipped_Historic_Disturbance_Path}"
+  },
+  {
+    "task": "clip",
+    "workspace": "${Historic_Harvest_Dir}",
+    "workspace_filter": "BC_cutblocks90_15.shp",
+    "new_workspace": "${Clipped_Historic_Harvest_Path}"
+  },
+  {
+    "task": "clip",
+    "workspace": "${Historic_Insect_Dir}",
+    "workspace_filter": "mpb*.shp",
+    "new_workspace": "${Clipped_Historic_Insect_Path}"
+  },
+  {
+    "task": "copy",
+    "workspace": "${Environment_Dir}",
+    "workspace_filter": "NAmerica_MAT_1971_2000.tif",
+    "new_workspace": "${Copied_Environment_Dir}"
+  },
+  {
+    "task": "copy",
+    "workspace": "${Spatial_Boundaries}",
+    "workspace_filter": "*.shp",
+    "new_workspace": "${Copied_Spatial_Boundaries_Dir}"
+  }
+]
+

@@ -1,0 +1,1 @@
+python ..\preprocessorsetup.py --pathRegistry .\pathRegistry.json
