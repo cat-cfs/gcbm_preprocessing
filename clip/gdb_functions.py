@@ -67,9 +67,9 @@ class GDBFunctions(object):
         for layer in self.scan_for_layers(workspace, workspace_filter):
             self.arcpy.MakeFeatureLayer_management(layer, 'clip')
             if self.arcpy.GetInstallInfo()['Version'] == '10.1':
-                    self.arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION")
+                self.arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION")
             else:
-                arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
+                self.arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
             if name==None:
                 logging.info('Clipping {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace,os.path.basename(layer))))
                 self.arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))

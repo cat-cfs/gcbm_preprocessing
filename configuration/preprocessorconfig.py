@@ -1,4 +1,6 @@
 import json
+import multiprocessing
+
 
 class PreprocessorConfig(object):
     def __init__(self, configPath, pathRegistry):
@@ -14,6 +16,13 @@ class PreprocessorConfig(object):
 
     def GetAreaMajorityRule(self):
         return self.config["Area_Majority_Rule"]
+
+    @property
+    def n_processes(self):
+        if self.config["N_Processes"] == "Auto":
+            return multiprocessing.cpu_count() - 1
+        else:
+            return int(self.config["N_Processes"])
 
     def GetInventoryWorkspace(self, region_path):
         return self.pathRegistry.UnpackPath(

@@ -1,6 +1,7 @@
 {
   "Resolution": 0.01,
   "Area_Majority_Rule": true,
+  "N_Processes": "Auto",
   "Inventory_Workspace": "${Clipped_Inventory_Path}",
   "Inventory_Filter": "inventory",
   "Inventory_Year": 2015,
