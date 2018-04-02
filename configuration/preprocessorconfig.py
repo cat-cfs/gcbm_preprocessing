@@ -17,8 +17,7 @@ class PreprocessorConfig(object):
     def GetAreaMajorityRule(self):
         return self.config["Area_Majority_Rule"]
 
-    @property
-    def n_processes(self):
+    def GetNProcesses(self):
         if self.config["N_Processes"] == "Auto":
             return multiprocessing.cpu_count() - 1
         else:

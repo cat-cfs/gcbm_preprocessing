@@ -83,7 +83,7 @@ class GridInventory(object):
         sql = self.db.queries['load_grid']
         blocks = [b for b in self.db['preprocessing.blocks'].distinct('block_id')]
         func = partial(util.parallel_tiled, self.db.url, sql, n_subs=2)
-        pool = multiprocessing.Pool(2)
+        pool = multiprocessing.Pool(self.n_processes)
         pool.map(func, blocks)
         pool.close()
         pool.join()

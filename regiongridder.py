@@ -49,7 +49,7 @@ def main():
                 ageFieldName = preprocessorConfig.GetInventoryField("age")
                 gridInventory = GridInventory(
                     resolution,
-                    preprocessorConfig.n_processes,
+                    preprocessorConfig.GetNProcesses(),
                     preprocessorConfig.GetAreaMajorityRule())
                 gridInventory.load_to_postgres(
                     workspace,
@@ -58,6 +58,7 @@ def main():
                 gridInventory.create_blocks()
                 gridInventory.create_grid()
                 gridInventory.grid_inventory()
+
 
     except Exception as ex:
         logging.exception("error")
