@@ -2,12 +2,13 @@ from configuration.tilerconfig import TilerConfig
 import os, logging
 class HistoricTilerConfig(object):
 
-    def __init__(self, path):
-        self.config_path = path
-        self.tilerConfig = TilerConfig(path)
+    def __init__(self, input_path, output_path):
+        self.input_path = input_path
+        self.output_path = output_path
+        self.tilerConfig = TilerConfig(input_path)
 
-    def Save(self, outPath):
-        self.tilerConfig.writeJson(outPath)
+    def Save(self):
+        self.tilerConfig.writeJson(self.output_path)
 
 
     def AddAdminEcoLayers(self, spatial_boundaries_path, attributes):
@@ -19,7 +20,7 @@ class HistoricTilerConfig(object):
             vectorLayerConfig = self.tilerConfig.CreateConfigItem(
                 "VectorLayer",
                 name = attribute_name,
-                path = spatial_boundaries_path,
+                path = self.tilerConfig.CreateRelativePath(self.output_path, spatial_boundaries_path),
                 attributes=attributeConfig)
             self.tilerConfig.AppendLayer("admin_eco", vectorLayerConfig)
 
@@ -28,7 +29,7 @@ class HistoricTilerConfig(object):
             "climate",
             self.tilerConfig.CreateConfigItem(
                 "RasterLayer",
-                path=climateLayerPath,
+                path=self.tilerConfig.CreateRelativePath(self.output_path, climateLayerPath),
                 nodata_value=nodata_value))
 
     def AddMergedDisturbanceLayers(self, layerData, inventory_workspace,
@@ -74,7 +75,7 @@ class HistoricTilerConfig(object):
         vectorlayerConfig = self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name = name,
-            path = self.tilerConfig.CreateRelativePath(self.config_path, path),
+            path = self.tilerConfig.CreateRelativePath(self.output_path, path),
             attributes = attributeConfig)
 
         transitionRuleConfig = self.tilerConfig.CreateConfigItem(
@@ -118,7 +119,7 @@ class HistoricTilerConfig(object):
         vectorLayerConfig =  self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name=name,
-            path= self.tilerConfig.CreateRelativePath(self.config_path, inventory_workspace),
+            path= self.tilerConfig.CreateRelativePath(self.output_path, inventory_workspace),
             attributes=attributeConfig,
             layer="MergedDisturbances")
 
@@ -154,7 +155,7 @@ class HistoricTilerConfig(object):
         vectorLayerConfig = self.tilerConfig.CreateConfigItem(
             "VectorLayer",
             name = "{0}_{1}".format(name,year),
-            path = self.tilerConfig.CreateRelativePath(self.config_path, path),
+            path = self.tilerConfig.CreateRelativePath(self.output_path, path),
             attributes=attributeConfig)
 
         transitionConfig = self.tilerConfig.CreateConfigItem(

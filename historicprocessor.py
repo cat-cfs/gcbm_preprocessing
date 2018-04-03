@@ -19,7 +19,8 @@ class Historic(object):
     def Process(self, region_path):
         #load the rollback tiler config path. We will append to a copy of this.
         tilerConfig = HistoricTilerConfig(
-            self.preprocessorConfig.GetRollbackTilerConfigPath(region_path))
+            input_path=self.preprocessorConfig.GetRollbackTilerConfigPath(region_path),
+            output_path=self.preprocessorConfig.GetHistoricTilerConfigPath(region_path))
 
         classifiers = list(self.preprocessorConfig.GetInventoryClassifiers().keys())
 
@@ -72,8 +73,8 @@ class Historic(object):
                     cbmDisturbanceTypeName = sbInput["CBM_Disturbance_Type"],
                     layerMeta = "historic_{}".format(sbInput["Name"]),
                     classifiers=classifiers)
-        tilerConfigPath = self.preprocessorConfig.GetHistoricTilerConfigPath(region_path)
-        tilerConfig.Save(tilerConfigPath)
+
+        tilerConfig.Save()
         return tilerConfigPath
 
 def main(): 
