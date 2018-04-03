@@ -33,7 +33,7 @@
     "HistoricTilerConfigPath": [ "${Pretiled_Layers}", "historic_tiler_config.json" ],
     "Clipped_Inventory_Path": [ "${Pretiled_Layers}", "00_Workspace.gdb" ],
     "Copied_Spatial_Boundaries_Dir": [ "${Pretiled_Layers}", "01_spatial_reference" ],
-    "Default_Spatial_Boundaries_Layer": [ "${Copied_Spatial_Boundaries_Dir}", "PSPUS_2016_FINAL_1_Reprojected.shp" ],
+    "Default_Spatial_Boundaries_Layer": [ "${Copied_Spatial_Boundaries_Dir}", "PSPUS_2016.shp" ],
     "InventoryRasterOutputDir": [ "${Pretiled_Layers}", "02_inventory" ],
     "Pretiled_Disturbances": [ "${Pretiled_Layers}", "03_disturbances" ],
     "Copied_Environment_Dir": [ "${Pretiled_Layers}", "04_environment" ],

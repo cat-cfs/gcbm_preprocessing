@@ -65,7 +65,7 @@ def main():
                 update_gcbm_config(gcbm_config, study_area,
                                    start_year = futureConfig.GetStartYear(),
                                    end_year = futureConfig.GetEndYear(),
-                                   classifiers = ["AU", "LDSpp"],
+                                   classifiers = ["AU", "LdSpp"],
                                    reporting_classifiers = ["eco_boundary", "THLB" ],
                                    output_db_path = gcbm_output_db_path,
                                    variable_grid_output_dir = gcbm_output_variable_grid_dir)
