@@ -100,6 +100,8 @@ def main():
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+
                         "regions will be processed")
+    parser.add_argument("--runtiler", dest="runtiler", action="store_true",
+                       help="if specified the tiler will be run imediately after processing the future spatial layers for each future scenario")
 
     try:
         args = parser.parse_args()
@@ -122,13 +124,14 @@ def main():
                     scenario,
                     region["PathName"])
 
-                t = RunTiler()
-                futureTileLayerDir = pathRegistry.GetPath(
-                    "TiledLayersDir", 
-                    region_path=region["PathName"],
-                    scenario_name=scenario["Name"])
-                t.launch(config_path = tilerConfig,
-                         tiler_output_path = futureTileLayerDir)
+                if args.runTiler:
+                    t = RunTiler()
+                    futureTileLayerDir = pathRegistry.GetPath(
+                        "TiledLayersDir", 
+                        region_path=region["PathName"],
+                        scenario_name=scenario["Name"])
+                    t.launch(config_path = tilerConfig,
+                             tiler_output_path = futureTileLayerDir)
 
 
     except Exception as ex:
