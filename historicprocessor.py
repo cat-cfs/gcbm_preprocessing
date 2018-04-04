@@ -18,9 +18,11 @@ class Historic(object):
 
     def Process(self, region_path):
         #load the rollback tiler config path. We will append to a copy of this.
+        input_path = self.preprocessorConfig.GetRollbackTilerConfigPath(region_path)
+        output_path = self.preprocessorConfig.GetHistoricTilerConfigPath(region_path)
         tilerConfig = HistoricTilerConfig(
-            input_path=self.preprocessorConfig.GetRollbackTilerConfigPath(region_path),
-            output_path=self.preprocessorConfig.GetHistoricTilerConfigPath(region_path))
+            input_path=input_path,
+            output_path=output_path)
 
         classifiers = list(self.preprocessorConfig.GetInventoryClassifiers().keys())
 
@@ -75,7 +77,7 @@ class Historic(object):
                     classifiers=classifiers)
 
         tilerConfig.Save()
-        return tilerConfigPath
+        return output_path
 
 def main(): 
 
