@@ -76,7 +76,7 @@ class PreprocessorConfig(object):
             result.append({
                 "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
-                "YearField": dist["YearField"],
+                "YearSQL": dist["YearSQL"],
             })
         return result
 

@@ -52,17 +52,17 @@
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
-      "YearField": "YEAR_"
+      "YearSQL": "SELECT YEAR_ AS year"
     },
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NBAC*.shp",
-      "YearField": "EDATE"
+      "YearSQL": "SELECT substr(EDATE, 1, 4) AS year"
     },
     {
       "Workspace": "${Clipped_Historic_Harvest_Path}",
       "WorkspaceFilter": "BC_cutblocks90_15.shp",
-      "YearField": "HARV_YR"
+      "YearSQL": "SELECT HARV_YR AS year"
     }
   ],
   "HistoricMergedDisturbanceLayers": [

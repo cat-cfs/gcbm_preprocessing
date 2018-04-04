@@ -7,8 +7,6 @@ import logging
 from osgeo import gdal
 import pgdata
 
-import util
-
 
 def parallel_tiled(db_url, sql, block, n_subs=2):
     """

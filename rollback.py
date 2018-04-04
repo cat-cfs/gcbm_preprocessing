@@ -5,12 +5,13 @@ from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 
-from rollback.merge_disturbances import MergeDisturbances
+from rollback import merge_disturbances
 from rollback.intersect_disturbances_inventory import IntersectDisturbancesInventory
 from rollback.update_inventory import CalculateDistDEdifference
 from rollback.update_inventory import CalculateNewDistYr
 from rollback.update_inventory import updateInvRollback
 from rollback.rollback_tiler_config import RollbackTilerConfig
+
 
 class Rollback(object):
 
@@ -23,9 +24,10 @@ class Rollback(object):
 
         for r in regions:
             region_path = r["PathName"]
-            inventoryMeta = self.RunRollback(region_path = region_path)
+            logging.info(region_path)
+            inventoryMeta = self.RunRollback(region_path=region_path)
 
-            tilerPath = self.config.GetRollbackTilerConfigPath(region_path = region_path)
+            """tilerPath = self.config.GetRollbackTilerConfigPath(region_path = region_path)
             rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutputDir(region_path)
             tilerConfig = RollbackTilerConfig()
             dist_lookup = self.config.GetRollbackOutputDisturbanceTypes()
@@ -38,6 +40,7 @@ class Rollback(object):
                     self.config.GetRollbackRange()["StartYear"],
                     self.config.GetRollbackRange()["EndYear"]],
                 dist_lookup=dist_lookup)
+            """
 
     def RunRollback(self, region_path):
         inventory_workspace = self.config.GetInventoryWorkspace(region_path)
@@ -56,13 +59,10 @@ class Rollback(object):
         disturbances = self.config.GetRollbackInputLayers(region_path)
 
         with arc_license(Products.ARC) as arcpy:
-            mergeDist = MergeDisturbances(arcpy, inventory_workspace, disturbances)
-            intersect = IntersectDisturbancesInventory(arcpy, 
-                                                       inventory_workspace,
-                                                       inventory_year, 
+            intersect = IntersectDisturbancesInventory(inventory_workspace,
+                                                       inventory_year,
                                                        inventory_field_names,
                                                        rollback_range[0])
-
             calcDistDEdiff = CalculateDistDEdifference(arcpy,
                                                        inventory_workspace,
                                                        inventory_year,
@@ -73,7 +73,6 @@ class Rollback(object):
                                                inventory_field_names,
                                                rollback_range[0],harvest_year_field,
                                                self.config.GetDistAgeProportionFilePath())
-
             updateInv = updateInvRollback(arcpy, inventory_workspace,
                                           inventory_year,
                                           inventory_field_names,
@@ -85,13 +84,14 @@ class Rollback(object):
                                           slashburnpercent,
                                           reportingclassifiers)
 
-            mergeDist.runMergeDisturbances()
+            merge_disturbances.merge_disturbances(disturbances)
+            """
             intersect.runIntersectDisturbancesInventory()
             calcDistDEdiff.calculateDistDEdifference()
             calcNewDistYr.calculateNewDistYr()
             raster_metadata = updateInv.updateInvRollback()
             return raster_metadata
-
+            """
 def main():
 
     create_script_log(sys.argv[0])
