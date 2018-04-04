@@ -25,11 +25,9 @@ class RegionGridder(object):
                                          workspaceFilter,
                                          ageFieldName)
 
-    def Process(self, subRegionConfig, subRegionNames=None):
-        regions = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
+    def Process(self, subRegionConfig):
 
-        for r in regions:
+        for r in subRegionConfig.GetRegions():
             self.ProcessSubRegion(region_path = r["PathName"])
 
 def main():
@@ -49,7 +47,9 @@ def main():
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),pathRegistry)
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(",") if args.subRegionNames else None)
         with arc_license(Products.ARC) as arcpy:
             resolution = preprocessorConfig.GetResolution()
             logging.info("run region gridder at resolution {}".format(resolution))
@@ -62,11 +62,8 @@ def main():
                 fishnet = fishnet,
                 gridInventory = gridInventory)
 
-            subRegionNames = args.subRegionNames.split(",") \
-                if args.subRegionNames else None
+            p.Process(subRegionConfig = subRegionConfig)
 
-            p.Process(subRegionConfig = subRegionConfig,
-                        subRegionNames = subRegionNames)
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)

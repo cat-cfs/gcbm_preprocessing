@@ -21,14 +21,12 @@ def main():
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(",") if args.subRegionNames else None)
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
 
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
-        regionsToProcess = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
-        for region in regionsToProcess:
+        for region in subRegionConfig.GetRegions():
             for scenario in futureConfig.GetScenarios():
                 tiledLayersDir = pathRegistry.GetPath("TiledLayersDir", 
                                      region_path=region["PathName"],

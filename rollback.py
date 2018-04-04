@@ -17,11 +17,9 @@ class Rollback(object):
     def __init__(self, config):
         self.config = config
 
-    def Process(self, subRegionConfig, subRegionNames=None):
-        regions = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
+    def Process(self, subRegionConfig):
 
-        for r in regions:
+        for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
             inventoryMeta = self.RunRollback(region_path = region_path)
 
@@ -110,13 +108,12 @@ def main():
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         preprocessorconfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig), pathRegistry)
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
-
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(",") if args.subRegionNames else None)
 
         r = Rollback(preprocessorconfig)
-        r.Process(subRegionConfig, subRegionNames)
+        r.Process(subRegionConfig)
 
     except Exception as ex:
         logging.exception("error")

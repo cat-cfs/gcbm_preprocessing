@@ -2,12 +2,18 @@ from loghelper import *
 import os, argparse, shutil, zipfile
 
 from configuration.pathregistry import PathRegistry
+from configuration.subregionconfig import SubRegionConfig
 def main():
 
     create_script_log(sys.argv[0])
     try:
         parser = argparse.ArgumentParser(description="sets up external data in working directory for subsequent processes")
         parser.add_argument("--pathRegistry", help="path to file registry data")
+        parser.add_argument("--subRegionConfig", help="path to sub region data")
+        parser.add_argument("--subRegionNames", help="optional comma delimited "+
+                            "string of sub region names (as defined in "+
+                            "subRegionConfig) to process, if unspecified all "+
+                            "regions will be processed")
         parser.add_argument("--spatial", action="store_true", dest="spatial", help="copy spatial files to the working dir")
         parser.add_argument("--future", action="store_true", dest="future", help="copys future projection files to the working dir")
         parser.add_argument("--aspatial", action="store_true", dest="aspatial", help="copy aspatial files to the working dir")
@@ -18,8 +24,10 @@ def main():
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath( args.pathRegistry))
-        
-        
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(',') if args.subRegionNames else None)
+
         if not args.spatial \
            and not args.aspatial \
            and not args.tools \

@@ -110,18 +110,15 @@ def main():
 
     try:
         args = parser.parse_args()
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(",") if args.subRegionNames else None)
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
         future = Future(futureConfig)
 
-        regionsToProcess = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
-
-        for region in regionsToProcess:
+        for region in subRegionConfig.GetRegions():
             for scenario in futureConfig.GetScenarios():
                 result = future.Process(
                     region["PathName"],

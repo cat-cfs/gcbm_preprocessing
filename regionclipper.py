@@ -67,20 +67,14 @@ class RegionClipper(object):
                 raise ValueError("specified task not supported '{}'"
                                  .format(t.task))
 
-    def Process(self, subRegionConfig, subRegionNames=None):
+    def Process(self, subRegionConfig):
         '''
         runs the clip/copy/cut tasks specified in config, 
         optionally for the sub-regions specified
         @param subRegionConfig SubRegionConfig instance
-        @param subRegionNames if None all subRegions specified in subRegionConfig are
-        processed, otherwise if a list of subregion names are specified that 
-        set of subregions are processed
         '''
 
-        regions = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
-
-        for r in regions:
+        for r in subRegionConfig.GetRegions():
             clipFeature = self.path_registry.GetPath("Clip_Feature")
             clipFeatureFilter = r["ClipFeatureFilter"]
             clipConfig = RegionClipperConfig(
@@ -109,19 +103,19 @@ def main():
                             "regions will be processed")
 
         args = parser.parse_args()
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
+
         with arc_license(Products.ARC) as arcpy:
             gdbFunctions = GDBFunctions(arcpy)
             pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-            subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+            subRegionConfig = SubRegionConfig(
+                os.path.abspath(args.subRegionConfig),
+                args.subRegionNames.split(",") if args.subRegionNames else None)
 
             r = RegionClipper(configPath = args.regionClipperConfig,
                               gdbfunctions = gdbFunctions,
                               path_registry = pathRegistry)
 
-            r.Process(subRegionConfig = subRegionConfig,
-                      subRegionNames = subRegionNames)
+            r.Process(subRegionConfig = subRegionConfig)
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)

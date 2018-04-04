@@ -101,18 +101,13 @@ def main():
         preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),
                                         pathRegistry)
         
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
-
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(",") if args.subRegionNames else None)
 
         historic = Historic(preprocessorConfig)
 
-        regions = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
-
-
-        for r in regions:
+        for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
 
             tilerConfigPath = historic.Process(region_path)
