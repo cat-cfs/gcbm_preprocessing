@@ -26,11 +26,6 @@ class FutureConfig(object):
     def GetEndYear(self):
         return int(self.config["End_Year"])
 
-    def GetExternalRasterDir(self, future_subregion_dir):
-        return self.pathRegistry.UnpackPath(
-            self.config["External_Raster_Dir"],
-            future_subregion_dir= future_subregion_dir)
-
     def GetBaseRasterDir(self, region_path):
         return self.pathRegistry.UnpackPath(
             self.config["Base_Raster_Dir"],

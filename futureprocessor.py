@@ -43,19 +43,12 @@ class Future(object):
         tilerConfig.writeJson(outputTilerConfigPath)
         return outputTilerConfigPath
 
-    def Process(self, region_name, future_subregion_name, scenario):
+    def Process(self, region_name, scenario):
 
         logging.info("processing future scenario '{0}' for region '{1}'"
                      .format(scenario["Name"],region_name))
 
-        external_raster_dir = self.config.GetExternalRasterDir(
-            future_subregion_name)
-
         baseRasterDir = self.config.GetBaseRasterDir(region_name)
-        if not os.path.exists(baseRasterDir):
-            os.makedirs(os.path.dirname(baseRasterDir))
-            shutil.copytree(src=external_raster_dir, dst=baseRasterDir)
-
         
         future_range = list(range(self.config.GetStartYear(),
                        self.config.GetEndYear()))
@@ -122,7 +115,6 @@ def main():
             for scenario in futureConfig.GetScenarios():
                 result = future.Process(
                     region["PathName"],
-                    region["FutureDir"],
                     scenario)
 
                 tilerConfig = future.CreateTilerConfig(
