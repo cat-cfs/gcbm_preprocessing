@@ -1,5 +1,5 @@
 from loghelper import *
-import os, argparse, shutil
+import os, argparse, shutil, zipfile
 
 from configuration.pathregistry import PathRegistry
 def main():
@@ -9,6 +9,7 @@ def main():
         parser = argparse.ArgumentParser(description="sets up external data in working directory for subsequent processes")
         parser.add_argument("--pathRegistry", help="path to file registry data")
         parser.add_argument("--spatial", action="store_true", dest="spatial", help="copy spatial files to the working dir")
+        parser.add_argument("--future", action="store_true", dest="future", help="copys future projection files to the working dir")
         parser.add_argument("--aspatial", action="store_true", dest="aspatial", help="copy aspatial files to the working dir")
         parser.add_argument("--tools", action="store_true", dest="tools", help="copy tools to the working dir")
         parser.set_defaults(spatial=False)
@@ -18,7 +19,11 @@ def main():
 
         pathRegistry = PathRegistry(os.path.abspath( args.pathRegistry))
         
-        if not args.spatial and not args.aspatial and not args.tools:
+        
+        if not args.spatial \
+           and not args.aspatial \
+           and not args.tools \
+           and not args.future:
             logging.error("nothing to do")
 
         if args.aspatial:
@@ -48,6 +53,19 @@ def main():
             logging.info("source: {}".format(src))
             logging.info("destination: {}".format(dst))
             shutil.copytree(src=src, dst=dst)
+
+        if args.future:
+            src = pathRegistry.GetPath("Source_External_Future_Dir")
+            dest = pathRegistry.GetPath("External_Future_Dist")
+            for file in os.listdir(src):
+                if file.lower().endswith(".zip"):
+                    srcFile = os.path.join(src, file)
+                    with zipfile.ZipFile(srcFile, 'r') as z:
+                        logging.info("unzipping future project files to local working directory")
+                        logging.info("source: {} ".format(srcFile))
+                        logging.info("destination dir: {}".format(dest))
+                        z.extractall(dest)
+
 
     except Exception as ex:
         logging.exception("error")
