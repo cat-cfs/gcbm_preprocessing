@@ -1,9 +1,9 @@
 {
-  "Path_Variables": [ "region_path", "future_subregion_dir", "scenario_name" ],
+  "Path_Variables": [ "region_path", "future_scenario_zip", "scenario_name" ],
   "Paths": {
     "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC" ],
     "Source_External_Data_Dir": [ "${Source_Dir}", "00_external_data" ],
-    "Source_External_Future_Dir": [ "${Source_Dir}", "SHA", "Scenarios", "Base", "Zip_Files_BASE" ],
+    "Source_External_Future_Dir": [ "${Source_Dir}", "SHA", "Scenarios", "Base", "Zip_Files_BASE", "${future_scenario_zip}" ],
     "Source_External_Spatial_Dir": [ "${Source_External_Data_Dir}", "01_spatial" ],
     "Source_External_Aspatial_Dir": [ "${Source_External_Data_Dir}", "02_aspatial" ],
     "Source_Tools_Dir": [ "M:/", "Spatially_explicit", "03_Tools" ],
@@ -23,8 +23,6 @@
     "Clip_Feature": [ "${Spatial_Boundaries}", "PSPUS_2016_FINAL_1_Reprojected.shp" ],
     "Inventory_Workspace": [ "${External_Spatial_Dir}", "02_inventory", "Processed.gdb" ],
     "External_Historic_Dist": [ "${External_Spatial_Dir}", "03_disturbances", "01_historic" ],
-    "External_Future_Dist": [ "${External_Spatial_Dir}", "03_disturbances", "02_future", "Base" ],
-    "Region_Future_Dist_Dir": [ "${External_Future_Dist}", "${future_subregion_dir}" ],
     "Historic_Fire_Dir": [ "${External_Historic_Dist}", "01_fire", "shapefiles" ],
     "Historic_Harvest_Dir": [ "${External_Historic_Dist}", "02_harvest" ],
     "Historic_Insect_Dir": [ "${External_Historic_Dist}", "03_insect_filtered_30" ],

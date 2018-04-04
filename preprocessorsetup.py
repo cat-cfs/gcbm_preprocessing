@@ -63,16 +63,27 @@ def main():
             shutil.copytree(src=src, dst=dst)
 
         if args.future:
-            src = pathRegistry.GetPath("Source_External_Future_Dir")
-            dest = pathRegistry.GetPath("External_Future_Dist")
-            for file in os.listdir(src):
-                if file.lower().endswith(".zip"):
-                    srcFile = os.path.join(src, file)
-                    with zipfile.ZipFile(srcFile, 'r') as z:
-                        logging.info("unzipping future project files to local working directory")
-                        logging.info("source: {} ".format(srcFile))
-                        logging.info("destination dir: {}".format(dest))
-                        z.extractall(dest)
+            for region in subRegionConfig.GetRegions():
+                src = pathRegistry.GetPath("Source_External_Future_Dir",
+                                           future_scenario_zip=region["FutureScenarioZip"])
+                dest = pathRegistry.GetPath("Future_Dist_Input_Dir",
+                                            region_path=region["PathName"])
+
+                with zipfile.ZipFile(src, 'r') as z:
+                    if not os.path.exists(dest):
+                        os.makedirs(dest)
+                    logging.info("unzipping future project files to local working directory")
+                    logging.info("source: {} ".format(src))
+                    logging.info("destination dir: {}".format(dest))
+                    # see: https://stackoverflow.com/questions/4917284/extract-files-from-zip-without-keeping-the-structure-using-python-zipfile
+                    for f in z.namelist():
+                        filename = os.path.basename(f)
+                        if not filename:
+                            continue
+                        srcFile = z.open(f)
+                        destFile = file(os.path.join(dest, filename), 'wb')
+                        with srcFile, destFile:
+                            shutil.copyfileobj(srcFile, destFile)
 
 
     except Exception as ex:

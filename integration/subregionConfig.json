@@ -5,7 +5,7 @@
     "PathName": "TSA_1_Arrow",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'",
     "InventoryName": "tsa1",
-    "FutureDir": "TSA01/Base"
+    "FutureScenarioZip": "tsa01_distout.zip"
   },
   {
     "Name": "Boundary",
@@ -13,6 +13,6 @@
     "PathName": "TSA_2_Boundary",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
     "InventoryName": "tsa2",
-    "FutureDir": "TSA02/Base"
+    "FutureScenarioZip": "tsa02_distout.zip"
   }
 ]
