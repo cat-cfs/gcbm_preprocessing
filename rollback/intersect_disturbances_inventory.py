@@ -1,90 +1,64 @@
-'''
-Author: Byron Smiley
-Date: 2017_02_28
-
-Description:
-  1) Spatially joins the grid with the inventory polygon with the largest area
-     within each grid cell
-  
-  2) Takes the combined stand-replacing disturbances layer and intersects
-     it with the gridded inventory. Output is all polygons in the inventory that would have been
-     established during the rollup period intersect with the disturbances that occurred on
-     those areas for disturbances that occured between inventory date and rollback start year.
-'''
-import inspect
+import os
 import logging
-from preprocess_tools.licensemanager import *
+import inspect
+
+import pgdata
+
 
 class IntersectDisturbancesInventory(object):
-    def __init__(self, arcpy, inventory_workspace, inventory_year,
-                 inventory_field_names, 
-                 rollback_start):
-
-        self.arcpy = arcpy
+    def __init__(
+        self,
+        inventory_workspace, inventory_year,
+        inventory_field_names,
+        rollback_start
+    ):
         self.inventory_workspace = inventory_workspace
         self.inventory_year = inventory_year
         self.inventory_field_names = inventory_field_names
         self.rollback_start = rollback_start
+        # point to the sql folder within rollback module
+        sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
+        self.db = pgdata.connect(sql_path=sql_path)
 
-        # Temp Layers
-        self.disturbances_layer = r"in_memory\disturbances_layer"
-        self.disturbances_layer2 = r"in_memory\disturbances_layer2"
-        self.inventory_layer3 = r"in_memory\inventory_layer3"
-        self.SpBoundary_layer = r"in_memory\SpBoundary_layer"
-
-    def runIntersectDisturbancesInventory(self):
-        logging.info("intersecting rollback disturbances and inventory")
+    def intersect_disturbances_inventory(self):
+        logging.info("Intersecting rollback disturbances and inventory")
         self.rolledback_years = self.inventory_year - self.rollback_start
-        self.invAge_fieldName = self.inventory_field_names['age']
+        self.age_field = self.inventory_field_names['age']
+        self.disturbance_field = "year"
 
-        # Field Names
-        self.disturbance_fieldName = "DistYEAR"
-        self.establishmentDate_fieldName = self.inventory_field_names["establishment_date"]
-        self.inv_dist_dateDiff = self.inventory_field_names['dist_date_diff']
-        self.preDistAge = self.inventory_field_names['pre_dist_age']
+        self.establishment_date_field = self.inventory_field_names["establishment_date"]
+        self.inv_dist_date_diff_field = self.inventory_field_names['dist_date_diff']
+        self.pre_dist_age_field = self.inventory_field_names['pre_dist_age']
         self.dist_type_field = self.inventory_field_names['dist_type']
         self.regen_delay_field = self.inventory_field_names['regen_delay']
         self.rollback_age_field = self.inventory_field_names['rollback_age']
         self.new_disturbance_field = self.inventory_field_names['new_disturbance_yr']
+        self.grid = 'preprocessing.grid'
 
-        self.gridded_inventory = r"{}\inventory_gridded".format(self.inventory_workspace)
-        self.disturbances = r"{}\MergedDisturbances".format(self.inventory_workspace)
-        self.temp_overlay = r"{}\temp_DisturbedInventory".format(self.inventory_workspace)
-        self.output = r"{}\DisturbedInventory".format(self.inventory_workspace)
+        self.run_intersect()
 
+        #self.addFields()
+        #self.selectInventoryRecords()
+        #self.makeFeatureLayer()
+        #self.selectDisturbanceRecords()
+        #self.intersectLayers()
+        #self.removeNonConcurring()
 
-        self.addFields()
-        self.selectInventoryRecords()
-        self.makeFeatureLayer()
-        self.selectDisturbanceRecords()
-        self.intersectLayers()
-        self.removeNonConcurring()
-
-
-    def addFields(self):
-        logging.info("adding new fields to inventory")
-        field_names = [
-            self.establishmentDate_fieldName,
-            self.inv_dist_dateDiff,
-            self.preDistAge,
-            self.dist_type_field,
-            self.regen_delay_field,
-            self.rollback_age_field,
-            self.new_disturbance_field
-        ]
-        for field_name in field_names:
-            self.arcpy.AddField_management(self.gridded_inventory, field_name, "LONG", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
+    def run_intersect(self):
+        blocks = [b for b in self.db['preprocessing.blocks'].distinct('block_id')]
+        for block in blocks[0]:
+            self.db.execute(
+                self.db.queries['intersect_disturbances_inventory'], (block,)
+            )
 
     def selectInventoryRecords(self):
         inv_whereClause = '{} < {}'.format(self.arcpy.AddFieldDelimiters(self.inventory_workspace, self.invAge_fieldName), self.rolledback_years)
         logging.info('Selecting inventory records where {}'.format(inv_whereClause))
         self.arcpy.Select_analysis(self.gridded_inventory, self.inventory_layer3, inv_whereClause)
 
-
     def makeFeatureLayer(self):
         logging.info("make feature layer")
         self.arcpy.MakeFeatureLayer_management(self.disturbances, self.disturbances_layer)
-
 
     def selectDisturbanceRecords(self):
         #Select disturbance records that occur before inventory vintage

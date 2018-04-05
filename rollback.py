@@ -58,41 +58,42 @@ class Rollback(object):
         reportingclassifiers = self.config.GetReportingClassifiers()
         disturbances = self.config.GetRollbackInputLayers(region_path)
 
-        with arc_license(Products.ARC) as arcpy:
-            """
-            intersect = IntersectDisturbancesInventory(inventory_workspace,
-                                                       inventory_year,
-                                                       inventory_field_names,
-                                                       rollback_range[0])
-            calcDistDEdiff = CalculateDistDEdifference(inventory_workspace,
-                                                       inventory_year,
-                                                       inventory_field_names)
-            calcNewDistYr = CalculateNewDistYr(arcpy,
-                                               inventory_workspace,
-                                               inventory_year,
-                                               inventory_field_names,
-                                               rollback_range[0],harvest_year_field,
-                                               self.config.GetDistAgeProportionFilePath())
-            updateInv = updateInvRollback(arcpy, inventory_workspace,
-                                          inventory_year,
-                                          inventory_field_names,
-                                          inventory_classifiers,
-                                          inventory_raster_output_dir,
-                                          rollback_disturbances_output,
-                                          rollback_range,
-                                          resolution,
-                                          slashburnpercent,
-                                          reportingclassifiers)
-            """
-            #merge_disturbances.merge_disturbances(disturbances)
-            merge_disturbances.grid_disturbances(self.config.GetNProcesses())
-            """
-            intersect.runIntersectDisturbancesInventory()
-            calcDistDEdiff.calculateDistDEdifference()
-            calcNewDistYr.calculateNewDistYr()
-            raster_metadata = updateInv.updateInvRollback()
-            return raster_metadata
-            """
+        intersect = IntersectDisturbancesInventory(inventory_workspace,
+                                                   inventory_year,
+                                                   inventory_field_names,
+                                                   rollback_range[0])
+        """
+        calcDistDEdiff = CalculateDistDEdifference(inventory_workspace,
+                                                   inventory_year,
+                                                   inventory_field_names)
+        calcNewDistYr = CalculateNewDistYr(arcpy,
+                                           inventory_workspace,
+                                           inventory_year,
+                                           inventory_field_names,
+                                           rollback_range[0],harvest_year_field,
+                                           self.config.GetDistAgeProportionFilePath())
+        updateInv = updateInvRollback(arcpy, inventory_workspace,
+                                      inventory_year,
+                                      inventory_field_names,
+                                      inventory_classifiers,
+                                      inventory_raster_output_dir,
+                                      rollback_disturbances_output,
+                                      rollback_range,
+                                      resolution,
+                                      slashburnpercent,
+                                      reportingclassifiers)
+        """
+        merge_disturbances.merge_disturbances(disturbances)
+        merge_disturbances.grid_disturbances(self.config.GetNProcesses())
+        intersect.runIntersectDisturbancesInventory()
+        """
+        calcDistDEdiff.calculateDistDEdifference()
+        calcNewDistYr.calculateNewDistYr()
+        raster_metadata = updateInv.updateInvRollback()
+        return raster_metadata
+        """
+
+
 def main():
 
     create_script_log(sys.argv[0])
