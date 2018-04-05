@@ -58,7 +58,7 @@ SELECT
   -- regen delay is establisment date minus disturbance year
   CASE
     WHEN d.dist_year IS NOT NULL AND (dt.inv_year - i.age) - d.dist_year > 0
-    THEN (dt.inv_year - i.age) - d.dist_year
+      THEN (dt.inv_year - i.age) - d.dist_year
     ELSE 0
   END AS regen_delay,
   -- disturbance date :
@@ -67,7 +67,7 @@ SELECT
   -- Otherwise, disturbance date is the same as establishment date
   CASE
     WHEN d.dist_year IS NOT NULL AND (dt.inv_year - i.age) - d.dist_year > 0
-    THEN d.dist_year
+      THEN d.dist_year
     ELSE dt.inv_year - i.age
   END AS new_disturbance_yr,
   0 AS pre_dist_age, -- populate this in separate script
