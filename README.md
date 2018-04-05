@@ -54,5 +54,5 @@ If necessary, it should be fairly straightforward to remove this requirement and
 ## working with the modified gridding tools
 
 - checkout branch `dearc` in `gcbm_preprocessing`
-- run `data_prep.py` and `preprocessor.py` as per usual
+- modify configs and run various .bat files in `/integration` as required
 
