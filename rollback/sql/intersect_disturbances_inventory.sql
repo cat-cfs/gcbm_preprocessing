@@ -42,27 +42,36 @@ SELECT
   i.grid_id,
   i.age,
   d.dist_year,
-  -- stand establishment date: simply inventory date minus age
+  -- stand establishment date
+  -- simply inventory date minus age
   dt.inv_year - i.age AS establishment_date,
+  -- dist_date_diff
+  -- number of years difference (positive or negative) between what the inventory
+  -- defines as the disturbance year (establishment_date) and the disturbance year
+  -- defined in the gridded disturbances
   CASE
     WHEN d.dist_year IS NOT NULL THEN (dt.inv_year - i.age) - d.dist_year
     ELSE 0
   END AS dist_date_diff,
-  -- disturbance type : taken directly from the input disturbances
-  CASE
-    WHEN d.dist_type = 'Wild Fires' THEN 1
-    WHEN d.dist_type = 'Clearcut harvesting with salvage' THEN 2
-  END as dist_type,
-  -- regen delay :
-  -- if there is a disturbance, and establishment date minus disturbance year is > 0,
-  -- regen delay is establisment date minus disturbance year
+  -- disturbance type
+  -- Taken directly from the input disturbance type in the gridded disturbances
+  d.dist_type,
+  -- regen delay
+  -- set to dist_date_diff (establishment date minus disturbance year) if dist_date_diff
+  -- is positive, otherwise zero
+  -- This gets used when the transition_rules.csv file is generated (input into
+  -- Recliner2GCBM)
   CASE
     WHEN d.dist_year IS NOT NULL AND (dt.inv_year - i.age) - d.dist_year > 0
       THEN (dt.inv_year - i.age) - d.dist_year
     ELSE 0
   END AS regen_delay,
-  -- disturbance date :
-  -- if there is a disturbance, and establishment date minus disturbance year is > 0,
+  -- disturbance date
+  -- Specifically generated for the RollbackDist.shp.
+  -- DIST_YR in merged_disturbance layer does not equal new_disturbance_year.
+  -- This field represents the disturbance that make sense based on the inventory ages.
+  -- If there is a disturbance, and the disturbance occured after the establishment
+  -- date (establishment date minus disturbance year is > 0),
   -- set the new disturbance year to the year of the disturbance
   -- Otherwise, disturbance date is the same as establishment date
   CASE

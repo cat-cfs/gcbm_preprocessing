@@ -56,9 +56,9 @@ class Rollback(object):
         reportingclassifiers = self.config.GetReportingClassifiers()
         disturbances = self.config.GetRollbackInputLayers(region_path)
 
-        merge_disturbances.merge_disturbances(disturbances)
-        merge_disturbances.grid_disturbances(self.config.GetNProcesses())
-        merge_disturbances.load_dist_age_prop(self.config.GetDistAgeProportionFilePath())
+        #merge_disturbances.merge_disturbances(disturbances)
+        #merge_disturbances.grid_disturbances(self.config.GetNProcesses())
+        #merge_disturbances.load_dist_age_prop(self.config.GetDistAgeProportionFilePath())
 
         intersect_disturbances_inventory.intersect_disturbances_inventory(
             inventory_workspace,

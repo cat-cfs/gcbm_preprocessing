@@ -65,9 +65,10 @@ def merge_disturbances(disturbances):
                 layer_creation_options = None
             # build sql to translate the data
             column_list = [dist["YearSQL"],
-                           "'"+dist["CBM_Disturbance_Type"] + "' AS dist_type",
+                           str((dist["DisturbanceTypeCode"])) + " AS dist_type",
                            "'" + layer + "' AS source",
                            "GEOMETRY FROM " + layer]
+            logging.info(", ".join(column_list))
             gdal.VectorTranslate(
                 pg,
                 os.path.join(dist["WorkspaceFilter"], filename),
@@ -87,12 +88,21 @@ def merge_disturbances(disturbances):
         ALTER TABLE preprocessing.disturbances
         RENAME COLUMN ogc_fid TO disturbance_id
     """)
+    # We should easily be able to force the dist_type to integer using CAST in the
+    # SQLITE sql expression above, but I'm having difficulty... so just ALTER the table
+    # after load is complete
+    db.execute("""
+        ALTER TABLE preprocessing.disturbances
+        ALTER COLUMN dist_type SET DATA TYPE integer
+        USING dist_type::integer
+    """)
 
 
 def load_dist_age_prop(dist_age_prop_path):
     """Load disturbance age data to postgres
     """
     db = pgdata.connect()
+    db['preprocessing.dist_age_prop'].drop()
     db.execute("""CREATE TABLE preprocessing.dist_age_prop
                   (dist_type_id integer, age integer, proportion numeric)""")
     with open(dist_age_prop_path, "r") as age_prop_file:
