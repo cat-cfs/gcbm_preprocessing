@@ -42,20 +42,29 @@ SELECT
   i.grid_id,
   i.age,
   d.dist_year,
+  -- stand establishment date: simply inventory date minus age
   dt.inv_year - i.age AS establishment_date,
   CASE
     WHEN d.dist_year IS NOT NULL THEN (dt.inv_year - i.age) - d.dist_year
     ELSE 0
   END AS dist_date_diff,
+  -- disturbance type : taken directly from the input disturbances
   CASE
     WHEN d.dist_type = 'Wild Fires' THEN 1
     WHEN d.dist_type = 'Clearcut harvesting with salvage' THEN 2
   END as dist_type,
+  -- regen delay :
+  -- if there is a disturbance, and establishment date minus disturbance year is > 0,
+  -- regen delay is establisment date minus disturbance year
   CASE
     WHEN d.dist_year IS NOT NULL AND (dt.inv_year - i.age) - d.dist_year > 0
     THEN (dt.inv_year - i.age) - d.dist_year
     ELSE 0
   END AS regen_delay,
+  -- disturbance date :
+  -- if there is a disturbance, and establishment date minus disturbance year is > 0,
+  -- set the new disturbance year to the year of the disturbance
+  -- Otherwise, disturbance date is the same as establishment date
   CASE
     WHEN d.dist_year IS NOT NULL AND (dt.inv_year - i.age) - d.dist_year > 0
     THEN d.dist_year
