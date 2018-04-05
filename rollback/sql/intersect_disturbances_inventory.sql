@@ -1,5 +1,7 @@
 -- Create a date lookup so we only pass the inv_year and rollback_start values to the
 -- query once
+CREATE TABLE preprocessing.disturbed_inventory AS
+
 WITH
 dates AS
 (
@@ -38,6 +40,7 @@ gridded_disturbances AS
 
 -- For all inventory to be rolled back, calculate output inventory columns that do not
 -- depend on random assignment of pre_dist_age
+
 SELECT
   i.grid_id,
   i.age,
