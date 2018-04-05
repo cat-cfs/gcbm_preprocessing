@@ -2,18 +2,14 @@ INSERT INTO preprocessing.grid (block_id, shape_area_ha, geom)
 
 WITH cells AS
 (SELECT
-   -- * note *
-   -- Resolution is hard coded at .001 deg, modify and call with
-   -- resolution parameters if necessary
-   ST_Fishnet(ST_SetSRID(ST_Extent(geom), 4326), .001, .001) AS geom
+   ST_Fishnet(ST_SetSRID(ST_Extent(geom), 4326), $x_res, $y_res) AS geom
  FROM preprocessing.blocks
  WHERE block_id = %s)
 
 SELECT DISTINCT
    block_id,
-   -- * note *
-   -- Area is based on BC Albers projection
-   ST_Area(ST_Transform(c.geom, 3005)) / 10000 as shape_area_ha,
+   -- Calculate area using Canada Albers
+   ST_Area(ST_Transform(c.geom, 102001)) / 10000 as shape_area_ha,
    c.geom
 FROM cells c
 INNER JOIN preprocessing.inventory i

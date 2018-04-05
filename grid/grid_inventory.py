@@ -102,6 +102,8 @@ class GridInventory(object):
     def create_grid(self):
         """ Create empty grid table, then insert cells by looping through blocks
         """
+        # load Canada Albers projection
+        self.db.execute(self.db.queries['load_canada_albers'])
         logging.info("Creating grid to overlay with inventory")
         self.db['preprocessing.grid'].drop()
         self.db.execute(
@@ -112,8 +114,10 @@ class GridInventory(object):
               shape_area_ha float,
               geom geometry)"""
         )
-        # note that self.resolution is not currently passed to grid creation
         sql = self.db.queries['load_grid']
+        # add resolution to query
+        lookup = {'x_res': str(self.resolution), 'y_res': str(self.resolution)}
+        sql = self.db.build_query(sql, lookup)
         blocks = [b for b in self.db['preprocessing.blocks'].distinct('block_id')]
         func = partial(parallel_tiled, self.db.url, sql, n_subs=2)
         pool = multiprocessing.Pool(self.n_processes)
