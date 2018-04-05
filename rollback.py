@@ -6,9 +6,7 @@ from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 
 from rollback import merge_disturbances
-from rollback.intersect_disturbances_inventory import IntersectDisturbancesInventory
-from rollback.update_inventory import CalculateDistDEdifference
-from rollback.update_inventory import CalculateNewDistYr
+from rollback import intersect_disturbances_inventory
 from rollback.update_inventory import updateInvRollback
 from rollback.rollback_tiler_config import RollbackTilerConfig
 
@@ -58,20 +56,18 @@ class Rollback(object):
         reportingclassifiers = self.config.GetReportingClassifiers()
         disturbances = self.config.GetRollbackInputLayers(region_path)
 
-        intersect = IntersectDisturbancesInventory(inventory_workspace,
-                                                   inventory_year,
-                                                   inventory_field_names,
-                                                   rollback_range[0])
+        merge_disturbances.merge_disturbances(disturbances)
+        merge_disturbances.grid_disturbances(self.config.GetNProcesses())
+        merge_disturbances.load_dist_age_prop(self.config.GetDistAgeProportionFilePath())
+
+        intersect_disturbances_inventory.intersect_disturbances_inventory(
+            inventory_workspace,
+            inventory_year,
+            inventory_field_names,
+            rollback_range[0]
+        )
+
         """
-        calcDistDEdiff = CalculateDistDEdifference(inventory_workspace,
-                                                   inventory_year,
-                                                   inventory_field_names)
-        calcNewDistYr = CalculateNewDistYr(arcpy,
-                                           inventory_workspace,
-                                           inventory_year,
-                                           inventory_field_names,
-                                           rollback_range[0],harvest_year_field,
-                                           self.config.GetDistAgeProportionFilePath())
         updateInv = updateInvRollback(arcpy, inventory_workspace,
                                       inventory_year,
                                       inventory_field_names,
@@ -82,13 +78,6 @@ class Rollback(object):
                                       resolution,
                                       slashburnpercent,
                                       reportingclassifiers)
-        """
-        merge_disturbances.merge_disturbances(disturbances)
-        merge_disturbances.grid_disturbances(self.config.GetNProcesses())
-        intersect.runIntersectDisturbancesInventory()
-        """
-        calcDistDEdiff.calculateDistDEdifference()
-        calcNewDistYr.calculateNewDistYr()
         raster_metadata = updateInv.updateInvRollback()
         return raster_metadata
         """

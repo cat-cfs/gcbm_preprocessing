@@ -52,17 +52,20 @@
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
-      "YearSQL": "SELECT YEAR_ AS year"
+      "YearSQL": "SELECT YEAR_ AS year",
+      "CBM_Disturbance_Type": "Wild Fires"
     },
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NBAC*.shp",
-      "YearSQL": "SELECT substr(EDATE, 1, 4) AS year"
+      "YearSQL": "SELECT substr(EDATE, 1, 4) AS year",
+      "CBM_Disturbance_Type": "Wild Fires"
     },
     {
       "Workspace": "${Clipped_Historic_Harvest_Path}",
       "WorkspaceFilter": "BC_cutblocks90_15.shp",
-      "YearSQL": "SELECT HARV_YR AS year"
+      "YearSQL": "SELECT HARV_YR AS year",
+      "CBM_Disturbance_Type": "Clearcut harvesting with salvage"
     }
   ],
   "HistoricMergedDisturbanceLayers": [

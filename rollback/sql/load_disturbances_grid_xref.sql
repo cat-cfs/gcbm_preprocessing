@@ -1,3 +1,31 @@
+-- tl;dr assigning disturbances to a grid cell is quick and dirty
+
+-- Whichever individual record has the maximum area within the cell gets assigned to
+-- that cell. In the event that several small records in the cell with the same
+-- disturbance year add up to more area than the max size disturbance, the cell still
+-- gets the year value from the max size record. Also, there is no accounting for
+-- overlaps - the largest record gets assigned to the cell regardless of what year
+-- the disturbance occured. Where areas are equal (common in areas of large
+-- disturbances covering an entire cell) the disturbance assigned to the grid cell is
+-- random (or perhaps determined by order of insertion when merging disturbances)
+
+-- Note that there is also no minimum size intersection required for a cell to be
+-- considered disturbed - with any intersection of a disturbance with a grid cell, the
+-- cell is considered disturbed
+
+-- It is possible to aggregate the disturbances by year and assign the year with
+-- the maximum area to the cell (and also get a preferred year value when areas for
+-- different years are equal) but I'm not sure if this output is what is required
+-- in subsequent steps, we may need to tie back to the individual disturbance_id
+
+-- However - when we later intersect inventory with disturbances, we throw out disturbed
+-- cells if the inventory age is > disturbance data (eg, if inventory says cell is 80 but
+-- disturbance says there was a fire 5 years ago, the cell is not considered disturbed).
+-- This corrects for the methods noted above.
+
+-- Note also that we are assigning disturbances to the *inventory* grid - if a
+-- disturbance occurs outside of a cell that is non-inventory, it is not retained
+
 INSERT INTO preprocessing.disturbances_grid_xref (grid_id, disturbance_id)
 
 WITH intersections AS
@@ -7,7 +35,7 @@ WITH intersections AS
   d.disturbance_id,
   d.geom as geom_d
 FROM preprocessing.grid g
-INNER JOIN preprocessing.rollback_disturbances d
+INNER JOIN preprocessing.disturbances d
 ON ST_Intersects(g.geom, d.geom)
 WHERE g.block_id = %s
 ORDER BY grid_id),

@@ -1,4 +1,5 @@
 import os
+import csv
 import glob
 import logging
 import inspect
@@ -45,7 +46,7 @@ def merge_disturbances(disturbances):
     )
     db = pgdata.connect()
     gdal.SetConfigOption('PG_USE_COPY', 'YES')
-    db['preprocessing.rollback_disturbances'].drop()
+    db['preprocessing.disturbances'].drop()
     for i, dist in enumerate(disturbances):
         for j, filename in enumerate(scan_for_layers(dist["Workspace"], dist["WorkspaceFilter"])):
             # The first input source defines the table creation, requiring
@@ -54,14 +55,19 @@ def merge_disturbances(disturbances):
             # - access mode is null
             layer = os.path.splitext(os.path.basename(filename))[0]
             if i + j == 0:
-                table_name = 'rollback_disturbances'
+                table_name = 'disturbances'
                 access_mode = None
                 layer_creation_options = ['SCHEMA=preprocessing',
                                           'GEOMETRY_NAME=geom']
             else:
-                table_name = 'preprocessing.rollback_disturbances'
+                table_name = 'preprocessing.disturbances'
                 access_mode = 'append'
                 layer_creation_options = None
+            # build sql to translate the data
+            column_list = [dist["YearSQL"],
+                           "'"+dist["CBM_Disturbance_Type"] + "' AS dist_type",
+                           "'" + layer + "' AS source",
+                           "GEOMETRY FROM " + layer]
             gdal.VectorTranslate(
                 pg,
                 os.path.join(dist["WorkspaceFilter"], filename),
@@ -70,8 +76,7 @@ def merge_disturbances(disturbances):
                 accessMode=access_mode,
                 # Note that GEOMETRY column is not required if using OGRSQL dialect.
                 # The SQLITE dialect provides more options for manipulating the data
-                SQLStatement=dist["YearSQL"] + ", '" + layer + "' as source, GEOMETRY FROM {lyr}".format(
-                    lyr=layer),
+                SQLStatement=", ".join(column_list),
                 SQLDialect='SQLITE',
                 dim='2',
                 geometryType='PROMOTE_TO_MULTI',
@@ -79,9 +84,26 @@ def merge_disturbances(disturbances):
             )
     # Rename primary key / fid to make queries a bit more readable
     db.execute("""
-        ALTER TABLE preprocessing.rollback_disturbances
+        ALTER TABLE preprocessing.disturbances
         RENAME COLUMN ogc_fid TO disturbance_id
     """)
+
+
+def load_dist_age_prop(dist_age_prop_path):
+    """Load disturbance age data to postgres
+    """
+    db = pgdata.connect()
+    db.execute("""CREATE TABLE preprocessing.dist_age_prop
+                  (dist_type_id integer, age integer, proportion numeric)""")
+    with open(dist_age_prop_path, "r") as age_prop_file:
+        reader = csv.reader(age_prop_file)
+        reader.next()  # skip header
+        for dist_type, age, prop in reader:
+            db.execute("""
+                INSERT INTO preprocessing.dist_age_prop
+                (dist_type_id, age, proportion)
+                VALUES (%s, %s, %s)
+            """, (dist_type, age, prop))
 
 
 def grid_disturbances(n_processes):
@@ -90,7 +112,7 @@ def grid_disturbances(n_processes):
     # point to the sql folder within grid module
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
     db = pgdata.connect(sql_path=sql_path)
-    logging.info("Overlaying disturbances with inventory")
+    logging.info("Gridding disturbances")
     db['preprocessing.disturbances_grid_xref'].drop()
     db.execute(
         """
@@ -100,10 +122,11 @@ def grid_disturbances(n_processes):
     )
     sql = db.queries['load_disturbances_grid_xref']
     blocks = [b for b in db['preprocessing.blocks'].distinct('block_id')]
-
     func = partial(parallel_tiled, db.url, sql, n_subs=1)
-
     pool = multiprocessing.Pool(n_processes)
     pool.map(func, blocks)
     pool.close()
     pool.join()
+
+    db['preprocessing.disturbances_grid_xref'].create_index(['grid_id'])
+    db['preprocessing.disturbances_grid_xref'].create_index(['disturbance_id'])

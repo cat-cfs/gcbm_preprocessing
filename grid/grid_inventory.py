@@ -30,15 +30,12 @@ def parallel_tiled(db_url, sql, block, n_subs=2):
 
 class GridInventory(object):
 
-    def __init__(
-        self,
-        resolution,
-        n_processes,
-        area_majority_rule=True,
-    ):
-        self.resolution = resolution
-        self.n_processes = n_processes
-        self.area_majority_rule = area_majority_rule
+    def __init__(self, config):
+        self.config = config
+        self.n_processes = config.GetNProcesses()
+        self.area_majority_rule = config.GetAreaMajorityRule()
+        self.resolution = config.GetResolution()
+
         # point to the sql folder within grid module
         sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
         self.db = pgdata.connect(sql_path=sql_path)
@@ -46,12 +43,20 @@ class GridInventory(object):
         self.inventory = 'preprocessing.inventory'
         self.gridded_inventory_lut = "preprocessing.inventory_grid_xref"
 
-    def load_to_postgres(self, in_workspace, in_layer, age_field):
+    def load_to_postgres(self, in_workspace, in_layer):
         """ Load inventory to db
         """
+        # remap age, species columns
+        inv_fields = {}
+        inv_fields["age"] = self.config.GetInventoryFieldNames()["age"]
+        inv_fields["species"] = self.config.GetInventoryFieldNames()["species"]
+
+        # build a SQL string that remaps the columns as specified in config
+        remap_string = ", ".join([c_in+' AS '+c_out for c_out, c_in in inv_fields.iteritems()])
+
+        # build age > 0 filter
+        filter_string = "{a} > 0".format(a=inv_fields["age"])
         logging.info("Loading inventory to postgres for gridding")
-        # don't load inventory where age = 0
-        where = age_field + ' > 0'
 
         # define pg connection string
         pg = "PG:host='{h}' port='{p}' dbname='{db}' user='{usr}' password='{pwd}'".format(
@@ -65,16 +70,26 @@ class GridInventory(object):
                 pg,
                 in_workspace,
                 format='PostgreSQL',
-                layers=[in_layer],
                 layerName=self.inventory,
                 accessMode='overwrite',
-                where=where,
                 dim='2',
+                SQLStatement="""
+                    SELECT {remap}
+                    FROM {lyr}
+                    WHERE {filter}""".format(
+                    remap=remap_string,
+                    lyr=in_layer,
+                    filter=filter_string),
+                SQLDialect='OGRSQL',
                 geometryType='PROMOTE_TO_MULTI',
                 layerCreationOptions=['OVERWRITE=YES',
                                       'SCHEMA=preprocessing',
                                       'GEOMETRY_NAME=geom']
         )
+        db = pgdata.connect()
+        db.execute("""
+            ALTER TABLE preprocessing.inventory
+            RENAME COLUMN ogc_fid TO inventory_id""")
 
     def create_blocks(self):
         """ Create .1 degree blocks to enable parallelization
@@ -115,7 +130,7 @@ class GridInventory(object):
             """
             CREATE TABLE preprocessing.inventory_grid_xref
              (grid_id integer,
-              objectid integer)"""
+              inventory_id integer)"""
         )
         if self.area_majority_rule:
             query = 'load_inventory_grid_xref_areamajority'
@@ -129,3 +144,7 @@ class GridInventory(object):
         pool.map(func, blocks)
         pool.close()
         pool.join()
+
+        # create indexes
+        self.db['preprocessing.inventory_grid_xref'].create_index(['grid_id'])
+        self.db['preprocessing.inventory_grid_xref'].create_index(['inventory_id'])

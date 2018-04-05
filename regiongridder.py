@@ -32,8 +32,8 @@ def main():
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
         with arc_license(Products.ARC) as arcpy:
-            resolution = preprocessorConfig.GetResolution()
-            logging.info("Run region gridder at resolution {}".format(resolution))
+
+            logging.info("Run region gridder at resolution {}".format(preprocessorConfig.GetResolution()))
 
             subRegionNames = args.subRegionNames.split(",") \
                 if args.subRegionNames else None
@@ -47,14 +47,10 @@ def main():
                 workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
                 workspaceFilter = preprocessorConfig.GetInventoryFilter()
                 ageFieldName = preprocessorConfig.GetInventoryField("age")
-                gridInventory = GridInventory(
-                    resolution,
-                    preprocessorConfig.GetNProcesses(),
-                    preprocessorConfig.GetAreaMajorityRule())
+                gridInventory = GridInventory(preprocessorConfig)
                 gridInventory.load_to_postgres(
                     workspace,
-                    workspaceFilter,
-                    ageFieldName)
+                    workspaceFilter)
                 gridInventory.create_blocks()
                 gridInventory.create_grid()
                 gridInventory.grid_inventory()

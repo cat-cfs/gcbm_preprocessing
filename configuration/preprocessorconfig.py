@@ -77,6 +77,7 @@ class PreprocessorConfig(object):
                 "Workspace": self.pathRegistry.UnpackPath(dist["Workspace"], region_path),
                 "WorkspaceFilter": dist["WorkspaceFilter"],
                 "YearSQL": dist["YearSQL"],
+                "CBM_Disturbance_Type": dist["CBM_Disturbance_Type"]
             })
         return result
 
