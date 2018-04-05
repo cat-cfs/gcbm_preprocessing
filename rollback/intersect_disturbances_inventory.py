@@ -15,4 +15,5 @@ def intersect_disturbances_inventory(
     # point to the sql folder within rollback module and run the query
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
     db = pgdata.connect(sql_path=sql_path)
-    db.execute(db.queries['intersect_disturbances_inventory'])
+    db.execute(db.queries['intersect_disturbances_inventory'],
+               (inventory_year, rollback_start))
