@@ -59,12 +59,12 @@ class Rollback(object):
         disturbances = self.config.GetRollbackInputLayers(region_path)
 
         with arc_license(Products.ARC) as arcpy:
+            """
             intersect = IntersectDisturbancesInventory(inventory_workspace,
                                                        inventory_year,
                                                        inventory_field_names,
                                                        rollback_range[0])
-            calcDistDEdiff = CalculateDistDEdifference(arcpy,
-                                                       inventory_workspace,
+            calcDistDEdiff = CalculateDistDEdifference(inventory_workspace,
                                                        inventory_year,
                                                        inventory_field_names)
             calcNewDistYr = CalculateNewDistYr(arcpy,
@@ -83,8 +83,9 @@ class Rollback(object):
                                           resolution,
                                           slashburnpercent,
                                           reportingclassifiers)
-
-            merge_disturbances.merge_disturbances(disturbances)
+            """
+            #merge_disturbances.merge_disturbances(disturbances)
+            merge_disturbances.grid_disturbances(self.config.GetNProcesses())
             """
             intersect.runIntersectDisturbancesInventory()
             calcDistDEdiff.calculateDistDEdifference()
