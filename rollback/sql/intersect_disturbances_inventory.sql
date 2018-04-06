@@ -1,6 +1,6 @@
 -- Create a date lookup so we only pass the inv_year and rollback_start values to the
 -- query once
-CREATE TABLE preprocessing.disturbed_inventory AS
+CREATE TABLE preprocessing.inventory_disturbed AS
 
 WITH
 dates AS

@@ -3,6 +3,7 @@ import random
 import numpy as np
 import os
 import logging
+import inspect
 
 import pgdata
 
@@ -56,9 +57,9 @@ class CalculateNewDistYr(object):
 
     def calculatePreDistAge(self, dist_age_prop_path):
         """
-        This takes time to apply - one execution per grid cell record
+        This update is one execution per grid cell record
 
-        It should be possible to apply the update to all cells at once.
+        It should be possible to apply the update to all cells at once...
         Maybe using this approach?
         https://dba.stackexchange.com/questions/55363/set-random-value-from-set/55364#55364
         """
@@ -78,11 +79,11 @@ class CalculateNewDistYr(object):
         age_distributors = {}
         for dist_type, age_props in dist_age_props.iteritems():
             age_distributors[dist_type] = RollbackDistributor(**age_props)
-        for row in self.db['preprocessing.disturbed_inventory']:
+        for row in self.db['preprocessing.inventory_disturbed']:
             age_distributor = age_distributors.get(dist_type)
             #logging.info("Age picks for disturbance type {}:{}".format(dist_type, str(age_distributor)))
             sql = """
-                UPDATE preprocessing.disturbed_inventory
+                UPDATE preprocessing.inventory_disturbed
                 SET pre_dist_age = %s
                 WHERE grid_id = %s
             """
@@ -91,17 +92,17 @@ class CalculateNewDistYr(object):
     def calculateRolledBackInvAge(self):
         logging.info("calculating rollback inventory age")
         sql = """
-            UPDATE preprocessing.disturbed_inventory
-            SET rollback_age = pre_dist_age + %s - new_disturbance_year
+            UPDATE preprocessing.inventory_disturbed
+            SET rollback_age = pre_dist_age + %s - new_disturbance_yr
         """
         self.db.execute(sql)
 
 
 class updateInvRollback(object):
-    def __init__(self, arcpy, inventory_workspace, inventory_year, inventory_field_names,
+    def __init__(self, inventory_workspace, inventory_year, inventory_field_names,
                  inventory_classifiers, rollbackInvOut, rollbackDisturbancesOutput, rollback_range,
                  resolution, sb_percent, reporting_classifiers):
-        self.arcpy = arcpy
+
         self.inventory_workspace = inventory_workspace
         self.inventory_year = inventory_year
         self.inventory_field_names = inventory_field_names
@@ -114,8 +115,6 @@ class updateInvRollback(object):
         self.reporting_classifiers = reporting_classifiers
 
         #data
-        self.gridded_inventory = "inventory_gridded"
-        self.disturbedInventory = "DisturbedInventory"
         self.RolledBackInventory = "inventory_gridded_1990"
         self.rollback_range = rollback_range
         self.inv_vintage = inventory_year
@@ -128,51 +127,19 @@ class updateInvRollback(object):
 
     def updateInvRollback(self):
         logging.info("updating rollback inventory")
-        self.arcpy.env.workspace = self.inventory_workspace
-        self.arcpy.env.overwriteOutput = True
-        #local variables
-        #fields
-        self.inv_age_field = self.inventory_field_names['age']
-        self.new_disturbance_field = self.inventory_field_names['new_disturbance_yr']
-        self.dist_type_field = self.inventory_field_names['dist_type']
-        self.regen_delay_field = self.inventory_field_names['regen_delay']
-        self.rollback_vintage_field = self.inventory_field_names['rollback_age']
-        self.CELL_ID = "CELL_ID"
-
-        self.makeLayers1()
-        self.remergeDistPolyInv()
-        self.makeLayers2()
         self.rollbackAgeNonDistStands()
-        self.generateSlashburn()
-        self.exportRollbackDisturbances()
-        return self.exportRollbackInventory()
-
-    def makeLayers1(self):
-        logging.info("making layers")
-        self.arcpy.MakeFeatureLayer_management(self.gridded_inventory, self.gridded_inventory_layer)
-        self.arcpy.MakeFeatureLayer_management(self.disturbedInventory, self.disturbedInventory_layer)
-
-    def remergeDistPolyInv(self):
-        logging.info("re-merging layers")
-        self.arcpy.Update_analysis(self.gridded_inventory_layer, self.disturbedInventory_layer,
-            self.RolledBackInventory, "BORDERS", "0.25 Meters")
-
-    def makeLayers2(self):
-        logging.info("making layers")
-        self.arcpy.MakeFeatureLayer_management(self.RolledBackInventory, self.RolledBackInventory_layer)
+        #self.generateSlashburn()
+        #self.exportRollbackDisturbances()
+        return 0 #self.exportRollbackInventory()
 
     def rollbackAgeNonDistStands(self):
-        logging.info('Rolling back ages for age{}'.format(self.rollback_start))
-
-        cur = self.arcpy.UpdateCursor(self.RolledBackInventory_layer)
-        for row in cur:
-            rolledBackAge = row.getValue(self.rollback_vintage_field)
-            RegenDelay = row.getValue(self.regen_delay_field)
-            invAge = row.getValue(self.inv_age_field)
-            if rolledBackAge is None:
-                row.setValue(self.rollback_vintage_field, (invAge - (self.inv_vintage - self.rollback_start)))
-                row.setValue(self.regen_delay_field, 0)
-            cur.updateRow(row)
+        logging.info('Rolling back ages for age {}'.format(self.rollback_start))
+        sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
+        db = pgdata.connect(sql_path=sql_path)
+        db['preprocessing.inventory_rollback'].drop()
+        db.execute(
+            db.queries['inventory_rollback'],
+            (self.inventory_year, self.rollback_start))
 
     def generateSlashburn(self):
         logging.info("generating rollback slashburn")
