@@ -1,14 +1,17 @@
+import logging
+import os
 
-import logging, json, os, sys
-def start_logging(fn=".\\script.log",fmode='w', use_console=True):
-    #set up logging to print to console window and to log file
-    #
-    # From http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
-    #
+
+def start_logging(fn=".\\script.log", fmode='w', use_console=True):
+    """
+    Set up logging to print to console window and to log file
+    From http://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
+    """
     rootLogger = logging.getLogger()
-
-    logFormatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M')
-
+    logFormatter = logging.Formatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%m-%d %H:%M'
+    )
     fileHandler = logging.FileHandler(fn, fmode)
     fileHandler.setFormatter(logFormatter)
     rootLogger.addHandler(fileHandler)
@@ -18,6 +21,8 @@ def start_logging(fn=".\\script.log",fmode='w', use_console=True):
         rootLogger.addHandler(consoleHandler)
 
     rootLogger.setLevel(logging.INFO)
+    return rootLogger
+
 
 def create_script_log(scriptPath):
     """
@@ -28,9 +33,3 @@ def create_script_log(scriptPath):
     s = os.path.splitext(s)[0]
     s = "{0}.log".format(s)
     start_logging(s)
-
-
-
-
-
-

@@ -1,29 +1,59 @@
-from loghelper import *
-from preprocess_tools.licensemanager import *
 import argparse
+import os
+import sys
+import logging
+
+from loghelper import create_script_log
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 
 from rollback import merge_disturbances
-from rollback import intersect_disturbances_inventory
-from rollback.update_inventory import updateInvRollback
+from rollback import update_inventory
 from rollback.rollback_tiler_config import RollbackTilerConfig
 
 
-class Rollback(object):
+def main():
 
-    def __init__(self, config):
-        self.config = config
+    create_script_log(sys.argv[0])
+    try:
+        parser = argparse.ArgumentParser(description="rollback")
+        parser.add_argument("--pathRegistry", help="path to file registry data")
+        parser.add_argument(
+            "--preprocessorConfig",
+            help="path to preprocessor configuration")
+        parser.add_argument("--subRegionConfig", help="path to sub region data")
+        parser.add_argument(
+            "--subRegionNames",
+            help=("optional comma delimited string of sub region names (as defined in "
+                  "subRegionConfig) to process, if unspecified all regions will be "
+                  "processed"))
 
-    def Process(self, subRegionConfig, subRegionNames=None):
-        regions = subRegionConfig.GetRegions() if subRegionNames is None \
-            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
+        args = parser.parse_args()
+        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
+        if args.subRegionNames:
+            subRegionNames = args.subRegionNames.split(",")
+            regions = [subRegionConfig.GetRegion(x) for x in subRegionNames]
+        else:
+            subRegionNames = None
+            regions = subRegionConfig.GetRegions()
+
+        pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
+        config = PreprocessorConfig(
+            os.path.abspath(args.preprocessorConfig), pathRegistry)
 
         for r in regions:
             region_path = r["PathName"]
             logging.info(region_path)
-            inventoryMeta = self.RunRollback(region_path=region_path)
+
+            disturbances = config.GetRollbackInputLayers(region_path)
+            merge_disturbances.merge_disturbances(disturbances)
+            merge_disturbances.grid_disturbances(config)
+            merge_disturbances.intersect_disturbances_inventory(config)
+
+            update_inventory.rollback_age_disturbed(config)
+            update_inventory.rollback_age_non_disturbed(config)
+            update_inventory.generate_slashburn(config)
 
             """tilerPath = self.config.GetRollbackTilerConfigPath(region_path = region_path)
             rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutputDir(region_path)
@@ -40,79 +70,12 @@ class Rollback(object):
                 dist_lookup=dist_lookup)
             """
 
-    def RunRollback(self, region_path):
-        inventory_workspace = self.config.GetInventoryWorkspace(region_path)
-        inventory_year = int(self.config.GetInventoryYear())
-        inventory_field_names = self.config.GetInventoryFieldNames()
-        inventory_classifiers = self.config.GetInventoryClassifiers()
-        rollback_range = [
-                    self.config.GetRollbackRange()["StartYear"],
-                    self.config.GetRollbackRange()["EndYear"]]
-        harvest_year_field = self.config.GetHistoricHarvestYearField()
-        inventory_raster_output_dir = self.config.GetInventoryRasterOutputDir(region_path)
-        rollback_disturbances_output = self.config.GetRollbackDisturbancesOutputDir(region_path)
-        resolution = self.config.GetResolution()
-        slashburnpercent = self.config.GetSlashBurnPercent()
-        reportingclassifiers = self.config.GetReportingClassifiers()
-        disturbances = self.config.GetRollbackInputLayers(region_path)
-
-        #merge_disturbances.merge_disturbances(disturbances)
-        #merge_disturbances.grid_disturbances(self.config.GetNProcesses())
-        #merge_disturbances.load_dist_age_prop(self.config.GetDistAgeProportionFilePath())
-
-        intersect_disturbances_inventory.intersect_disturbances_inventory(
-            inventory_workspace,
-            inventory_year,
-            inventory_field_names,
-            rollback_range[0]
-        )
-
-        """
-        updateInv = updateInvRollback(arcpy, inventory_workspace,
-                                      inventory_year,
-                                      inventory_field_names,
-                                      inventory_classifiers,
-                                      inventory_raster_output_dir,
-                                      rollback_disturbances_output,
-                                      rollback_range,
-                                      resolution,
-                                      slashburnpercent,
-                                      reportingclassifiers)
-        raster_metadata = updateInv.updateInvRollback()
-        return raster_metadata
-        """
-
-
-def main():
-
-    create_script_log(sys.argv[0])
-    try:
-        parser = argparse.ArgumentParser(description="rollback")
-        parser.add_argument("--pathRegistry", help="path to file registry data")
-        parser.add_argument("--preprocessorConfig", help="path to preprocessor configuration")
-        parser.add_argument("--subRegionConfig", help="path to sub region data")
-        parser.add_argument("--subRegionNames", help="optional comma delimited "+
-                            "string of sub region names (as defined in "+
-                            "subRegionConfig) to process, if unspecified all "+
-                            "regions will be processed")
-
-        args = parser.parse_args()
-
-        pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
-        preprocessorconfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig), pathRegistry)
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
-
-        subRegionNames = args.subRegionNames.split(",") \
-            if args.subRegionNames else None
-
-        r = Rollback(preprocessorconfig)
-        r.Process(subRegionConfig, subRegionNames)
-
     except Exception as ex:
         logging.exception("error")
         sys.exit(1)
 
     logging.info("all rollup tasks finished")
+
 
 if __name__ == "__main__":
     main()
