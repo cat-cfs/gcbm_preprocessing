@@ -41,11 +41,11 @@ def main():
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         config = PreprocessorConfig(
             os.path.abspath(args.preprocessorConfig), pathRegistry)
-
         for r in regions:
             region_path = r["PathName"]
             logging.info(region_path)
 
+            """
             disturbances = config.GetRollbackInputLayers(region_path)
             merge_disturbances.merge_disturbances(disturbances)
             merge_disturbances.grid_disturbances(config)
@@ -54,19 +54,26 @@ def main():
             update_inventory.rollback_age_disturbed(config)
             update_inventory.rollback_age_non_disturbed(config)
             update_inventory.generate_slashburn(config)
+            """
 
-            """tilerPath = self.config.GetRollbackTilerConfigPath(region_path = region_path)
-            rollbackDisturbancePath = self.config.GetRollbackDisturbancesOutputDir(region_path)
+            update_inventory.export_rollback_disturbances(config, region_path)
+            raster_metadata = update_inventory.export_inventory(config, region_path)
+
+            """
+            tiler_path = config.GetRollbackTilerConfigPath(region_path = region_path)
+            rollback_disturbances_path = config.GetRollbackDisturbancesOutputDir(
+                region_path
+            )
             tilerConfig = RollbackTilerConfig()
             dist_lookup = self.config.GetRollbackOutputDisturbanceTypes()
-
-            tilerConfig.Generate(outPath=tilerPath,
-                inventoryMeta = inventoryMeta,
-                resolution = self.config.GetResolution(),
-                rollback_disturbances_path=rollbackDisturbancePath,
+            tilerConfig.Generate(
+                outPath=tilerPath,
+                inventoryMeta = raster_metadata,
+                resolution = config.GetResolution(),
+                rollback_disturbances_path=rollback_disturbances_path,
                 rollback_range=[
-                    self.config.GetRollbackRange()["StartYear"],
-                    self.config.GetRollbackRange()["EndYear"]],
+                    config.GetRollbackRange()["StartYear"],
+                    config.GetRollbackRange()["EndYear"]],
                 dist_lookup=dist_lookup)
             """
 

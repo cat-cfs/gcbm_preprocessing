@@ -46,16 +46,21 @@ class GridInventory(object):
     def load_to_postgres(self, in_workspace, in_layer):
         """ Load inventory to db
         """
-        # remap age, species columns
-        inv_fields = {}
-        inv_fields["age"] = self.config.GetInventoryFieldNames()["age"]
-        inv_fields["species"] = self.config.GetInventoryFieldNames()["species"]
+
+        # find inventory columns to retain
+        reporting_classifiers = self.config.GetReportingClassifiers()
+        inventory_classifiers = self.config.GetInventoryClassifiers()
+        inventory_fields = reporting_classifiers.copy()
+        inventory_fields.update(inventory_classifiers)
+        inventory_fields["species"] = self.config.GetInventoryFieldNames()["species"]
+        inventory_fields["age"] = self.config.GetInventoryFieldNames()["age"]
 
         # build a SQL string that remaps the columns as specified in config
-        remap_string = ", ".join([c_in+' AS '+c_out for c_out, c_in in inv_fields.iteritems()])
+        remap_string = ", ".join(
+            [c_in+' AS '+c_out.lower() for c_out, c_in in inventory_fields.iteritems()])
 
         # build age > 0 filter
-        filter_string = "{a} > 0".format(a=inv_fields["age"])
+        filter_string = "{a} > 0".format(a=inventory_fields["age"])
         logging.info("Loading inventory to postgres for gridding")
 
         # define pg connection string

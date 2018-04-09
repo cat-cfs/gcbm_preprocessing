@@ -4,7 +4,6 @@ import argparse
 
 from loghelper import *
 from grid.grid_inventory import GridInventory
-from preprocess_tools.licensemanager import *
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
@@ -31,30 +30,26 @@ def main():
         preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),pathRegistry)
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
-        with arc_license(Products.ARC) as arcpy:
+        logging.info("Run region gridder at resolution {}".format(preprocessorConfig.GetResolution()))
 
-            logging.info("Run region gridder at resolution {}".format(preprocessorConfig.GetResolution()))
+        subRegionNames = args.subRegionNames.split(",") \
+            if args.subRegionNames else None
+        regions = subRegionConfig.GetRegions() if subRegionNames is None \
+            else [subRegionConfig.GetRegion(x) for x in subRegionNames]
 
-            subRegionNames = args.subRegionNames.split(",") \
-                if args.subRegionNames else None
-            regions = subRegionConfig.GetRegions() if subRegionNames is None \
-                else [subRegionConfig.GetRegion(x) for x in subRegionNames]
-
-            # note that looping through regions will not currently work, table names
-            # in the postgres db are equivalent for each region.
-            for r in regions:
-                region_path = r["PathName"]
-                workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
-                workspaceFilter = preprocessorConfig.GetInventoryFilter()
-                ageFieldName = preprocessorConfig.GetInventoryField("age")
-                gridInventory = GridInventory(preprocessorConfig)
-                gridInventory.load_to_postgres(
-                    workspace,
-                    workspaceFilter)
-                gridInventory.create_blocks()
-                gridInventory.create_grid()
-                gridInventory.grid_inventory()
-
+        # note that looping through regions will not currently work, table names
+        # in the postgres db are equivalent for each region.
+        for r in regions:
+            region_path = r["PathName"]
+            workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
+            workspaceFilter = preprocessorConfig.GetInventoryFilter()
+            gridInventory = GridInventory(preprocessorConfig)
+            gridInventory.load_to_postgres(
+                workspace,
+                workspaceFilter)
+            gridInventory.create_blocks()
+            gridInventory.create_grid()
+            gridInventory.grid_inventory()
 
     except Exception as ex:
         logging.exception("error")
