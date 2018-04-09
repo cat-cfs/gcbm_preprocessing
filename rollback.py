@@ -76,7 +76,7 @@ def main():
         logging.exception("error")
         sys.exit(1)
 
-    logging.info("all rollup tasks finished")
+    logging.info("all rollback tasks finished")
 
 
 if __name__ == "__main__":
