@@ -124,7 +124,7 @@ def main():
                     scenario,
                     region["PathName"])
 
-                if args.runTiler:
+                if args.runtiler:
                     t = RunTiler()
                     futureTileLayerDir = pathRegistry.GetPath(
                         "TiledLayersDir", 
