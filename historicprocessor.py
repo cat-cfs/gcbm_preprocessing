@@ -1,11 +1,14 @@
-from loghelper import *
-from preprocess_tools.licensemanager import *
 import argparse
+import logging
+
+from loghelper import create_script_log
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 from historic.historic_tiler_config import HistoricTilerConfig
-from historic.generate_historic_slashburn import GenerateSlashburn
+from historic.generate_historic_slashburn import generate_slashburn
+
+
 class Historic(object):
     """
     computes historic slashburn as a proportion of the historical harvest
@@ -47,15 +50,15 @@ class Historic(object):
             harvest_shp = os.path.join(harvestLayer["Workspace"], harvestLayer["WorkspaceFilter"])
             harvest_shp_year_field = harvestLayer["YearField"]
             sb_percent = self.preprocessorConfig.GetSlashBurnPercent()
-            with arc_license(Products.ARC) as arcpy:
-                g = GenerateSlashburn(arcpy)
-                slashburn_path = g.generateSlashburn(
-                    inventory_workspace = self.preprocessorConfig.GetInventoryWorkspace(region_path),
-                    inventory_disturbance_year_fieldname = self.preprocessorConfig.GetInventoryField("disturbance_yr"),
-                    harvest_shp = harvest_shp,
-                    harvest_shp_year_field = harvest_shp_year_field,
-                    year_range = slashburn_year_range,
-                    sb_percent = sb_percent)
+
+            slashburn_path = generate_slashburn(
+                inventory_workspace=self.preprocessorConfig.GetInventoryWorkspace(
+                    region_path),
+                inventory_disturbance_year_fieldname=self.preprocessorConfig.GetInventoryField("disturbance_yr"),
+                harvest_shp=harvest_shp,
+                harvest_shp_year_field=harvest_shp_year_field,
+                year_range=slashburn_year_range,
+                sb_percent=sb_percent)
 
             for year in slashburn_year_range:
                 tilerConfig.AddSlashburn(
@@ -85,7 +88,7 @@ def main():
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),
                                         pathRegistry)
-        
+
         subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
 
         subRegionNames = args.subRegionNames.split(",") \

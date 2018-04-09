@@ -45,39 +45,34 @@ def main():
             region_path = r["PathName"]
             logging.info(region_path)
 
-            """
             disturbances = config.GetRollbackInputLayers(region_path)
             merge_disturbances.merge_disturbances(disturbances)
             merge_disturbances.grid_disturbances(config)
             merge_disturbances.intersect_disturbances_inventory(config)
-
             update_inventory.rollback_age_disturbed(config)
             update_inventory.rollback_age_non_disturbed(config)
             update_inventory.generate_slashburn(config)
-            """
-
             update_inventory.export_rollback_disturbances(config, region_path)
             raster_metadata = update_inventory.export_inventory(config, region_path)
 
-            """
-            tiler_path = config.GetRollbackTilerConfigPath(region_path = region_path)
+            # run tiler on disturbances
+            tiler_path = config.GetRollbackTilerConfigPath(region_path=region_path)
             rollback_disturbances_path = config.GetRollbackDisturbancesOutputDir(
                 region_path
             )
             tilerConfig = RollbackTilerConfig()
-            dist_lookup = self.config.GetRollbackOutputDisturbanceTypes()
+            dist_lookup = config.GetRollbackOutputDisturbanceTypes()
             tilerConfig.Generate(
-                outPath=tilerPath,
-                inventoryMeta = raster_metadata,
-                resolution = config.GetResolution(),
+                outPath=tiler_path,
+                inventoryMeta=raster_metadata,
+                resolution=config.GetResolution(),
                 rollback_disturbances_path=rollback_disturbances_path,
                 rollback_range=[
                     config.GetRollbackRange()["StartYear"],
                     config.GetRollbackRange()["EndYear"]],
                 dist_lookup=dist_lookup)
-            """
 
-    except Exception as ex:
+    except Exception:
         logging.exception("error")
         sys.exit(1)
 

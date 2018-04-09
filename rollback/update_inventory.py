@@ -3,7 +3,6 @@ import inspect
 import logging
 import os
 import random
-import subprocess
 import tempfile
 from xml.sax.saxutils import escape
 
@@ -134,9 +133,9 @@ def export_rollback_disturbances(config, region_path):
     sql = """
         SELECT
           i.grid_id AS cell_id,
-          i.dist_type AS {},
-          i.new_disturbance_yr AS {},
-          i.regen_delay AS {},
+          i.dist_type AS {dist_type},
+          i.new_disturbance_yr AS {dist_yr},
+          i.regen_delay AS {regen},
           ST_Union(g.geom) as geom
         FROM preprocessing.inventory_rollback i
         INNER JOIN preprocessing.inventory_grid_xref x
@@ -149,9 +148,26 @@ def export_rollback_disturbances(config, region_path):
           i.dist_type,
           i.new_disturbance_yr,
           i.regen_delay
-    """.format(config.GetInventoryField('dist_type'),
-               config.GetInventoryField('new_disturbance_yr'),
-               config.GetInventoryField('regen_delay'))
+        UNION ALL
+        SELECT
+          i.grid_id AS cell_id,
+          i.dist_type AS {dist_type},
+          i.year AS {dist_yr},
+          0 AS {regen},
+          ST_Union(g.geom) as geom
+        FROM preprocessing.temp_slashburn i
+        INNER JOIN preprocessing.inventory_grid_xref x
+        ON i.grid_id = x.grid_id
+        INNER JOIN preprocessing.grid g
+        ON x.grid_id = g.grid_id
+        WHERE i.year IS NOT NULL
+        GROUP BY
+          i.grid_id,
+          i.dist_type,
+          i.year
+    """.format(dist_type=config.GetInventoryField('dist_type'),
+               dist_yr=config.GetInventoryField('new_disturbance_yr'),
+               regen=config.GetInventoryField('regen_delay'))
     # gdal.VectorTranslate option SQLStatement doesn't seem to pick up that we want to
     # use the PG driver's sql - it seems to be using OGRSQL so it throws errors when
     # trying to use ST_Union and similar
