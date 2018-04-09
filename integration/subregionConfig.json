@@ -4,6 +4,7 @@
     "Region_Number": 1,
     "PathName": "TSA_1_Arrow",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'",
+
     "InventoryName": "tsa1",
     "FutureScenarioZip": "tsa01_distout.zip"
   },
@@ -12,7 +13,24 @@
     "Region_Number": 2,
     "PathName": "TSA_2_Boundary",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
+
     "InventoryName": "tsa2",
     "FutureScenarioZip": "tsa02_distout.zip"
+  },
+    {
+    "Name": "Revelstoke",
+    "Region_Number": 27,
+    "PathName": "TSA_27_Revelstoke",
+    "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Revelstoke TSA'",
+    "InventoryName": "tsa27",
+    "FutureScenarioZip": "tsa27_distout.zip"
+  },
+  {
+    "Name": "Prince George",
+    "Region_Number": 24,
+    "PathName": "TSA_24_Prince_George",
+    "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Prince George TSA'",
+    "InventoryName": "tsa24",
+    "FutureScenarioZip": "tsa24_distout.zip"
   }
 ]

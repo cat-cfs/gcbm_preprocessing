@@ -1,4 +1,5 @@
 {
+
   "Path_Variables": [ "region_path", "future_scenario_zip", "scenario_name" ],
   "Paths": {
     "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC" ],
@@ -29,10 +30,12 @@
     "Environment_Dir": [ "${External_Spatial_Dir}", "04_environment" ],
     "SubRegionDir": [ "${Local_Working_Dir}", "${region_path}" ],
     "Pretiled_Layers": [ "${SubRegionDir}", "01a_pretiled_layers" ],
+
     "RollbackTilerConfigPath": [ "${Pretiled_Layers}", "rollback_tiler_config.yaml" ],
     "HistoricTilerConfigPath": [ "${Pretiled_Layers}", "historic_tiler_config.yaml" ],
     "Clipped_Inventory_Path": [ "${Pretiled_Layers}", "00_Workspace.gdb" ],
     "Copied_Spatial_Boundaries_Dir": [ "${Pretiled_Layers}", "01_spatial_reference" ],
+
     "Default_Spatial_Boundaries_Layer": [ "${Copied_Spatial_Boundaries_Dir}", "PSPUS_2016.shp" ],
     "InventoryRasterOutputDir": [ "${Pretiled_Layers}", "02_inventory" ],
     "Pretiled_Disturbances": [ "${Pretiled_Layers}", "03_disturbances" ],
@@ -44,6 +47,7 @@
     "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs", "base" ],
     "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs" ],
     "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
+
     "MeanAnnualTempPath": [ "${Copied_Environment_Dir}", "NAmerica_MAT_1971_2000.tif" ],
     "TiledLayersDir": [ "${SubRegionDir}", "01b_tiled_layers", "${scenario_name}" ],
     "TransitionRulesPath": [ "${TiledLayersDir}", "transition_rules.csv" ],

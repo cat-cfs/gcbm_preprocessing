@@ -3,7 +3,11 @@ import glob
 import shutil
 import logging
 import time
+
+from osgeo import gdal
+
 from preprocess_tools.licensemanager import *
+
 
 class SpatialInputs(object):
     def __init__(self, workspace, filter):
@@ -61,7 +65,11 @@ class SpatialInputs(object):
                 raise Exception('Invalid clip feature. No selection from filter')
             for layer in self.scan_for_layers():
                 arcpy.MakeFeatureLayer_management(layer, 'clip')
-                arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
+                # arcgis 10.1 has one less arg for selectbylocation
+                if arcpy.GetInstallInfo()['Version'] == '10.1':
+                    arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION")
+                else:
+                    arcpy.SelectLayerByLocation_management('clip', "INTERSECT", 'clip_to', "", "NEW_SELECTION", "NOT_INVERT")
                 if name==None:
                     logging.info('Clipping {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace,os.path.basename(layer))))
                     arcpy.FeatureClassToFeatureClass_conversion('clip', new_workspace, os.path.basename(layer))
@@ -139,6 +147,45 @@ class SpatialInputs(object):
 
     def scan_for_files(self, name):
         return sorted(glob.glob(os.path.join(self.getWorkspace(), '{}*'.format(name))), key=os.path.basename)
+
+    def load_to_db(self, out_table=None, where=None):
+        """Load source to postgis
+        """
+        # point to input file
+        in_file = self._workspace
+
+        # point to input layer
+        if self._filter:
+            in_layer = self._filter
+        else:
+            in_layer = os.path.splitext(os.path.basename(self._workspace))[0]
+
+        # if output table name not provided, it gets the same name as input
+        if not out_table:
+            out_table = in_layer.lower()
+
+        # define ogr pg connection string
+        pg = "PG:host='{h}' port='{p}' dbname='{db}' user='{usr}' password='{pwd}'".format(
+                    h=os.environ['PGHOST'],
+                    p=os.environ['PGPORT'],
+                    db=os.environ['PGDATABASE'],
+                    usr=os.environ['PGUSER'],
+                    pwd=os.environ['PGPASSWORD']
+        )
+        gdal.VectorTranslate(
+                pg,
+                in_file,
+                format='PostgreSQL',
+                layers=[in_layer],
+                layerName=out_table,
+                where=where,
+                dim='2',
+                geometryType='PROMOTE_TO_MULTI',
+                layerCreationOptions=['OVERWRITE=YES',
+                                      'SCHEMA=preprocessing',
+                                      'GEOMETRY_NAME=geom']
+        )
+
 
 class Inventory(SpatialInputs):
     def __init__(self, workspace, filter, year, classifiers_attr, province, field_names=None, reporting_classifiers=None):
@@ -392,6 +439,7 @@ class ReportingIndicators(object):
     def addReportingIndicator(self, indicator):
         self._reporting_indicators.update(indicator)
 
+
 class HistoricDisturbance(SpatialInputs):
     def __init__(self, workspace, filter, year_field):
         self._workspace = workspace
@@ -400,6 +448,7 @@ class HistoricDisturbance(SpatialInputs):
 
     def getYearField(self):
         return self._year_field
+
 
 class ProjectedDisturbance(SpatialInputs):
     def __init__(self, workspace, filter, scenario, lookup_table):
@@ -413,6 +462,7 @@ class ProjectedDisturbance(SpatialInputs):
 
     def getLookupTable(self):
         return self._lookup_table
+
 
 class RollbackDisturbances(object):
     def __init__(self, path):

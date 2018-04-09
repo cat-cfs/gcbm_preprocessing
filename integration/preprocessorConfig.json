@@ -1,6 +1,7 @@
 {
   "Resolution": 0.01,
   "Area_Majority_Rule": true,
+  "N_Processes": "Auto",
   "Inventory_Workspace": "${Clipped_Inventory_Path}",
   "Inventory_Filter": "inventory",
   "Inventory_Year": 2015,
@@ -51,17 +52,20 @@
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NFDB*.shp",
-      "YearField": "YEAR_"
+      "YearSQL": "SELECT YEAR_ AS year",
+      "DisturbanceTypeCode": 1
     },
     {
       "Workspace": "${Clipped_Historic_Disturbance_Path}",
       "WorkspaceFilter": "NBAC*.shp",
-      "YearField": "EDATE"
+      "YearSQL": "SELECT substr(EDATE, 1, 4) AS year",
+      "DisturbanceTypeCode": 1
     },
     {
       "Workspace": "${Clipped_Historic_Harvest_Path}",
       "WorkspaceFilter": "BC_cutblocks90_15.shp",
-      "YearField": "HARV_YR"
+      "YearSQL": "SELECT HARV_YR AS year",
+      "DisturbanceTypeCode": 2
     }
   ],
   "HistoricMergedDisturbanceLayers": [
