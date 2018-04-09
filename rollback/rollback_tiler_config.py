@@ -102,4 +102,4 @@ class RollbackTilerConfig(object):
                       disturbanceLayerConfig)
 
     def _WriteTilerConfig(self, path):
-        self.tilerConfig.writeJson(path)
+        self.tilerConfig.save(path)

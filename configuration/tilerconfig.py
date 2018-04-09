@@ -1,4 +1,5 @@
 import json, os
+import yaml
 from pydoc import locate
 
 class TilerConfig(object):
@@ -19,7 +20,7 @@ class TilerConfig(object):
         self.layerMetaIndex = {}
         self.config = {}
         if path is not None:
-           self.config = self.loadJson(path)
+           self.config = self.load(path)
            for layer in self.config["Layers"]:
                self.UpdateMetaIndex(layer["Metadata"],
                                    layer["LayerConfig"])
@@ -47,6 +48,7 @@ class TilerConfig(object):
                     objectArgInjections))
 
         return argsList
+
     def AssembleTilerObject(self, config, objectArgInjections):
         args = {}
         if "argsList" in config:
@@ -108,13 +110,13 @@ class TilerConfig(object):
     def GetLayer(self, layerMeta):
         return self.layerMetaIndex[layerMeta]
 
-    def writeJson(self, path, indent=4):
+    def save(self, path, indent=4):
         with open(path, 'w') as outfile:
-            json.dump(self.config, outfile, indent=indent)
+            yaml.dump(self.config, outfile, default_flow_style=True)
 
-    def loadJson(self, path):
+    def load(self, path):
         with open(path) as json_data:
-            return json.load(json_data)
+            return yaml.load(json_data)
 
     def CreateConfigItem(self, typeName, **kwargs):
         if not typeName in self.typeRegistry:

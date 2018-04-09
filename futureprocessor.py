@@ -39,8 +39,8 @@ class Future(object):
 
         outputTilerConfigPath = os.path.join(
             os.path.dirname(baseTilerConfigPath),
-            "{}_tiler_config.json".format(scenario["Name"]))
-        tilerConfig.writeJson(outputTilerConfigPath)
+            "{}_tiler_config.yaml".format(scenario["Name"]))
+        tilerConfig.save(outputTilerConfigPath)
         return outputTilerConfigPath
 
     def Process(self, region_name, scenario):

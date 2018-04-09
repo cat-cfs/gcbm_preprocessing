@@ -8,7 +8,7 @@ class HistoricTilerConfig(object):
         self.tilerConfig = TilerConfig(input_path)
 
     def Save(self):
-        self.tilerConfig.writeJson(self.output_path)
+        self.tilerConfig.save(self.output_path)
 
 
     def AddAdminEcoLayers(self, spatial_boundaries_path, attributes):
