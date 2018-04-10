@@ -21,7 +21,6 @@ def main():
         parser.add_argument("--preprocessorConfig", help=(
             "path to preprocessor configuration"))
         parser.add_argument("--subRegionConfig", help="path to sub region data")
-                            "regions will be processed")
         parser.add_argument("--subRegionNames", help=(
             "optional comma delimited string of sub region names (as defined in "
             "subRegionConfig) to process, if unspecified all regions will be "
@@ -42,7 +41,7 @@ def main():
 
         # note that looping through regions will not currently work, table names
         # in the postgres db are equivalent for each region.
-        for r in regions:
+        for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
             workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
             workspaceFilter = preprocessorConfig.GetInventoryFilter()
