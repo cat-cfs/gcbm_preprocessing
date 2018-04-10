@@ -1,5 +1,5 @@
 from loghelper import *
-import os, argparse, shutil, zipfile
+import os, sys, argparse, shutil, zipfile
 
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
