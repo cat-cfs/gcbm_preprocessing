@@ -54,14 +54,6 @@ def main():
                 logging.info("destination: {}".format(dst))
                 shutil.copytree(src=src,dst=dst)
 
-        if args.spatial:
-            src = pathRegistry.GetPath("Source_External_Spatial_Dir")
-            dst = pathRegistry.GetPath("External_Spatial_Dir")
-            logging.info("copying external spatial data to local working directory")
-            logging.info("source: {}".format(src))
-            logging.info("destination: {}".format(dst))
-            shutil.copytree(src=src, dst=dst)
-
         if args.future:
             for region in subRegionConfig.GetRegions():
                 src = pathRegistry.GetPath("Source_External_Future_Dir",
@@ -84,6 +76,15 @@ def main():
                         destFile = file(os.path.join(dest, filename), 'wb')
                         with srcFile, destFile:
                             shutil.copyfileobj(srcFile, destFile)
+
+        if args.spatial:
+            src = pathRegistry.GetPath("Source_External_Spatial_Dir")
+            dst = pathRegistry.GetPath("External_Spatial_Dir")
+            logging.info("copying external spatial data to local working directory")
+            logging.info("source: {}".format(src))
+            logging.info("destination: {}".format(dst))
+            shutil.copytree(src=src, dst=dst)
+
 
 
     except Exception as ex:

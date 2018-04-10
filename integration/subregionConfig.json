@@ -4,7 +4,6 @@
     "Region_Number": 1,
     "PathName": "TSA_1_Arrow",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'",
-
     "InventoryName": "tsa1",
     "FutureScenarioZip": "tsa01_distout.zip"
   },
@@ -13,7 +12,6 @@
     "Region_Number": 2,
     "PathName": "TSA_2_Boundary",
     "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'",
-
     "InventoryName": "tsa2",
     "FutureScenarioZip": "tsa02_distout.zip"
   },
