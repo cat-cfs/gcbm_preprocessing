@@ -6,3 +6,4 @@ objects
 inputs
 /mojadata
 *.log
+/preprocess_tools/postgis_connnection_variables.json

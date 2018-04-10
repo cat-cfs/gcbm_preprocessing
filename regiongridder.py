@@ -9,6 +9,7 @@ from grid.grid_inventory import GridInventory
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
+from preprocess_tools import postgis_manage
 
 def main():
 
@@ -28,6 +29,7 @@ def main():
 
         args = parser.parse_args()
 
+        
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
         preprocessorConfig = PreprocessorConfig(os.path.abspath(args.preprocessorConfig),pathRegistry)
 
@@ -37,7 +39,9 @@ def main():
 
 
         logging.info("Run region gridder at resolution {}".format(preprocessorConfig.GetResolution()))
-
+        postgis_manage.load_connection_variables()
+        postgis_manage.drop_preprocessing_schema()
+        postgis_manage.create_preprocessing_schema()
 
         # note that looping through regions will not currently work, table names
         # in the postgres db are equivalent for each region.

@@ -1,5 +1,5 @@
 {
-  "Resolution": 0.01,
+  "Resolution": 0.001,
   "Area_Majority_Rule": true,
   "N_Processes": "Auto",
   "Inventory_Workspace": "${Clipped_Inventory_Path}",

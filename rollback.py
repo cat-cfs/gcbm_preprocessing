@@ -12,7 +12,7 @@ from configuration.preprocessorconfig import PreprocessorConfig
 from rollback import merge_disturbances
 from rollback import update_inventory
 from rollback.rollback_tiler_config import RollbackTilerConfig
-
+from preprocess_tools import postgis_manage
 
 def main():
 
@@ -33,24 +33,17 @@ def main():
                   "processed"))
 
         args = parser.parse_args()
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig))
-        if args.subRegionNames:
-            subRegionNames = args.subRegionNames.split(",")
-            regions = [subRegionConfig.GetRegion(x) for x in subRegionNames]
-        else:
-            subRegionNames = None
-            regions = subRegionConfig.GetRegions()
+        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig),
+                                           args.subRegionNames.split(","))
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
 
-        config = PreprocessorConfig(
-        subRegionConfig = SubRegionConfig(
-            os.path.abspath(args.subRegionConfig),
-            args.subRegionNames.split(",") if args.subRegionNames else None)
-        for r in regions:
+        config = PreprocessorConfig(args.preprocessorConfig, pathRegistry)
+ 
+        postgis_manage.load_connection_variables()
+        for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
             logging.info(region_path)
-
 
             disturbances = config.GetRollbackInputLayers(region_path)
             merge_disturbances.merge_disturbances(disturbances)
