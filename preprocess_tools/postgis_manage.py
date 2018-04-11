@@ -25,15 +25,8 @@ def execute(command):
         logging.exception("error occurred running command")
         raise ex
 
-def save_connection_variables(PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD):
+def save_connection_variables(**values):
     with open(get_connection_variables_path(), 'w') as outfile:
-        values = {
-            "PGHOST": PGHOST,
-            "PGPORT": PGPORT,
-            "PGDATABASE": PGDATABASE,
-            "PGUSER": PGUSER,
-            "PGPASSWORD": PGPASSWORD
-        }
         json.dump(values, outfile, indent=4)
 
 def load_connection_variables():
@@ -53,6 +46,19 @@ def load_connection_variables():
                     PGDATABASE = os.environ["PGDATABASE"],
                     PGUSER = os.environ["PGUSER"],
                     PGPASSWORD = os.environ["PGPASSWORD"])
+
+def url_string(**kwargs):
+    return r"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}" \
+            .format(PGHOST = kwargs["PGHOST"],
+                    PGPORT = kwargs["PGPORT"],
+                    PGDATABASE = kwargs["PGDATABASE"],
+                    PGUSER = kwargs["PGUSER"],
+                    PGPASSWORD = kwargs["PGPASSWORD"])
+
+def get_url(**kwargs):
+    config = load_connection_variables()
+    config.update(kwargs)
+    return url_string(**kwargs)
 
 def create_postgis_extension():
     command = ["psql",
