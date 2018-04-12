@@ -39,14 +39,33 @@ def main():
 
 
         logging.info("Run region gridder at resolution {}".format(preprocessorConfig.GetResolution()))
-        postgis_manage.load_connection_variables()
-        postgis_manage.drop_preprocessing_schema()
-        postgis_manage.create_preprocessing_schema()
+
 
         # note that looping through regions will not currently work, table names
         # in the postgres db are equivalent for each region.
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
+
+            
+            root_postgis_var_path = pathRegistry.GetPath(
+                "PostGIS_Connection_Vars")
+
+            region_postgis_var_path = pathRegistry.GetPath(
+                "PostGIS_Region_Connection_Vars",
+                region_path=region_path)
+
+            root_postgis_vars = postgis_manage.get_connection_variables(
+                root_postgis_var_path)
+
+            region_postgis_vars = root_postgis_vars.copy()
+
+            region_postgis_vars["PGDATABASE"] = postgis_manage.generate_unique_db_name()
+            postgis_manage.save_connection_variables(
+               region_postgis_var_path,
+                **region_postgis_vars)
+            postgis_manage.create_database(root_postgis_var_path, region_postgis_vars["PGDATABASE"])
+            postgis_manage.create_preprocessing_schema(region_postgis_var_path)
+
             workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
             workspaceFilter = preprocessorConfig.GetInventoryFilter()
             gridInventory = GridInventory(preprocessorConfig)
