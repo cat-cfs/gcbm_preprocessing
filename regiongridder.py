@@ -45,7 +45,6 @@ def main():
         # in the postgres db are equivalent for each region.
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
-
             
             root_postgis_var_path = pathRegistry.GetPath(
                 "PostGIS_Connection_Vars")
@@ -54,22 +53,18 @@ def main():
                 "PostGIS_Region_Connection_Vars",
                 region_path=region_path)
 
-            root_postgis_vars = postgis_manage.get_connection_variables(
-                root_postgis_var_path)
+            db_url = postgis_manage.set_up_working_db(
+                root_postgis_var_path,
+                region_postgis_var_path)
 
-            region_postgis_vars = root_postgis_vars.copy()
-
-            region_postgis_vars["PGDATABASE"] = postgis_manage.generate_unique_db_name()
-            postgis_manage.save_connection_variables(
-               region_postgis_var_path,
-                **region_postgis_vars)
-            postgis_manage.create_database(root_postgis_var_path, region_postgis_vars["PGDATABASE"])
-            postgis_manage.create_preprocessing_schema(region_postgis_var_path)
+            gdal_con = postgis_manage.get_gdal_conn_string(
+                region_postgis_var_path)
 
             workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
             workspaceFilter = preprocessorConfig.GetInventoryFilter()
-            gridInventory = GridInventory(preprocessorConfig)
+            gridInventory = GridInventory(preprocessorConfig, db_url)
             gridInventory.load_to_postgres(
+                gdal_con,
                 workspace,
                 workspaceFilter)
             gridInventory.create_blocks()

@@ -1,4 +1,5 @@
 import logging, os, json, inspect, psycopg2, uuid
+from psycopg2.extensions import AsIs
 from contextlib import contextmanager
 
 def get_connection_variables(var_path):
@@ -9,22 +10,14 @@ def save_connection_variables(var_path, **values):
     with open(var_path, 'w') as outfile:
         json.dump(values, outfile, indent=4)
 
-def load_environment_variables(connectionVariables):
-    '''
-    Set postgres connection environment variables
-    '''
-    logging.info("Set postgres connection environment variables")
-    os.environ["PGHOST"] = str(connectionVariables["PGHOST"])
-    os.environ["PGPORT"] = str(connectionVariables["PGPORT"])
-    os.environ["PGDATABASE"] = str(connectionVariables["PGDATABASE"])
-    os.environ["PGUSER"] = str(connectionVariables["PGUSER"])
-    os.environ["PGPASSWORD"] = str(connectionVariables["PGPASSWORD"])
-    os.environ["DATABASE_URL"] = r"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}" \
-        .format(PGHOST = os.environ["PGHOST"],
-                PGPORT = os.environ["PGPORT"],
-                PGDATABASE = os.environ["PGDATABASE"],
-                PGUSER = os.environ["PGUSER"],
-                PGPASSWORD = os.environ["PGPASSWORD"])
+def get_gdal_conn_string(var_path):
+    vars = get_connection_variables(var_path)
+    return "PG:host='{h}' port='{p}' dbname='{db}' user='{usr}' password='{pwd}'".format(
+            h=vars['PGHOST'],
+            p=vars['PGPORT'],
+            db=vars['PGDATABASE'],
+            usr=vars['PGUSER'],
+            pwd=vars['PGPASSWORD'])
 
 def url_string(**kwargs):
     return r"postgresql://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}" \
@@ -34,56 +27,99 @@ def url_string(**kwargs):
                     PGUSER = kwargs["PGUSER"],
                     PGPASSWORD = kwargs["PGPASSWORD"])
 
-def get_url(**kwargs):
-    config = load_connection_variables()
-    config.update(kwargs)
-    return url_string(**kwargs)
+def get_url(var_path):
+    return url_string(**get_connection_variables(var_path))
 
 @contextmanager
 def connect(**kwargs):
-    yield psycopg2.connect(
+    conn = psycopg2.connect(
         dbname = kwargs["PGDATABASE"],
         user = kwargs["PGUSER"],
         password = kwargs["PGPASSWORD"],
         host = kwargs["PGHOST"],
         port = kwargs["PGPORT"])
+    yield conn
 
 @contextmanager
 def cursor(**kwargs):
     with connect(**kwargs) as connection:
         yield connection.cursor()
+        connection.commit()
 
 def create_postgis_extension(var_path):
-    with cursor(get_connection_variables(var_path)) as cur:
+    logging.info("enable postgis")
+    with cursor(**get_connection_variables(var_path)) as cur:
         cur.execute("CREATE EXTENSION IF NOT EXISTS postgis")
 
 def drop_preprocessing_schema(var_path):
-    with cursor(get_connection_variables(var_path)) as cur:
+    with cursor(**get_connection_variables(var_path)) as cur:
         cur.execute("DROP SCHEMA IF EXISTS preprocessing CASCADE")
 
 def create_preprocessing_schema(var_path):
-    with cursor(get_connection_variables(var_path)) as cur:
+    logging.info("creating preprocessing schema")
+    with cursor(**get_connection_variables(var_path)) as cur:
         cur.execute("CREATE SCHEMA preprocessing")
 
+def get_db_name_prefix():
+    return "gcbm_preprocessing"
+
 def generate_unique_db_name():
-    return "gcbm_preprocessing_{}".format(
-        uuid.uuid4().bytes
+    return "{prefix}_{uuid}".format(
+        prefix = get_db_name_prefix(),
+        uuid = uuid.uuid4().bytes
             .encode('base64') # shorten up the uuid
             .rstrip('=\n') # trim off the end bytes
             .replace('/','_') # postgres allows _ but not / in identifiers
             .replace('+','$')) # postgres allows $ but not + in identifiers
 
 def create_database(var_path, dbname):
-    with cursor(**get_connection_variables(var_path)) as cur:
-        cur.execute("""
-            CREATE DATABASE %(dbname)s
-            WITH 
-            OWNER = postgres
-            ENCODING = 'UTF8'
-            LC_COLLATE = 'English_Canada.1252'
-            LC_CTYPE = 'English_Canada.1252'
-            TABLESPACE = pg_default
-            CONNECTION LIMIT = -1;
-            """, {"dbname": dbname})
+
+    with connect(**get_connection_variables(var_path)) as conn:
+        conn.autocommit = True
+        with conn.cursor() as cur:
+            cur.execute("""
+                CREATE DATABASE "%s"
+                WITH 
+                OWNER = postgres
+                ENCODING = 'UTF8'
+                LC_COLLATE = 'English_Canada.1252'
+                LC_CTYPE = 'English_Canada.1252'
+                TABLESPACE = pg_default
+                CONNECTION LIMIT = -1;
+                """, (AsIs(dbname),))
+
+def drop_database(var_path, dbname):
+    vars = get_connection_variables(var_path)
+    if dbname.lower().strip() == "postgres":
+        raise ValueError("cannot delete database 'postgres'")
+    if not dbname.lower().startswith(get_db_name_prefix().lower()):
+        raise ValueError("cannot delete database '{}'".format(vars["PGDATABASE"]))
+    with connect(**vars) as conn:
+        conn.autocommit = True
+        with conn.cursor() as cur:
+            cur.execute("""DROP DATABASE "%s" """, (AsIs(dbname),))
+        
+
+def set_up_working_db(root_postgis_var_path, region_postgis_var_path):
+    if os.path.exists(region_postgis_var_path):
+        drop_db_name = get_connection_variables(region_postgis_var_path)["PGDATABASE"]
+        logging.info("dropping stale working db '{}'".format(drop_db_name))
+        drop_database(root_postgis_var_path, drop_db_name)
+
+    root_postgis_vars = get_connection_variables(
+        root_postgis_var_path)
+
+    region_postgis_vars = root_postgis_vars.copy()
+
+    region_postgis_vars["PGDATABASE"] = generate_unique_db_name()
+    save_connection_variables(
+        region_postgis_var_path,
+        **region_postgis_vars)
+    logging.info("creating working db '{}'".format(region_postgis_vars["PGDATABASE"]))
+    create_database(root_postgis_var_path, region_postgis_vars["PGDATABASE"])
+    
+    create_preprocessing_schema(region_postgis_var_path)
+    create_postgis_extension(region_postgis_var_path)
+    return url_string(**region_postgis_vars)
 
 

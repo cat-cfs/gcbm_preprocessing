@@ -33,19 +33,11 @@ def _scan_for_layers(path, filter):
     return sorted(glob.glob(os.path.join(path, filter)), key=os.path.basename)
 
 
-def merge_disturbances(disturbances):
+def merge_disturbances(db_url, gdal_con, disturbances):
     """ Load all input disturbance data to a single table
     """
     logging.info("Merging disturbances")
-    pg = ("PG:host='{h}' port='{p}' dbname='{db}' "
-          "user='{usr}' password='{pwd}'").format(
-        h=os.environ['PGHOST'],
-        p=os.environ['PGPORT'],
-        db=os.environ['PGDATABASE'],
-        usr=os.environ['PGUSER'],
-        pwd=os.environ['PGPASSWORD']
-    )
-    db = pgdata.connect()
+    db = pgdata.connect(db_url)
     gdal.SetConfigOption('PG_USE_COPY', 'YES')
     db['preprocessing.disturbances'].drop()
     for i, dist in enumerate(disturbances):
@@ -71,7 +63,7 @@ def merge_disturbances(disturbances):
                            "GEOMETRY FROM " + layer]
             logging.info(", ".join(column_list))
             gdal.VectorTranslate(
-                pg,
+                gdal_con,
                 os.path.join(dist["WorkspaceFilter"], filename),
                 format='PostgreSQL',
                 layerName=table_name,
@@ -99,12 +91,12 @@ def merge_disturbances(disturbances):
     """)
 
 
-def grid_disturbances(config):
+def grid_disturbances(db_url, config):
     """ Create and load disturbances_grid_xref by overlaying disturbances and grid
     """
     # point to the sql folder within grid module
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-    db = pgdata.connect(sql_path=sql_path)
+    db = pgdata.connect(db_url, sql_path=sql_path)
     logging.info("Gridding disturbances")
     db['preprocessing.disturbances_grid_xref'].drop()
     db.execute(
@@ -125,7 +117,7 @@ def grid_disturbances(config):
     db['preprocessing.disturbances_grid_xref'].create_index(['disturbance_id'])
 
 
-def intersect_disturbances_inventory(config):
+def intersect_disturbances_inventory(db_url, config):
     """
     Create table preprocessing.inventory_disturbed by joining gridded inventory
     to gridded disturbances.
@@ -133,7 +125,7 @@ def intersect_disturbances_inventory(config):
     logging.info("Intersecting rollback disturbances and inventory")
     # point to the sql folder within rollback module and run the query
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-    db = pgdata.connect(sql_path=sql_path)
+    db = pgdata.connect(db_url, sql_path=sql_path)
     db['preprocessing.inventory_disturbed'].drop()
     db.execute(
         db.queries['intersect_disturbances_inventory'],

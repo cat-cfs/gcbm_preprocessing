@@ -8,7 +8,6 @@ from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 
-
 from rollback import merge_disturbances
 from rollback import update_inventory
 from rollback.rollback_tiler_config import RollbackTilerConfig
@@ -40,20 +39,23 @@ def main():
 
         config = PreprocessorConfig(args.preprocessorConfig, pathRegistry)
  
-        postgis_manage.load_connection_variables()
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
             logging.info(region_path)
-
+            region_postgis_var_path = pathRegistry.GetPath(
+                "PostGIS_Region_Connection_Vars",
+                region_path=region_path)
+            db_url = postgis_manage.get_url(region_postgis_var_path)
+            gdal_con = postgis_manage.get_gdal_conn_string(region_postgis_var_path)
             disturbances = config.GetRollbackInputLayers(region_path)
-            merge_disturbances.merge_disturbances(disturbances)
-            merge_disturbances.grid_disturbances(config)
-            merge_disturbances.intersect_disturbances_inventory(config)
-            update_inventory.rollback_age_disturbed(config)
-            update_inventory.rollback_age_non_disturbed(config)
-            update_inventory.generate_slashburn(config)
+            merge_disturbances.merge_disturbances(db_url, gdal_con, disturbances)
+            merge_disturbances.grid_disturbances(db_url, config)
+            merge_disturbances.intersect_disturbances_inventory(db_url, config)
+            update_inventory.rollback_age_disturbed(db_url, config)
+            update_inventory.rollback_age_non_disturbed(db_url, config)
+            update_inventory.generate_slashburn(db_url, config)
             update_inventory.export_rollback_disturbances(config, region_path)
-            raster_metadata = update_inventory.export_inventory(config, region_path)
+            raster_metadata = update_inventory.export_inventory(db_url, gdal_con, config, region_path)
 
 
             # run tiler on disturbances
