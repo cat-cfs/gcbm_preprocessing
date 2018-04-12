@@ -201,8 +201,8 @@ def export_inventory(config, region_path):
 
     # rasterize age, it comes from the 'inventory_disturbed' table
     sql = """
-        SELECT r.rollback_age as age, g.geom
-        FROM preprocessing.grid
+        SELECT i.rollback_age as age, g.geom
+        FROM preprocessing.grid g
         INNER JOIN preprocessing.inventory_disturbed i
         ON g.grid_id = i.grid_id
     """
@@ -235,16 +235,18 @@ def export_inventory(config, region_path):
     to_rasterize["species"] = config.GetInventoryFieldNames()["species"]   # add species
 
     # define classifier types which do not require attribute dicts
-    integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
+    integer_types = ['SMALLINT', 'BIGINT', 'INTEGER']
     db = pgdata.connect()
 
     raster_meta = []
     for attribute, field_name in to_rasterize.items():
+        attribute_pg = attribute.lower()
         file_path = os.path.join(raster_output, "{}.tif".format(attribute))
+        logging.info('Exporting {} to {}'.format(attribute, file_path))
         # do not create a lookup/attribute table for integer fields
-        if db['preprocessing.inventory'].column_types[field_name] in integer_types:
+        if str(db['preprocessing.inventory'].column_types[attribute_pg]) in integer_types:
             sql = """
-                SELECT i.{}, g.geom
+                SELECT i.{} as val, g.geom
                 FROM preprocessing.grid g
                 INNER JOIN preprocessing.inventory_grid_xref x
                 ON g.grid_id = x.grid_id
@@ -255,20 +257,20 @@ def export_inventory(config, region_path):
         # for non-int types, create lookup and rasterize with the integer lookup value
         else:
             # create lookup
-            db['preprocessing.inventory_{col}_xref'].drop()
+            db['preprocessing.inventory_{}_xref'.format(attribute_pg)].drop()
             lut_sql = """
+            CREATE TABLE preprocessing.inventory_{col}_xref AS
             WITH attrib AS
             (
              SELECT DISTINCT {col}
              FROM preprocessing.inventory
              ORDER BY {col}
             )
-            CREATE TABLE preprocessing.inventory_{col}_xref
             SELECT
-              row_number() over() as val,
+              row_number() over() AS val,
               {col}
             FROM attrib
-            """
+            """.format(col=attribute_pg)
             db.execute(lut_sql)
             # generate sql for rasterization
             sql = """
@@ -280,19 +282,18 @@ def export_inventory(config, region_path):
                 ON x.inventory_id = i.inventory_id
                 INNER JOIN preprocessing.inventory_{col}_xref lut
                 ON i.{col} = lut.{col}
-            """.format(col=field_name)
+            """.format(col=attribute_pg)
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
-            for row in db['preprocessing.inventory_'+field_name+"_xref"]:
-                attribute_table[row['val']] = list(row[field_name])
-
-        vrtpath = _create_pg_vrt(sql, attribute)
+            for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
+                attribute_table[row['val']] = [row[attribute_pg]]
+        vrtpath = _create_pg_vrt(sql, attribute_pg)
         gdal.Rasterize(
             file_path,
             vrtpath,
             xRes=config.GetResolution(),
             yRes=config.GetResolution(),
-            attribute=field_name,
+            attribute='val',
             allTouched=True,
             # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
             creationOptions=["COMPRESS=DEFLATE"]
