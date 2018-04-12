@@ -29,6 +29,7 @@ class RollbackDistributor(object):
         return int(age)
 
 
+
 def rollback_age_disturbed(db_url, config):
     """ Calculate pre-disturbance age and rollback inventory age
     """
@@ -71,9 +72,9 @@ def rollback_age_disturbed(db_url, config):
         UPDATE preprocessing.inventory_disturbed
         SET rollback_age = pre_dist_age + (%s - new_disturbance_yr)
     """
+
     db = pgdata.connect(db_url)
     db.execute(sql, (config.GetRollbackRange()["StartYear"]))
-
 
 
 def rollback_age_non_disturbed(db_url, config):
@@ -173,6 +174,7 @@ def export_rollback_disturbances(gdal_con, config, region_path):
     # trying to use ST_Union and similar
     # Lets just create a VRT as as work-around
     out_layer = os.path.splitext(os.path.basename(rollback_disturbances_output))[0]
+
     vrtpath = _create_pg_vrt(gdal_con, sql, out_layer)
     gdal.VectorTranslate(
         rollback_disturbances_output,
@@ -196,11 +198,12 @@ def export_inventory(db_url, gdal_con, config, region_path):
 
     # rasterize age, it comes from the 'inventory_disturbed' table
     sql = """
-        SELECT r.rollback_age as age, g.geom
-        FROM preprocessing.grid
+        SELECT i.rollback_age as age, g.geom
+        FROM preprocessing.grid g
         INNER JOIN preprocessing.inventory_disturbed i
         ON g.grid_id = i.grid_id
     """
+
     vrtpath = _create_pg_vrt(gdal_con, sql, 'age')
     src_age_col = config.GetInventoryFieldNames()["age"]
     file_path = os.path.join(raster_output, "{}.tif".format(src_age_col))
@@ -230,16 +233,21 @@ def export_inventory(db_url, gdal_con, config, region_path):
     to_rasterize["species"] = config.GetInventoryFieldNames()["species"]   # add species
 
     # define classifier types which do not require attribute dicts
-    integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
+
+    integer_types = ['SMALLINT', 'BIGINT', 'INTEGER']
+
     db = pgdata.connect(db_url)
 
     raster_meta = []
     for attribute, field_name in to_rasterize.items():
+        attribute_pg = attribute.lower()
         file_path = os.path.join(raster_output, "{}.tif".format(attribute))
+        logging.info('Exporting {} to {}'.format(attribute, file_path))
         # do not create a lookup/attribute table for integer fields
-        if db['preprocessing.inventory'].column_types[field_name] in integer_types:
+
+        if str(db['preprocessing.inventory'].column_types[attribute_pg]) in integer_types:
             sql = """
-                SELECT i.{}, g.geom
+                SELECT i.{} as val, g.geom
                 FROM preprocessing.grid g
                 INNER JOIN preprocessing.inventory_grid_xref x
                 ON g.grid_id = x.grid_id
@@ -250,20 +258,21 @@ def export_inventory(db_url, gdal_con, config, region_path):
         # for non-int types, create lookup and rasterize with the integer lookup value
         else:
             # create lookup
-            db['preprocessing.inventory_{col}_xref'].drop()
+
+            db['preprocessing.inventory_{}_xref'.format(attribute_pg)].drop()
             lut_sql = """
+            CREATE TABLE preprocessing.inventory_{col}_xref AS
             WITH attrib AS
             (
              SELECT DISTINCT {col}
              FROM preprocessing.inventory
              ORDER BY {col}
             )
-            CREATE TABLE preprocessing.inventory_{col}_xref
             SELECT
-              row_number() over() as val,
+              row_number() over() AS val,
               {col}
             FROM attrib
-            """
+            """.format(col=attribute_pg)
             db.execute(lut_sql)
             # generate sql for rasterization
             sql = """
@@ -275,11 +284,13 @@ def export_inventory(db_url, gdal_con, config, region_path):
                 ON x.inventory_id = i.inventory_id
                 INNER JOIN preprocessing.inventory_{col}_xref lut
                 ON i.{col} = lut.{col}
-            """.format(col=field_name)
+
+            """.format(col=attribute_pg)
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
-            for row in db['preprocessing.inventory_'+field_name+"_xref"]:
-                attribute_table[row['val']] = list(row[field_name])
+
+            for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
+                attribute_table[row['val']] = [row[attribute_pg]]
 
         vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
         gdal.Rasterize(
@@ -287,7 +298,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
             vrtpath,
             xRes=config.GetResolution(),
             yRes=config.GetResolution(),
-            attribute=field_name,
+            attribute='val',
             allTouched=True,
             # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
             creationOptions=["COMPRESS=DEFLATE"]
@@ -304,17 +315,20 @@ def export_inventory(db_url, gdal_con, config, region_path):
 
 
 
+
 def _create_pg_vrt(gdal_con, sql, out_layer):
     """ Create a quick temp vrt file pointing to layer name, pg connection and query
     """
     vrt = """<OGRVRTDataSource>
                <OGRVRTLayer name="{layer}">
+
                  <SrcDataSource>{pgcred}</SrcDataSource>
                  <SrcSQL>{sql}</SrcSQL>
                </OGRVRTLayer>
              </OGRVRTDataSource>
           """.format(layer=out_layer,
                      sql=escape(sql.replace("\n", " ")),
+
                      pgcred=gdal_con)
     vrtpath = os.path.join(tempfile.gettempdir(), "pg_dump.vrt")
     if os.path.exists(vrtpath):
@@ -338,12 +352,14 @@ def _create_attribute_table(dbf_path, field_name):
 
 
 
+
 def _load_dist_age_prop(db_url, dist_age_prop_path):
     """
     Load disturbance age csv data to postgres
     Currently not used but could be useful to speed up calculatePreDistAge
     (or perhaps just read the csv to strings that get inlined into pg arrays)
     """
+
     db = pgdata.connect(db_url)
     db['preprocessing.dist_age_prop'].drop()
     db.execute("""CREATE TABLE preprocessing.dist_age_prop
