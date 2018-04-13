@@ -10,26 +10,7 @@ from osgeo import gdal
 from dbfread import DBF
 import pgdata
 
-from preprocess_tools import postgis_manage
 import numpy as np
-
-class RollbackDistributor(object):
-    def __init__(self, **age_proportions):
-        self._rand = random.Random()
-        self._ages = []
-        for age, proportion in age_proportions.iteritems():
-            self._ages.extend([age] * int(100.00 * proportion))
-
-        self._rand.shuffle(self._ages)
-        self._choices = {age: 0 for age in age_proportions.keys()}
-
-    def __str__(self):
-        return str(self._choices)
-
-    def next(self):
-        age = self._rand.choice(self._ages)
-        self._choices[age] += 1
-        return int(age)
 
 def read_dist_age_prop(path):
     with open(path, "r") as age_prop_file:
@@ -62,7 +43,7 @@ def rollback_age_disturbed(db_url, config):
     db_data = list(db.execute("select grid_id, dist_type from preprocessing.inventory_disturbed where dist_type IS NOT NULL"))
     np_db_data = np.asarray(db_data)
 
-
+    #### possible optimization (needs some tweaking to get it working) ####
     #np_db_data = np.fromiter(db_data, 
                              #count= len(db_data), #performance helper
     #                         dtype=("i8,i4"))
@@ -98,17 +79,6 @@ def rollback_age_disturbed(db_url, config):
 
 
     # https://trvrm.github.io/bulk-psycopg2-inserts.html
-    #update_sql = """
-    #            UPDATE preprocessing.inventory_disturbed
-    #            SET pre_dist_age = unnest( %(age)s::TEXT[] )
-    #            WHERE grid_id = unnest( %(id)s::TEXT[] )
-    #        """
-    # update_sql = """
-    #           UPDATE preprocessing.inventory_disturbed
-    #           SET pre_dist_age = unnest( %(age)s )
-    #           WHERE grid_id = unnest( %(id)s )
-    #        """
-
     update_sql = """
         UPDATE preprocessing.inventory_disturbed
         SET pre_dist_age = new_values.age
@@ -127,54 +97,6 @@ def rollback_age_disturbed(db_url, config):
 
     db = pgdata.connect(db_url)
     db.execute(sql, (config.GetRollbackRange()["StartYear"]))
-
-
-def rollback_age_disturbed_v1(db_url, config):
-    """ Calculate pre-disturbance age and rollback inventory age
-    """
-    dist_age_prop_path = config.GetDistAgeProportionFilePath()
-    logging.info("Calculating pre disturbance age using '{}' to select age"
-                 .format(dist_age_prop_path))
-    # Calculating pre-disturbance age is one execution per grid cell record
-    # It should be possible to apply the update to all cells at once...
-    # Maybe using this approach?
-    # https://dba.stackexchange.com/questions/55363/set-random-value-from-set/55364#55364
-    dist_age_props = {}
-    with open(dist_age_prop_path, "r") as age_prop_file:
-        reader = csv.reader(age_prop_file)
-        reader.next()  # skip header
-        for dist_type, age, prop in reader:
-            dist_type = int(dist_type)
-            dist_ages = dist_age_props.get(dist_type)
-            if not dist_ages:
-                dist_age_props[dist_type] = {}
-                dist_ages = dist_age_props[dist_type]
-            dist_ages[age] = float(prop)
-    age_distributors = {}
-    for dist_type, age_props in dist_age_props.iteritems():
-        age_distributors[dist_type] = RollbackDistributor(**age_props)
-    db = pgdata.connect(db_url)
-    for row in db['preprocessing.inventory_disturbed']:
-        age_distributor = age_distributors.get(dist_type)
-        # logging.info("Age picks for disturbance type {}:{}".format(
-        # dist_type, str(age_distributor)))
-        sql = """
-            UPDATE preprocessing.inventory_disturbed
-            SET pre_dist_age = %s
-            WHERE grid_id = %s
-        """
-        db.execute(sql, (age_distributor.next(), row['grid_id']))
-
-
-    logging.info("Calculating rollback inventory age")
-    sql = """
-        UPDATE preprocessing.inventory_disturbed
-        SET rollback_age = pre_dist_age + (%s - new_disturbance_yr)
-    """
-
-    db = pgdata.connect(db_url)
-    db.execute(sql, (config.GetRollbackRange()["StartYear"]))
-
 
 def rollback_age_non_disturbed(db_url, config):
     """ Roll back age for undisturbed stands
