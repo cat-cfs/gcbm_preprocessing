@@ -7,8 +7,8 @@ import tempfile
 from xml.sax.saxutils import escape
 
 from osgeo import gdal
-from dbfread import DBF
 import pgdata
+
 
 class RollbackDistributor(object):
     def __init__(self, **age_proportions):
@@ -65,7 +65,6 @@ def rollback_age_disturbed(db_url, config):
         """
         db.execute(sql, (age_distributor.next(), row['grid_id']))
 
-
     logging.info("Calculating rollback inventory age")
     sql = """
         UPDATE preprocessing.inventory_disturbed
@@ -73,7 +72,6 @@ def rollback_age_disturbed(db_url, config):
     """
     db = pgdata.connect(db_url)
     db.execute(sql, (config.GetRollbackRange()["StartYear"]))
-
 
 
 def rollback_age_non_disturbed(db_url, config):
@@ -116,6 +114,7 @@ def generate_slashburn(db_url, config):
     """)
     for year in range(rollback_start, rollback_end + 1):
         db.execute(db.queries['create_slashburn'], (year, slashburn_percent))
+
 
 def export_rollback_disturbances(gdal_con, config, region_path):
     """ Export rolled back disturbances to shapefile
@@ -304,7 +303,6 @@ def export_inventory(db_url, gdal_con, config, region_path):
     return raster_meta
 
 
-
 def _create_pg_vrt(gdal_con, sql, out_layer):
     """ Create a quick temp vrt file pointing to layer name, pg connection and query
     """
@@ -323,20 +321,6 @@ def _create_pg_vrt(gdal_con, sql, out_layer):
     with open(vrtpath, "w") as vrtfile:
         vrtfile.write(vrt)
     return vrtpath
-
-
-def _create_attribute_table(dbf_path, field_name):
-    """
-    Create an attribute table with the field name given to be used in the tiler along
-    with the tif. This is necessary for fields that are not integers.
-    """
-    attr_table = {}
-    for row in DBF(dbf_path):
-        if len(row) < 3:
-            return None
-        attr_table.update({row.items()[0][1]: [row.items()[-1][1]]})
-    return attr_table
-
 
 
 def _load_dist_age_prop(db_url, dist_age_prop_path):
