@@ -11,6 +11,8 @@ from osgeo import gdal
 import pgdata
 
 import numpy as np
+
+
 def read_dist_age_prop(path):
     with open(path, "r") as age_prop_file:
         reader = csv.reader(age_prop_file)
@@ -39,16 +41,16 @@ def rollback_age_disturbed(db_url, config):
     dist_age_prop_path = config.GetDistAgeProportionFilePath()
     logging.info("Calculating pre disturbance age using '{}' to select age"
                  .format(dist_age_prop_path))
- 
+
 
     grouped = read_dist_age_prop(dist_age_prop_path)
     db = pgdata.connect(db_url)
-    
+
     db_data = list(db.execute("select grid_id, dist_type from preprocessing.inventory_disturbed where dist_type IS NOT NULL"))
     np_db_data = np.asarray(db_data)
 
     #### possible optimization (needs some tweaking to get it working) ####
-    #np_db_data = np.fromiter(db_data, 
+    #np_db_data = np.fromiter(db_data,
                              #count= len(db_data), #performance helper
     #                         dtype=("i8,i4"))
     #np_db_data = np_db_data.view(np.int64).reshape((len(np_db_data),-1))
@@ -56,7 +58,7 @@ def rollback_age_disturbed(db_url, config):
     output_ids = None
     output_age = None
     for distType in np.unique(np_db_data[:,1]):
-        #iterate over each unique dist type 
+        #iterate over each unique dist type
 
         #fetch the distribution parameters
         distribution = grouped[distType]
@@ -260,20 +262,16 @@ def export_inventory(db_url, gdal_con, config, region_path):
     to_rasterize["species"] = config.GetInventoryFieldNames()["species"]   # add species
 
     # define classifier types which do not require attribute dicts
-
-
     integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
-
 
     db = pgdata.connect(db_url)
 
     raster_meta = []
-    for attribute, field_name in to_rasterize.items():
+    for attribute in to_rasterize.keys():
         attribute_pg = attribute.lower()
         file_path = os.path.join(raster_output, "{}.tif".format(attribute))
         logging.info('Exporting {} to {}'.format(attribute, file_path))
         # do not create a lookup/attribute table for integer fields
-
         if str(db['preprocessing.inventory'].column_types[attribute_pg]) in integer_types:
             sql = """
                 SELECT i.{} as val, g.geom
@@ -282,12 +280,11 @@ def export_inventory(db_url, gdal_con, config, region_path):
                 ON g.grid_id = x.grid_id
                 INNER JOIN preprocessing.inventory i
                 ON x.inventory_id = i.inventory_id
-            """.format(field_name)
+            """.format(attribute_pg)
             attribute_table = None
         # for non-int types, create lookup and rasterize with the integer lookup value
         else:
             # create lookup
-
             db['preprocessing.inventory_{}_xref'.format(attribute_pg)].drop()
             lut_sql = """
             CREATE TABLE preprocessing.inventory_{col}_xref AS
@@ -317,8 +314,8 @@ def export_inventory(db_url, gdal_con, config, region_path):
             """.format(col=attribute_pg)
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
-        for row in db['preprocessing.inventory_'+field_name+"_xref"]:
-            attribute_table[row['val']] = list(row[field_name])
+            for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
+                attribute_table[row['val']] = list(row[attribute_pg])
         vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
         gdal.Rasterize(
             file_path,

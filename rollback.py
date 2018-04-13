@@ -38,7 +38,7 @@ def main():
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
 
         config = PreprocessorConfig(args.preprocessorConfig, pathRegistry)
- 
+
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
             logging.info(region_path)
@@ -65,7 +65,7 @@ def main():
             )
             tilerConfig = RollbackTilerConfig()
             dist_lookup = config.GetRollbackOutputDisturbanceTypes()
-            
+
             tilerConfig.Generate(
                 outPath=tiler_path,
                 inventoryMeta=raster_metadata,
