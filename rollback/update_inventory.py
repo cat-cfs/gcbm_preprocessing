@@ -280,16 +280,9 @@ def export_inventory(db_url, gdal_con, config, region_path):
             """.format(col=attribute_pg)
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
-<<<<<<< HEAD
-            for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
-                attribute_table[row['val']] = [row[attribute_pg]]
-        vrtpath = _create_pg_vrt(sql, attribute_pg)
-=======
-            for row in db['preprocessing.inventory_'+field_name+"_xref"]:
-                attribute_table[row['val']] = list(row[field_name])
-
+        for row in db['preprocessing.inventory_'+field_name+"_xref"]:
+            attribute_table[row['val']] = list(row[field_name])
         vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
->>>>>>> 010ea2bf2c91da867a327ac4ebc4680a8d61b94d
         gdal.Rasterize(
             file_path,
             vrtpath,
