@@ -222,6 +222,18 @@ def export_inventory(db_url, gdal_con, config, region_path):
     if not os.path.exists(raster_output):
         os.makedirs(raster_output)
 
+    db = pgdata.connect(db_url)
+    # get bounds of the inventory grid so that output rasters use the same extent
+    # (and therefore line up)
+    bounds = db.query("""
+        SELECT
+        ST_Xmin(geom), ST_Ymin(geom), ST_Xmax(geom), ST_Ymax(geom)
+        FROM
+          (SELECT
+           ST_Extent(geom) AS geom
+           FROM preprocessing.grid) AS g
+        """).fetchone()
+
     # initialize raster meta, recording info about each raster that gets dumped
     raster_meta = []
 
@@ -232,7 +244,6 @@ def export_inventory(db_url, gdal_con, config, region_path):
         INNER JOIN preprocessing.inventory_disturbed i
         ON g.grid_id = i.grid_id
     """
-
     vrtpath = _create_pg_vrt(gdal_con, sql, 'age')
     src_age_col = config.GetInventoryFieldNames()["age"]
     file_path = os.path.join(raster_output, "{}.tif".format(src_age_col))
@@ -244,13 +255,15 @@ def export_inventory(db_url, gdal_con, config, region_path):
         attribute='age',
         allTouched=True,
         # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
-        creationOptions=["COMPRESS=DEFLATE"]
+        creationOptions=["COMPRESS=DEFLATE"],
+        outputBounds=bounds
     )
     raster_meta.append(
         {
             "file_path": file_path,
             "attribute": src_age_col,
-            "attribute_table": None
+            "attribute_table": None,
+            "metadata": "inventory"
         }
     )
 
@@ -264,9 +277,6 @@ def export_inventory(db_url, gdal_con, config, region_path):
     # define classifier types which do not require attribute dicts
     integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
 
-    db = pgdata.connect(db_url)
-
-    raster_meta = []
     for attribute in to_rasterize.keys():
         attribute_pg = attribute.lower()
         file_path = os.path.join(raster_output, "{}.tif".format(attribute))
@@ -325,14 +335,14 @@ def export_inventory(db_url, gdal_con, config, region_path):
             attribute='val',
             allTouched=True,
             # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
-            creationOptions=["COMPRESS=DEFLATE"]
+            creationOptions=["COMPRESS=DEFLATE"],
+            outputBounds=bounds
         )
 
         raster_meta.append(
             {
                 "file_path": file_path,
                 "attribute": attribute,
-
                 "attribute_table": attribute_table,
                 "metadata": "inventory"
             }
