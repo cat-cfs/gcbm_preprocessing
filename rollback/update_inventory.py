@@ -10,6 +10,9 @@ from osgeo import gdal
 from dbfread import DBF
 import pgdata
 
+from preprocess_tools import postgis_manage
+import numpy as np
+
 class RollbackDistributor(object):
     def __init__(self, **age_proportions):
         self._rand = random.Random()
@@ -28,6 +31,84 @@ class RollbackDistributor(object):
         self._choices[age] += 1
         return int(age)
 
+def read_dist_age_prop(path):
+    with open(path, "r") as age_prop_file:
+        reader = csv.reader(age_prop_file)
+        reader.next()  # skip header
+        grouped_by_dist_rows = {}
+        for row in reader:
+            dist_type = int(row[0])
+            if dist_type in grouped_by_dist_rows:
+                grouped_by_dist_rows[dist_type].append(row)
+            else:
+                grouped_by_dist_rows[dist_type]=[row]
+        distributions = {}
+        for k,v in grouped_by_dist_rows.items():
+            distributions[k] = {
+                "age": [float(x[1]) for x in v],
+                "p_age": [float(x[2]) for x in v]
+            }
+        return distributions
+
+def rollback_age_disturbed_v2(db_url, config):
+
+    dist_age_prop_path = config.GetDistAgeProportionFilePath()
+    logging.info("Calculating pre disturbance age using '{}' to select age"
+                 .format(dist_age_prop_path))
+
+    grouped = read_dist_age_prop(dist_age_prop_path)
+    db = pgdata.connect(db_url)
+    
+    db_data = db.execute("select grid_id, dist_type from preprocessing.inventory_disturbed where dist_type IS NOT NULL")
+    np_db_data = np.fromiter(db_data, 
+                             #count= len(db_data), #performance helper
+                             dtype=("i8,i4"))
+    np_db_data = np_db_data.view(np.int64).reshape((len(np_db_data),-1))
+    output_ids = None
+    output_age = None
+    for distType in np.unique(np_db_data[:,1]):
+        #iterate over each unique dist type 
+
+        #fetch the distribution parameters
+        distribution = grouped[distType]
+
+        #get all of the rows of the entire dataset that match the dist type
+        distTypeSubset = np_db_data[np_db_data[:,1] == distType]
+
+        #copy the grid id column to the outputconfig
+        output_id_subset = distTypeSubset[:,0].astype(np.int64)
+
+        #use the numpy method for a categorical distribution
+        output_age_subset = np.random.choice(
+            size = distTypeSubset.shape[0],
+            a=distribution["age"],
+            p=distribution["p_age"])
+
+        #build up the output, by concatenating
+        if output_ids is None:
+            output_ids = output_id_subset
+            output_age = output_age_subset
+        else:
+            output_ids = np.hstack((output_ids, output_id_subset))
+            output_age = np.hstack((output_age, output_age_subset))
+
+
+    # https://trvrm.github.io/bulk-psycopg2-inserts.html
+    update_sql = """
+                UPDATE preprocessing.inventory_disturbed
+                SET pre_dist_age = unnest( %(age)s::TEXT[] )
+                WHERE grid_id = unnest( %(id)s::TEXT[] )
+            """
+    db.execute(update_sql, {"age": output_age, "id": output_ids})
+
+    logging.info("Calculating rollback inventory age")
+    sql = """
+        UPDATE preprocessing.inventory_disturbed
+        SET rollback_age = pre_dist_age + (%s - new_disturbance_yr)
+    """
+
+    db = pgdata.connect(db_url)
+    db.execute(sql, (config.GetRollbackRange()["StartYear"]))
 
 
 def rollback_age_disturbed(db_url, config):
