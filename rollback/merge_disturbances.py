@@ -131,3 +131,4 @@ def intersect_disturbances_inventory(db_url, config):
         db.queries['intersect_disturbances_inventory'],
         (config.GetInventoryYear(), config.GetRollbackRange()["StartYear"])
     )
+    db['preprocessing.inventory_disturbed'].create_index(['grid_id'])

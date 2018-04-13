@@ -7,11 +7,10 @@ import tempfile
 from xml.sax.saxutils import escape
 
 from osgeo import gdal
-from dbfread import DBF
+
 import pgdata
 
 import numpy as np
-
 def read_dist_age_prop(path):
     with open(path, "r") as age_prop_file:
         reader = csv.reader(age_prop_file)
@@ -31,11 +30,16 @@ def read_dist_age_prop(path):
             }
         return distributions
 
+
 def rollback_age_disturbed(db_url, config):
 
+
+    """ Calculate pre-disturbance age and rollback inventory age
+    """
     dist_age_prop_path = config.GetDistAgeProportionFilePath()
     logging.info("Calculating pre disturbance age using '{}' to select age"
                  .format(dist_age_prop_path))
+ 
 
     grouped = read_dist_age_prop(dist_age_prop_path)
     db = pgdata.connect(db_url)
@@ -85,6 +89,7 @@ def rollback_age_disturbed(db_url, config):
         FROM (select unnest( %(id)s ) as id, unnest( %(age)s ) as age) as new_values
         WHERE grid_id = new_values.id
         """
+
     output_age_list = output_age.tolist()
     output_id_list = output_ids.tolist()
     db.execute(update_sql, {"age": output_age_list, "id": output_id_list})
@@ -138,6 +143,7 @@ def generate_slashburn(db_url, config):
     """)
     for year in range(rollback_start, rollback_end + 1):
         db.execute(db.queries['create_slashburn'], (year, slashburn_percent))
+
 
 def export_rollback_disturbances(gdal_con, config, region_path):
     """ Export rolled back disturbances to shapefile
@@ -255,7 +261,9 @@ def export_inventory(db_url, gdal_con, config, region_path):
 
     # define classifier types which do not require attribute dicts
 
+
     integer_types = ['SMALLINT', 'BIGINT', 'INTEGER']
+
 
     db = pgdata.connect(db_url)
 
@@ -309,12 +317,9 @@ def export_inventory(db_url, gdal_con, config, region_path):
             """.format(col=attribute_pg)
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
-
-            for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
-                attribute_table[row['val']] = [row[attribute_pg]]
-
-        vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
-        gdal.Rasterize(
+        for row in db['preprocessing.inventory_'+field_name+"_xref"]:
+            attribute_table[row['val']] = list(row[field_name])
+        vrtpath = _create_pg_vrt(gdal_con, sql, attribute)        gdal.Rasterize(
             file_path,
             vrtpath,
             xRes=config.GetResolution(),
@@ -329,12 +334,12 @@ def export_inventory(db_url, gdal_con, config, region_path):
             {
                 "file_path": file_path,
                 "attribute": attribute,
+
                 "attribute_table": attribute_table,
                 "metadata": "inventory"
             }
         )
     return raster_meta
-
 
 
 
@@ -358,19 +363,6 @@ def _create_pg_vrt(gdal_con, sql, out_layer):
     with open(vrtpath, "w") as vrtfile:
         vrtfile.write(vrt)
     return vrtpath
-
-
-def _create_attribute_table(dbf_path, field_name):
-    """
-    Create an attribute table with the field name given to be used in the tiler along
-    with the tif. This is necessary for fields that are not integers.
-    """
-    attr_table = {}
-    for row in DBF(dbf_path):
-        if len(row) < 3:
-            return None
-        attr_table.update({row.items()[0][1]: [row.items()[-1][1]]})
-    return attr_table
 
 
 
