@@ -10,8 +10,6 @@ from osgeo import gdal
 from dbfread import DBF
 import pgdata
 
-
-
 class RollbackDistributor(object):
     def __init__(self, **age_proportions):
         self._rand = random.Random()
@@ -31,7 +29,7 @@ class RollbackDistributor(object):
         return int(age)
 
 
-def rollback_age_disturbed(config):
+def rollback_age_disturbed(db_url, config):
     """ Calculate pre-disturbance age and rollback inventory age
     """
     dist_age_prop_path = config.GetDistAgeProportionFilePath()
@@ -55,7 +53,7 @@ def rollback_age_disturbed(config):
     age_distributors = {}
     for dist_type, age_props in dist_age_props.iteritems():
         age_distributors[dist_type] = RollbackDistributor(**age_props)
-    db = pgdata.connect()
+    db = pgdata.connect(db_url)
     for row in db['preprocessing.inventory_disturbed']:
         age_distributor = age_distributors.get(dist_type)
         # logging.info("Age picks for disturbance type {}:{}".format(
@@ -73,25 +71,25 @@ def rollback_age_disturbed(config):
         UPDATE preprocessing.inventory_disturbed
         SET rollback_age = pre_dist_age + (%s - new_disturbance_yr)
     """
-    db = pgdata.connect()
+    db = pgdata.connect(db_url)
     db.execute(sql, (config.GetRollbackRange()["StartYear"]))
 
 
 
-def rollback_age_non_disturbed(config):
+def rollback_age_non_disturbed(db_url, config):
     """ Roll back age for undisturbed stands
     """
     logging.info('Rolling back ages for age {}'.format(
         config.GetRollbackRange()["StartYear"]))
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-    db = pgdata.connect(sql_path=sql_path)
+    db = pgdata.connect(db_url, sql_path=sql_path)
     db['preprocessing.inventory_rollback'].drop()
     db.execute(
         db.queries['inventory_rollback'],
         (config.GetInventoryYear(), config.GetRollbackRange()["StartYear"]))
 
 
-def generate_slashburn(config):
+def generate_slashburn(db_url, config):
     """
     Generate annual slashburn disturbances for the rollback period.
 
@@ -107,7 +105,7 @@ def generate_slashburn(config):
         rollback_end,
         slashburn_percent))
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-    db = pgdata.connect(sql_path=sql_path)
+    db = pgdata.connect(db_url, sql_path=sql_path)
     db['preprocessing.temp_slashburn'].drop()
     db.execute("""
         CREATE TABLE preprocessing.temp_slashburn
@@ -119,10 +117,7 @@ def generate_slashburn(config):
     for year in range(rollback_start, rollback_end + 1):
         db.execute(db.queries['create_slashburn'], (year, slashburn_percent))
 
-
-
-
-def export_rollback_disturbances(config, region_path):
+def export_rollback_disturbances(gdal_con, config, region_path):
     """ Export rolled back disturbances to shapefile
     """
     rollback_disturbances_output = config.GetRollbackDisturbancesOutputDir(region_path)
@@ -178,14 +173,14 @@ def export_rollback_disturbances(config, region_path):
     # trying to use ST_Union and similar
     # Lets just create a VRT as as work-around
     out_layer = os.path.splitext(os.path.basename(rollback_disturbances_output))[0]
-    vrtpath = _create_pg_vrt(sql, out_layer)
+    vrtpath = _create_pg_vrt(gdal_con, sql, out_layer)
     gdal.VectorTranslate(
         rollback_disturbances_output,
         vrtpath,
         accessMode='overwrite')
 
 
-def export_inventory(config, region_path):
+def export_inventory(db_url, gdal_con, config, region_path):
     """ Export classifiers and rolled back age to file (raster)
     """
     raster_output = config.GetInventoryRasterOutputDir(region_path)
@@ -206,7 +201,7 @@ def export_inventory(config, region_path):
         INNER JOIN preprocessing.inventory_disturbed i
         ON g.grid_id = i.grid_id
     """
-    vrtpath = _create_pg_vrt(sql, 'age')
+    vrtpath = _create_pg_vrt(gdal_con, sql, 'age')
     src_age_col = config.GetInventoryFieldNames()["age"]
     file_path = os.path.join(raster_output, "{}.tif".format(src_age_col))
     gdal.Rasterize(
@@ -235,8 +230,8 @@ def export_inventory(config, region_path):
     to_rasterize["species"] = config.GetInventoryFieldNames()["species"]   # add species
 
     # define classifier types which do not require attribute dicts
-    integer_types = ['SMALLINT', 'BIGINT', 'INTEGER']
-    db = pgdata.connect()
+    integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
+    db = pgdata.connect(db_url)
 
     raster_meta = []
     for attribute, field_name in to_rasterize.items():
@@ -285,9 +280,16 @@ def export_inventory(config, region_path):
             """.format(col=attribute_pg)
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
+<<<<<<< HEAD
             for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
                 attribute_table[row['val']] = [row[attribute_pg]]
         vrtpath = _create_pg_vrt(sql, attribute_pg)
+=======
+            for row in db['preprocessing.inventory_'+field_name+"_xref"]:
+                attribute_table[row['val']] = list(row[field_name])
+
+        vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
+>>>>>>> 010ea2bf2c91da867a327ac4ebc4680a8d61b94d
         gdal.Rasterize(
             file_path,
             vrtpath,
@@ -310,23 +312,18 @@ def export_inventory(config, region_path):
 
 
 
-def _create_pg_vrt(sql, out_layer):
+def _create_pg_vrt(gdal_con, sql, out_layer):
     """ Create a quick temp vrt file pointing to layer name, pg connection and query
     """
-    pgcred = 'host={h} user={u} dbname={db} password={p}'.format(
-        h=os.environ['PGHOST'],
-        u=os.environ['PGUSER'],
-        db=os.environ['PGDATABASE'],
-        p=os.environ['PGPASSWORD'])
     vrt = """<OGRVRTDataSource>
                <OGRVRTLayer name="{layer}">
-                 <SrcDataSource>PG:{pgcred}</SrcDataSource>
+                 <SrcDataSource>{pgcred}</SrcDataSource>
                  <SrcSQL>{sql}</SrcSQL>
                </OGRVRTLayer>
              </OGRVRTDataSource>
           """.format(layer=out_layer,
                      sql=escape(sql.replace("\n", " ")),
-                     pgcred=pgcred)
+                     pgcred=gdal_con)
     vrtpath = os.path.join(tempfile.gettempdir(), "pg_dump.vrt")
     if os.path.exists(vrtpath):
         os.remove(vrtpath)
@@ -349,13 +346,13 @@ def _create_attribute_table(dbf_path, field_name):
 
 
 
-def _load_dist_age_prop(self, dist_age_prop_path):
+def _load_dist_age_prop(db_url, dist_age_prop_path):
     """
     Load disturbance age csv data to postgres
     Currently not used but could be useful to speed up calculatePreDistAge
     (or perhaps just read the csv to strings that get inlined into pg arrays)
     """
-    db = pgdata.connect()
+    db = pgdata.connect(db_url)
     db['preprocessing.dist_age_prop'].drop()
     db.execute("""CREATE TABLE preprocessing.dist_age_prop
                   (dist_type_id integer, age integer, proportion numeric)""")

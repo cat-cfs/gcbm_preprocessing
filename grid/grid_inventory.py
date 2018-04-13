@@ -30,7 +30,8 @@ def parallel_tiled(db_url, sql, block, n_subs=2):
 
 class GridInventory(object):
 
-    def __init__(self, config):
+    def __init__(self, config, db_url):
+        self.db_url = db_url
         self.config = config
         self.n_processes = config.GetNProcesses()
         self.area_majority_rule = config.GetAreaMajorityRule()
@@ -38,12 +39,12 @@ class GridInventory(object):
 
         # point to the sql folder within grid module
         sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-        self.db = pgdata.connect(sql_path=sql_path)
+        self.db = pgdata.connect(url=self.db_url, sql_path=sql_path)
         self.db.execute(self.db.queries['ST_Fishnet'])
         self.inventory = 'preprocessing.inventory'
         self.gridded_inventory_lut = "preprocessing.inventory_grid_xref"
 
-    def load_to_postgres(self, in_workspace, in_layer):
+    def load_to_postgres(self, gdal_pg_conn, in_workspace, in_layer):
         """ Load inventory to db
         """
 
@@ -63,16 +64,8 @@ class GridInventory(object):
         filter_string = "{a} > 0".format(a=inventory_fields["age"])
         logging.info("Loading inventory to postgres for gridding")
 
-        # define pg connection string
-        pg = "PG:host='{h}' port='{p}' dbname='{db}' user='{usr}' password='{pwd}'".format(
-            h=os.environ['PGHOST'],
-            p=os.environ['PGPORT'],
-            db=os.environ['PGDATABASE'],
-            usr=os.environ['PGUSER'],
-            pwd=os.environ['PGPASSWORD'])
-
         gdal.VectorTranslate(
-                pg,
+                gdal_pg_conn,
                 in_workspace,
                 format='PostgreSQL',
                 layerName=self.inventory,
@@ -91,7 +84,7 @@ class GridInventory(object):
                                       'SCHEMA=preprocessing',
                                       'GEOMETRY_NAME=geom']
         )
-        db = pgdata.connect()
+        db = pgdata.connect(url=self.db_url)
         db.execute("""
             ALTER TABLE preprocessing.inventory
             RENAME COLUMN ogc_fid TO inventory_id""")

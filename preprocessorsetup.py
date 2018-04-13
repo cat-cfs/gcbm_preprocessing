@@ -1,6 +1,7 @@
 from loghelper import *
 import os, sys, argparse, shutil, zipfile
-
+from future.builtins import input
+from preprocess_tools import postgis_manage
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 def main():
@@ -18,9 +19,12 @@ def main():
         parser.add_argument("--future", action="store_true", dest="future", help="copys future projection files to the working dir")
         parser.add_argument("--aspatial", action="store_true", dest="aspatial", help="copy aspatial files to the working dir")
         parser.add_argument("--tools", action="store_true", dest="tools", help="copy tools to the working dir")
+        parser.add_argument("--postgis", action="store_true", dest="postgis", help="set up postgis credentials/url")
         parser.set_defaults(spatial=False)
+        parser.set_defaults(future=False)
         parser.set_defaults(aspatial=False)
         parser.set_defaults(tools=False)
+        parser.set_defaults(postgis=False)
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath( args.pathRegistry))
@@ -31,8 +35,40 @@ def main():
         if not args.spatial \
            and not args.aspatial \
            and not args.tools \
-           and not args.future:
+           and not args.future \
+           and not args.postgis:
             logging.error("nothing to do")
+
+        if args.postgis:
+            logging.info("postgis setup")
+            post_gis_variables = [{"name": "PGHOST", "default": "localhost"},
+                                  {"name": "PGPORT", "default": "5432" }, 
+                                  {"name": "PGUSER",  "default": "postgres"}, 
+                                  {"name": "PGPASSWORD", "default": None}]
+            print("PostGIS connection variables:")
+            pg_var_result = {}
+            for pg_var in post_gis_variables:
+                input_string = "{v} (push enter for '{d}') : " \
+                     .format(v=pg_var["name"], d=pg_var["default"]) \
+                     if pg_var["default"] is not None else \
+                     "{v} : ".format(v = pg_var["name"])
+                result = input(input_string)
+                result = pg_var["default"] if len(result) == 0 and pg_var["default"] else result
+
+                pg_var_result[pg_var["name"]] = result
+            pg_var_result["PGDATABASE"] = "postgres"
+
+            connectionVarsPath = pathRegistry.GetPath("PostGIS_Connection_Vars")
+            if not os.path.exists(os.path.dirname(connectionVarsPath)):
+                os.makedirs(os.path.dirname(connectionVarsPath))
+            postgis_manage.save_connection_variables(connectionVarsPath, **pg_var_result)
+            result = input("test connection? (y/n):")
+            if result.lower() in ["yes", "y"]:
+                with postgis_manage.connect(**postgis_manage.get_connection_variables(connectionVarsPath)) as conn:
+                    if conn.closed:
+                        raise RuntimeError("database connection error")
+                    logging.info("db connected sucessfully")
+                    input("any key to continue")
 
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
