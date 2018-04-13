@@ -267,6 +267,15 @@ def export_inventory(db_url, gdal_con, config, region_path):
     db = pgdata.connect(db_url)
 
     raster_meta = []
+    bounds = db.query("""
+        SELECT
+        ST_Xmin(geom), ST_Ymin(geom), ST_Xmax(geom), ST_Ymax(geom)
+        FROM
+          (SELECT
+           ST_Extent(geom) AS geom
+           FROM preprocessing.grid) AS g
+        """).fetchone()
+
     for attribute in to_rasterize.keys():
         attribute_pg = attribute.lower()
         file_path = os.path.join(raster_output, "{}.tif".format(attribute))
@@ -325,7 +334,8 @@ def export_inventory(db_url, gdal_con, config, region_path):
             attribute='val',
             allTouched=True,
             # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
-            creationOptions=["COMPRESS=DEFLATE"]
+            creationOptions=["COMPRESS=DEFLATE"],
+            outputBounds=bounds
         )
 
         raster_meta.append(
