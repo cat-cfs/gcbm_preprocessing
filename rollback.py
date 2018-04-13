@@ -65,6 +65,7 @@ def main():
             )
             tilerConfig = RollbackTilerConfig()
             dist_lookup = config.GetRollbackOutputDisturbanceTypes()
+            
             tilerConfig.Generate(
                 outPath=tiler_path,
                 inventoryMeta=raster_metadata,
@@ -73,7 +74,8 @@ def main():
                 rollback_range=[
                     config.GetRollbackRange()["StartYear"],
                     config.GetRollbackRange()["EndYear"]],
-                dist_lookup=dist_lookup)
+                dist_lookup=dist_lookup,
+                classifiers = config.GetInventoryClassifiers())
 
 
     except Exception:

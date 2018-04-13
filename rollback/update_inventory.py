@@ -50,7 +50,7 @@ def read_dist_age_prop(path):
             }
         return distributions
 
-def rollback_age_disturbed_v2(db_url, config):
+def rollback_age_disturbed(db_url, config):
 
     dist_age_prop_path = config.GetDistAgeProportionFilePath()
     logging.info("Calculating pre disturbance age using '{}' to select age"
@@ -59,11 +59,15 @@ def rollback_age_disturbed_v2(db_url, config):
     grouped = read_dist_age_prop(dist_age_prop_path)
     db = pgdata.connect(db_url)
     
-    db_data = db.execute("select grid_id, dist_type from preprocessing.inventory_disturbed where dist_type IS NOT NULL")
-    np_db_data = np.fromiter(db_data, 
+    db_data = list(db.execute("select grid_id, dist_type from preprocessing.inventory_disturbed where dist_type IS NOT NULL"))
+    np_db_data = np.asarray(db_data)
+
+
+    #np_db_data = np.fromiter(db_data, 
                              #count= len(db_data), #performance helper
-                             dtype=("i8,i4"))
-    np_db_data = np_db_data.view(np.int64).reshape((len(np_db_data),-1))
+    #                         dtype=("i8,i4"))
+    #np_db_data = np_db_data.view(np.int64).reshape((len(np_db_data),-1))
+
     output_ids = None
     output_age = None
     for distType in np.unique(np_db_data[:,1]):
@@ -75,7 +79,7 @@ def rollback_age_disturbed_v2(db_url, config):
         #get all of the rows of the entire dataset that match the dist type
         distTypeSubset = np_db_data[np_db_data[:,1] == distType]
 
-        #copy the grid id column to the outputconfig
+        #copy the grid id column to the output subset
         output_id_subset = distTypeSubset[:,0].astype(np.int64)
 
         #use the numpy method for a categorical distribution
@@ -94,12 +98,26 @@ def rollback_age_disturbed_v2(db_url, config):
 
 
     # https://trvrm.github.io/bulk-psycopg2-inserts.html
+    #update_sql = """
+    #            UPDATE preprocessing.inventory_disturbed
+    #            SET pre_dist_age = unnest( %(age)s::TEXT[] )
+    #            WHERE grid_id = unnest( %(id)s::TEXT[] )
+    #        """
+    # update_sql = """
+    #           UPDATE preprocessing.inventory_disturbed
+    #           SET pre_dist_age = unnest( %(age)s )
+    #           WHERE grid_id = unnest( %(id)s )
+    #        """
+
     update_sql = """
-                UPDATE preprocessing.inventory_disturbed
-                SET pre_dist_age = unnest( %(age)s::TEXT[] )
-                WHERE grid_id = unnest( %(id)s::TEXT[] )
-            """
-    db.execute(update_sql, {"age": output_age, "id": output_ids})
+        UPDATE preprocessing.inventory_disturbed
+        SET pre_dist_age = new_values.age
+        FROM (select unnest( %(id)s ) as id, unnest( %(age)s ) as age) as new_values
+        WHERE grid_id = new_values.id
+        """
+    output_age_list = output_age.tolist()
+    output_id_list = output_ids.tolist()
+    db.execute(update_sql, {"age": output_age_list, "id": output_id_list})
 
     logging.info("Calculating rollback inventory age")
     sql = """
@@ -111,7 +129,7 @@ def rollback_age_disturbed_v2(db_url, config):
     db.execute(sql, (config.GetRollbackRange()["StartYear"]))
 
 
-def rollback_age_disturbed(db_url, config):
+def rollback_age_disturbed_v1(db_url, config):
     """ Calculate pre-disturbance age and rollback inventory age
     """
     dist_age_prop_path = config.GetDistAgeProportionFilePath()
@@ -389,7 +407,8 @@ def export_inventory(db_url, gdal_con, config, region_path):
             {
                 "file_path": file_path,
                 "attribute": attribute,
-                "attribute_table": attribute_table
+                "attribute_table": attribute_table,
+                "metadata": "inventory"
             }
         )
     return raster_meta
