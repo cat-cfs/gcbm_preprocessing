@@ -262,7 +262,8 @@ def export_inventory(db_url, gdal_con, config, region_path):
         {
             "file_path": file_path,
             "attribute": src_age_col,
-            "attribute_table": None
+            "attribute_table": None,
+            "metadata": "inventory"
         }
     )
 
@@ -275,7 +276,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
 
     # define classifier types which do not require attribute dicts
     integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
-    raster_meta = []
+
     for attribute in to_rasterize.keys():
         attribute_pg = attribute.lower()
         file_path = os.path.join(raster_output, "{}.tif".format(attribute))
