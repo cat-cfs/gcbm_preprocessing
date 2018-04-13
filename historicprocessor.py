@@ -1,11 +1,12 @@
 from loghelper import *
-from preprocess_tools.licensemanager import *
-import argparse
+
+import argparse, sys
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 from historic.historic_tiler_config import HistoricTilerConfig
 from historic.generate_historic_slashburn import generate_slashburn
+from preprocess_tools import postgis_manage
 from runtiler import RunTiler
 class Historic(object):
     """
@@ -15,7 +16,7 @@ class Historic(object):
     def __init__(self, preprocessorConfig):
         self.preprocessorConfig = preprocessorConfig
 
-    def Process(self, region_path):
+    def Process(self, region_path, db_url, gdal_con):
         #load the rollback tiler config path. We will append to a copy of this.
         input_path = self.preprocessorConfig.GetRollbackTilerConfigPath(region_path)
         output_path = self.preprocessorConfig.GetHistoricTilerConfigPath(region_path)
@@ -56,7 +57,7 @@ class Historic(object):
             harvest_shp_year_field = harvestLayer["YearField"]
             sb_percent = self.preprocessorConfig.GetSlashBurnPercent()
 
-            slashburn_path = generate_slashburn(
+            slashburn_path = generate_slashburn(db_url, gdal_con,
                 inventory_workspace=self.preprocessorConfig.GetInventoryWorkspace(
                     region_path),
                 inventory_disturbance_year_fieldname=self.preprocessorConfig.GetInventoryField("disturbance_yr"),
@@ -107,7 +108,14 @@ def main():
         historic = Historic(preprocessorConfig)
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
-            tilerConfigPath = historic.Process(region_path)
+            region_postgis_var_path = pathRegistry.GetPath(
+                "PostGIS_Region_Connection_Vars",
+                region_path=region_path)
+
+            db_url = postgis_manage.get_url(region_postgis_var_path)
+            gdal_con = postgis_manage.get_gdal_conn_string(region_postgis_var_path)
+            tilerConfigPath = historic.Process(region_path, db_url, gdal_con)
+
             if args.runtiler:
 
                 t = RunTiler()

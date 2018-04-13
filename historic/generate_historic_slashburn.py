@@ -10,6 +10,7 @@ import pgdata
 
 
 def generate_slashburn(
+    db_url, gdal_con,
     inventory_workspace,
     inventory_disturbance_year_fieldname,
     harvest_shp,
@@ -29,7 +30,7 @@ def generate_slashburn(
         year_range[0], year_range[-1]))
 
     sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-    db = pgdata.connect(sql_path=sql_path)
+    db = pgdata.connect(url=db_url, sql_path=sql_path)
     db['preprocessing.temp_slashburn'].drop()
     db.execute("""
         CREATE TABLE preprocessing.temp_slashburn
@@ -65,7 +66,7 @@ def generate_slashburn(
     # trying to use ST_Union and similar
     # Lets just create a VRT as as work-around
     out_layer = os.path.splitext(os.path.basename(sb_shp))[0]
-    vrtpath = _create_pg_vrt(sql, out_layer)
+    vrtpath = _create_pg_vrt(sql, gdal_con, out_layer)
     gdal.VectorTranslate(
         sb_shp,
         vrtpath,
@@ -73,23 +74,19 @@ def generate_slashburn(
     return sb_shp
 
 
-def _create_pg_vrt(sql, out_layer):
+def _create_pg_vrt(sql, gdal_con, out_layer):
     """ Create a quick temp vrt file pointing to layer name, pg connection and query
     """
-    pgcred = 'host={h} user={u} dbname={db} password={p}'.format(
-        h=os.environ['PGHOST'],
-        u=os.environ['PGUSER'],
-        db=os.environ['PGDATABASE'],
-        p=os.environ['PGPASSWORD'])
+
     vrt = """<OGRVRTDataSource>
                <OGRVRTLayer name="{layer}">
-                 <SrcDataSource>PG:{pgcred}</SrcDataSource>
+                 <SrcDataSource>{pgcred}</SrcDataSource>
                  <SrcSQL>{sql}</SrcSQL>
                </OGRVRTLayer>
              </OGRVRTDataSource>
           """.format(layer=out_layer,
                      sql=escape(sql.replace("\n", " ")),
-                     pgcred=pgcred)
+                     pgcred=gdal_con)
     vrtpath = os.path.join(tempfile.gettempdir(), "pg_dump.vrt")
     if os.path.exists(vrtpath):
         os.remove(vrtpath)

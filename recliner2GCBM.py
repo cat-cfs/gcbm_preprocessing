@@ -2,7 +2,7 @@ from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.recliner2GCBMConfig import Recliner2GCBMConfig
-import os, argparse, subprocess
+import os, argparse, subprocess, sys
 from loghelper import *
 class Recliner2GCBM(object):
     def __init__(self, exe_paths, configTemplatePath, outputPath,
