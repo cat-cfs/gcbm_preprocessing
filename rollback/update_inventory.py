@@ -262,7 +262,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
     # define classifier types which do not require attribute dicts
 
 
-    integer_types = ['SMALLINT', 'BIGINT', 'INTEGER']
+    integer_types = ('SMALLINT', 'BIGINT', 'INTEGER')
 
 
     db = pgdata.connect(db_url)
@@ -319,7 +319,8 @@ def export_inventory(db_url, gdal_con, config, region_path):
             attribute_table = {}
         for row in db['preprocessing.inventory_'+field_name+"_xref"]:
             attribute_table[row['val']] = list(row[field_name])
-        vrtpath = _create_pg_vrt(gdal_con, sql, attribute)        gdal.Rasterize(
+        vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
+        gdal.Rasterize(
             file_path,
             vrtpath,
             xRes=config.GetResolution(),
