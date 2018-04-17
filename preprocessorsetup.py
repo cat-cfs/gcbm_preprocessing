@@ -81,7 +81,8 @@ def main():
         if args.tools:
             toolPathPairs = [("Source_GCBM_Dir", "Local_GCBM_Dir"),
                              ("Source_Recliner2GCBM-x64_Dir", "Local_Recliner2GCBM-x64_Dir"),
-                             ("Source_Recliner2GCBM-x86_Dir", "Local_Recliner2GCBM-x86_Dir")]
+                             ("Source_Recliner2GCBM-x86_Dir", "Local_Recliner2GCBM-x86_Dir"),
+                             ("Source_lostgis_dir", "Local_lostgis_dir")]
             for pair in toolPathPairs:
                 src = pathRegistry.GetPath(pair[0])
                 dst = pathRegistry.GetPath(pair[1])

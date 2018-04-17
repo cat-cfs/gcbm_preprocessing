@@ -40,12 +40,11 @@ def main():
 
         logging.info("Run region gridder at resolution {}".format(preprocessorConfig.GetResolution()))
 
-
         # note that looping through regions will not currently work, table names
         # in the postgres db are equivalent for each region.
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
-            
+            logging.info(region_path)
             root_postgis_var_path = pathRegistry.GetPath(
                 "PostGIS_Connection_Vars")
 
@@ -55,7 +54,12 @@ def main():
 
             db_url = postgis_manage.set_up_working_db(
                 root_postgis_var_path,
-                region_postgis_var_path)
+                region_postgis_var_path,
+                [
+                    # load some external postgis functions
+                    pathRegistry.GetPath("ST_Safe_Intersection"),
+                    pathRegistry.GetPath("ST_Safe_Repair")
+                ])
 
             gdal_con = postgis_manage.get_gdal_conn_string(
                 region_postgis_var_path)

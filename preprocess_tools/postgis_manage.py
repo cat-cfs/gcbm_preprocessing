@@ -98,7 +98,8 @@ def drop_database(var_path, dbname):
             cur.execute("""DROP DATABASE IF EXISTS "%s" """, (AsIs(dbname),))
         
 
-def set_up_working_db(root_postgis_var_path, region_postgis_var_path):
+def set_up_working_db(root_postgis_var_path, region_postgis_var_path, sql_files):
+
     if os.path.exists(region_postgis_var_path):
         drop_db_name = get_connection_variables(region_postgis_var_path)["PGDATABASE"]
         logging.info("dropping stale working db '{}'".format(drop_db_name))
@@ -118,6 +119,15 @@ def set_up_working_db(root_postgis_var_path, region_postgis_var_path):
     
     create_preprocessing_schema(region_postgis_var_path)
     create_postgis_extension(region_postgis_var_path)
+
+    if sql_files:
+        with cursor(**region_postgis_vars) as cur:
+            for f in sql_files:
+                with open(f, 'r') as sqlFile:
+                    fileQuery = sqlFile.read()
+                    logging.info("running query {} on working db".format(f))
+                    cur.execute(fileQuery)
+
     return url_string(**region_postgis_vars)
 
 

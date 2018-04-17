@@ -24,7 +24,7 @@ largest_overlap AS
 (SELECT DISTINCT ON (grid_id)
   i.grid_id,
   i.inventory_id,
-  ST_Area(ST_Intersection(i.geom_f, i.geom_i)) as area
+  ST_Area(ST_Safe_Intersection(i.geom_f, i.geom_i)) as area
   --ST_Area(ST_Transform(ST_Intersection(i.geom_f, i.geom_i), 3005)) as area
 FROM intersections i
 INNER JOIN count_intersections c ON i.grid_id = c.grid_id
