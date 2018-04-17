@@ -252,7 +252,7 @@
         "InventoryName": "tsa40", 
         "Region_Number": "40", 
         "PathName": "TSA_40_Fort_St_John", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fort St John TSA'", 
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fort St. John TSA'", 
         "Name": "Fort_St_John"
     }, 
     {
