@@ -14,7 +14,7 @@
     "Local_Dir" : ["C:/", "dev", "scott", "17_BC_ON_1ha"],
     "Local_Working_Dir": [ "${Local_Dir}", "05_working_BC" ],
     "PostGIS_Connection_Vars": ["${Local_Working_Dir}", "postgis", "postgis_connection.json"],
-    "PostGIS_Region_Connection_Vars": [ "${Local_Working_Dir}", "${region_path}", "post_connection.json"],
+    "PostGIS_Region_Connection_Vars": [ "${Local_Working_Dir}", "${region_path}", "postgis_connection.json"],
     "Local_Tools_Dir": [ "${Local_Dir}", "03_tools" ],
     "Local_Recliner2GCBM-x64_Dir": [ "${Local_Tools_Dir}", "Recliner2GCBM-x64" ],
     "Local_Recliner2GCBM-x86_Dir": [ "${Local_Tools_Dir}", "Recliner2GCBM-x86" ],
