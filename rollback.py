@@ -32,8 +32,9 @@ def main():
                   "processed"))
 
         args = parser.parse_args()
-        subRegionConfig = SubRegionConfig(os.path.abspath(args.subRegionConfig),
-                                           args.subRegionNames.split(","))
+        subRegionConfig = SubRegionConfig(
+            os.path.abspath(args.subRegionConfig),
+            args.subRegionNames.split(",") if args.subRegionNames else None)
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
 
@@ -56,7 +57,6 @@ def main():
             update_inventory.generate_slashburn(db_url, config)
             update_inventory.export_rollback_disturbances(gdal_con, config, region_path)
             raster_metadata = update_inventory.export_inventory(db_url, gdal_con, config, region_path)
-
 
             # run tiler on disturbances
             tiler_path = config.GetRollbackTilerConfigPath(region_path=region_path)
