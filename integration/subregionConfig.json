@@ -128,6 +128,14 @@
         "Name": "Robson_Valley"
     }, 
     {
+        "FutureScenarioZip": "../base_tsa18_distout_April_17th_2018.zip", 
+        "InventoryName": "tsa18", 
+        "Region_Number": "18", 
+        "PathName": "TSA_18_Merritt", 
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Merritt TSA'", 
+        "Name": "Merritt"
+    }, 
+    {
         "FutureScenarioZip": "tsa19_distout.zip", 
         "InventoryName": "tsa19", 
         "Region_Number": "19", 
