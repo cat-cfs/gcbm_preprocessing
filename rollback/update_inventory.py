@@ -356,14 +356,12 @@ def _create_pg_vrt(gdal_con, sql, out_layer):
     """
     vrt = """<OGRVRTDataSource>
                <OGRVRTLayer name="{layer}">
-
                  <SrcDataSource>{pgcred}</SrcDataSource>
                  <SrcSQL>{sql}</SrcSQL>
                </OGRVRTLayer>
              </OGRVRTDataSource>
           """.format(layer=out_layer,
                      sql=escape(sql.replace("\n", " ")),
-
                      pgcred=gdal_con)
     vrtpath = os.path.join(tempfile.gettempdir(), "pg_dump.vrt")
     if os.path.exists(vrtpath):
