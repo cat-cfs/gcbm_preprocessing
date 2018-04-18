@@ -325,7 +325,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
             # generate attribute lookup dict by iterating through table rows
             attribute_table = {}
             for row in db['preprocessing.inventory_'+attribute_pg+"_xref"]:
-                attribute_table[row['val']] = list(row[attribute_pg])
+                attribute_table[row['val']] = [row[attribute_pg]]
         vrtpath = _create_pg_vrt(gdal_con, sql, attribute)
         gdal.Rasterize(
             file_path,
