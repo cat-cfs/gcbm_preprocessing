@@ -1,12 +1,11 @@
 from futureprocessing.future_raster_processor import FutureRasterProcessor
 from futureprocessing.random_raster_subset import RandomRasterSubset
 
-from configuration.tilerconfig import TilerConfig
+from gcbm.tilerconfig import TilerConfig
 from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 
-from runtiler import RunTiler
 import sys, shutil
 from loghelper import *
 import argparse, logging
@@ -100,8 +99,6 @@ def main():
                         "string of sub region names (as defined in "+
                         "subRegionConfig) to process, if unspecified all "+
                         "regions will be processed")
-    parser.add_argument("--runtiler", dest="runtiler", action="store_true",
-                       help="if specified the tiler will be run imediately after processing the future spatial layers for each future scenario")
 
     try:
         args = parser.parse_args()
@@ -124,14 +121,7 @@ def main():
                     scenario,
                     region["PathName"])
 
-                if args.runtiler:
-                    t = RunTiler()
-                    futureTileLayerDir = pathRegistry.GetPath(
-                        "TiledLayersDir", 
-                        region_path=region["PathName"],
-                        scenario_name=scenario["Name"])
-                    t.launch(config_path = tilerConfig,
-                             tiler_output_path = futureTileLayerDir)
+
 
 
     except Exception as ex:

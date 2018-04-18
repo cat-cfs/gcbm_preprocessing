@@ -7,7 +7,7 @@ from configuration.preprocessorconfig import PreprocessorConfig
 from historic.historic_tiler_config import HistoricTilerConfig
 from historic.generate_historic_slashburn import generate_slashburn
 from preprocess_tools import postgis_manage
-from runtiler import RunTiler
+
 class Historic(object):
     """
     computes historic slashburn as a proportion of the historical harvest
@@ -90,8 +90,6 @@ def main():
                             "string of sub region names (as defined in "+
                             "subRegionConfig) to process, if unspecified all "+
                             "regions will be processed")
-        parser.add_argument("--runtiler", dest="runtiler", action="store_true",
-                           help="if specified the tiler will be run imediately after processing the historic spatial layers")
         parser.set_defaults(runtiler=False)
 
         args = parser.parse_args()
@@ -115,21 +113,6 @@ def main():
             db_url = postgis_manage.get_url(region_postgis_var_path)
             gdal_con = postgis_manage.get_gdal_conn_string(region_postgis_var_path)
             tilerConfigPath = historic.Process(region_path, db_url, gdal_con)
-
-            if args.runtiler:
-
-                t = RunTiler()
-                outpath = pathRegistry.GetPath(
-                    "TiledLayersDir", 
-                    region_path=region_path,
-                    scenario_name="historic")
-                transitionRulesOutPath = pathRegistry.GetPath(
-                    "TransitionRulesPath", 
-                    region_path=region_path,
-                    scenario_name="historic")
-                t.launch(config_path = tilerConfigPath,
-                         tiler_output_path = outpath,
-                         transitionRulesPath = transitionRulesOutPath)
 
     except Exception as ex:
         logging.exception("error")

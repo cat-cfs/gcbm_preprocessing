@@ -1,4 +1,4 @@
-from configuration.tilerconfig import TilerConfig
+from gcbm.tilerconfig import TilerConfig
 import os, logging
 class HistoricTilerConfig(object):
 

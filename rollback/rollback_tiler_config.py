@@ -1,4 +1,4 @@
-from configuration.tilerconfig import TilerConfig
+from gcbm.tilerconfig import TilerConfig
 
 class RollbackTilerConfig(object):
     def __init__(self):
