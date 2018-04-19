@@ -96,14 +96,16 @@ def drop_database(var_path, dbname):
         conn.autocommit = True
         with conn.cursor() as cur:
             cur.execute("""DROP DATABASE IF EXISTS "%s" """, (AsIs(dbname),))
-        
+
+def drop_working_db(root_postgis_var_path, region_postgis_var_path):
+    if os.path.exists(region_postgis_var_path):
+        drop_db_name = get_connection_variables(region_postgis_var_path)["PGDATABASE"]
+        logging.info("dropping working db '{}'".format(drop_db_name))
+        drop_database(root_postgis_var_path, drop_db_name)
 
 def set_up_working_db(root_postgis_var_path, region_postgis_var_path, sql_files):
 
-    if os.path.exists(region_postgis_var_path):
-        drop_db_name = get_connection_variables(region_postgis_var_path)["PGDATABASE"]
-        logging.info("dropping stale working db '{}'".format(drop_db_name))
-        drop_database(root_postgis_var_path, drop_db_name)
+    drop_working_db(root_postgis_var_path, region_postgis_var_path)
 
     root_postgis_vars = get_connection_variables(
         root_postgis_var_path)

@@ -105,6 +105,7 @@ def main():
 
         historic = Historic(preprocessorConfig)
         for r in subRegionConfig.GetRegions():
+            logging.info(r["Name"])
             region_path = r["PathName"]
             region_postgis_var_path = pathRegistry.GetPath(
                 "PostGIS_Region_Connection_Vars",
@@ -113,6 +114,10 @@ def main():
             db_url = postgis_manage.get_url(region_postgis_var_path)
             gdal_con = postgis_manage.get_gdal_conn_string(region_postgis_var_path)
             tilerConfigPath = historic.Process(region_path, db_url, gdal_con)
+
+            postgis_manage.drop_working_db(
+                    pathRegistry.GetPath("PostGIS_Connection_Vars"),
+                    region_postgis_var_path)
 
     except Exception as ex:
         logging.exception("error")
