@@ -1,4 +1,4 @@
-import os, logging
+import os, logging, subprocess
 from recliner2GCBMConfig import Recliner2GCBMConfig
 
 class Recliner2GCBM(object):
