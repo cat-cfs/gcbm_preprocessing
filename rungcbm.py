@@ -6,7 +6,7 @@ import os, argparse, sys, subprocess, shutil, multiprocessing
 from loghelper import *
 
 def gcbm_worker(task):
-    os.chdir(os.path.dirname(gcbm_config))
+    os.chdir(os.path.dirname(task["gcbm_config"]))
     gcbm_command = [task["gcbm_cli_path"], 
                     "--config", task["gcbm_config"],
                     "--config_provider", task["gcbm_provider"]]
@@ -54,7 +54,7 @@ def main():
                     "gcbm_cli_path": pathRegistry.GetPath("GCBM_EXE")
                 })
         try:
-            p = multiprocessing.Pool(35)
+            p = multiprocessing.Pool(min(len(tasks), 35))
             p.map(gcbm_worker, tasks)
         finally:
             p.close()
