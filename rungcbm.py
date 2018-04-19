@@ -2,8 +2,23 @@ from configuration.pathregistry import PathRegistry
 from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-import os, argparse, sys, subprocess, shutil
+import os, argparse, sys, subprocess, shutil, multiprocessing
 from loghelper import *
+
+def gcbm_worker(task):
+    os.chdir(os.path.dirname(gcbm_config))
+    gcbm_command = [task["gcbm_cli_path"], 
+                    "--config", task["gcbm_config"],
+                    "--config_provider", task["gcbm_provider"]]
+
+
+    logging.info("issuing command: {0}".format(gcbm_command))
+    cmnd_output = subprocess.check_output(gcbm_command) #, 
+                                        #stderr=subprocess.STDOUT,
+                                        #shell=False, 
+                                        #universal_newlines=True);
+    logging.info("command executed successfully")
+
 def main():
 
     create_script_log(sys.argv[0])
@@ -25,29 +40,26 @@ def main():
             args.subRegionNames.split(",") if args.subRegionNames else None)
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
 
+        tasks = []
         for region in subRegionConfig.GetRegions():
             for scenario in futureConfig.GetScenarios():
                 logging.info("run gcbm: {0},{1}".format(region["Name"], scenario["Name"]))
                 gcbm_config_dir = pathRegistry.GetPath("GCBM_Run_Dir",
                                              region_path=region["PathName"],
                                              scenario_name=scenario["Name"])
+                shutil.copy(pathRegistry.GetPath("GCBM_Logging_Conf"), gcbm_config_dir)
+                tasks.append({
+                    "gcbm_config": os.path.join(gcbm_config_dir, "GCBM_config.json"),
+                    "gcbm_provider": os.path.join(gcbm_config_dir, "GCBM_config_provider.json"),
+                    "gcbm_cli_path": pathRegistry.GetPath("GCBM_EXE")
+                })
+        try:
+            p = multiprocessing.Pool(35)
+            p.map(gcbm_worker, tasks)
+        finally:
+            p.close()
+            p.join()
 
-                gcbm_config = os.path.join(gcbm_config_dir, "GCBM_config.json")
-                gcbm_provider = os.path.join(gcbm_config_dir, "GCBM_config_provider.json")
-                gcbm_cli_path = pathRegistry.GetPath("GCBM_EXE")
-                wd = os.path.dirname(gcbm_config)
-                shutil.copy(pathRegistry.GetPath("GCBM_Logging_Conf"), wd)
-                os.chdir(wd)
-                gcbm_command = [gcbm_cli_path, 
-                                "--config", gcbm_config,
-                                "--config_provider", gcbm_provider]
-
-                logging.info("issuing command: {0}".format(gcbm_command))
-                cmnd_output = subprocess.check_output(gcbm_command) #, 
-                                                    #stderr=subprocess.STDOUT,
-                                                    #shell=False, 
-                                                    #universal_newlines=True);
-                logging.info("command executed successfully")
 
     except Exception as ex:
         logging.exception("error")

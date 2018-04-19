@@ -4,6 +4,7 @@ from gcbm.runtiler import RunTiler
 
 from configuration.pathregistry import PathRegistry
 from configuration.futureconfig import FutureConfig
+from configuration.preprocessorconfig import PreprocessorConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 import os, argparse, shutil
@@ -55,7 +56,7 @@ def recliner2gcbm(futureConfig, pathRegistry, subRegionConfig):
                               transitionRulesPath)
             r.run()
 
-def gcbmconfig(futureConfig, pathRegistry, subRegionConfig):
+def gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig):
     for region in subRegionConfig.GetRegions():
         for scenario in futureConfig.GetScenarios():
             logging.info("gcbm config: {0},{1}".format(region["Name"], scenario["Name"]))
@@ -90,12 +91,16 @@ def gcbmconfig(futureConfig, pathRegistry, subRegionConfig):
                 scenario_name=scenario["Name"])
     
             study_area = get_study_area(tiledLayersDir)
-    
+
+            reporting_classifiers = preprocessorConfig.GetReportingClassifiers().keys()
+            reporting_classifiers.extend(
+                preprocessorConfig.GetDefaultSpatialBoundaries(
+                    region_path=region["PathName"])["Attributes"].keys())
             update_gcbm_config(gcbm_config, study_area,
-                               start_year = futureConfig.GetStartYear(),
+                               start_year = preprocessorConfig.GetHistoricRange()["StartYear"],
                                end_year = futureConfig.GetEndYear(),
-                               classifiers = ["AU", "LdSpp"],
-                               reporting_classifiers = ["eco_boundary", "THLB" ],
+                               classifiers = preprocessorConfig.GetInventoryClassifiers().keys(),
+                               reporting_classifiers = reporting_classifiers,
                                output_db_path = gcbm_output_db_path,
                                variable_grid_output_dir = gcbm_output_variable_grid_dir)
     
@@ -108,6 +113,7 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="prepares gcbm configuration files")
         parser.add_argument("--pathRegistry", help="path to file registry data")
+        parser.add_argument("--preprocessorConfig", help="path to preprocessor configuration")
         parser.add_argument("--futureConfig", help="path to configuration")
         parser.add_argument("--subRegionConfig", help="path to sub region data")
         parser.add_argument("--subRegionNames", help="optional comma delimited "+
@@ -125,6 +131,7 @@ def main():
             os.path.abspath(args.subRegionConfig),
             args.subRegionNames.split(",") if args.subRegionNames else None)
         futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
+        preprocessorConfig = PreprocessorConfig(args.preprocessorConfig, pathRegistry)
 
         if not args.tiler \
            and not args.recliner2gcbm \
@@ -136,7 +143,7 @@ def main():
         if args.recliner2gcbm:
             recliner2gcbm(futureConfig, pathRegistry, subRegionConfig)
         if args.gcbmconfig:
-            gcbmconfig(futureConfig, pathRegistry, subRegionConfig)
+            gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig)
 
     except Exception as ex:
         logging.exception("error")
