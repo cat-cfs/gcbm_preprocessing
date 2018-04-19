@@ -35,13 +35,13 @@ def main():
                 gcbm_config = os.path.join(gcbm_config_dir, "GCBM_config.json")
                 gcbm_provider = os.path.join(gcbm_config_dir, "GCBM_config_provider.json")
                 gcbm_cli_path = pathRegistry.GetPath("GCBM_EXE")
-                
+                os.chdir(os.path.dirname(gcbm_config))
                 gcbm_command = [gcbm_cli_path, "--config", gcbm_config, "--config_provider", gcbm_provider]
                 logging.info("issuing command: {0}".format(gcbm_command))
-                cmnd_output = subprocess.check_output(gcbm_command, 
-                                                    stderr=subprocess.STDOUT,
-                                                    shell=False, 
-                                                    universal_newlines=True);
+                cmnd_output = subprocess.check_output(gcbm_command) #, 
+                                                    #stderr=subprocess.STDOUT,
+                                                    #shell=False, 
+                                                    #universal_newlines=True);
                 logging.info("command executed successfully")
 
     except Exception as ex:

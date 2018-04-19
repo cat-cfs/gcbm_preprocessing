@@ -246,7 +246,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
     """
     vrtpath = _create_pg_vrt(gdal_con, sql, 'age')
     src_age_col = config.GetInventoryFieldNames()["age"]
-    file_path = os.path.join(raster_output, "{}.tif".format(src_age_col))
+    file_path = os.path.join(raster_output, "age.tif")
     gdal.Rasterize(
         file_path,
         vrtpath,
