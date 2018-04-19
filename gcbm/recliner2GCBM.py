@@ -21,9 +21,7 @@ class Recliner2GCBM(object):
     def run(self):
         for exe_path in self.exe_paths:
             command = [exe_path, "-c", self.config_path]
-            try:
-                subprocess.check_call(command)
-                logging.info("Found and ran '{}'".format(" ".join(command)))
-                break
-            except Exception as e:
-                logging.error("Failed to run '{}': {}".format(" ".join(command), e))
+            subprocess.check_call(command)
+            logging.info("Found and ran '{}'".format(" ".join(command)))
+            break
+
