@@ -13,10 +13,10 @@ def gcbm_worker(task):
 
 
     logging.info("issuing command: {0}".format(gcbm_command))
-    cmnd_output = subprocess.check_output(gcbm_command) #, 
-                                        #stderr=subprocess.STDOUT,
-                                        #shell=False, 
-                                        #universal_newlines=True);
+    with open(os.devnull, 'wb') as devnull:
+        cmnd_output = subprocess.check_output(
+            gcbm_command, stderr=subprocess.STDOUT)
+
     logging.info("command executed successfully")
 
 def main():
