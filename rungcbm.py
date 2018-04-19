@@ -2,7 +2,7 @@ from configuration.pathregistry import PathRegistry
 from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-import os, argparse, sys, subprocess
+import os, argparse, sys, subprocess, shutil
 from loghelper import *
 def main():
 
@@ -35,8 +35,13 @@ def main():
                 gcbm_config = os.path.join(gcbm_config_dir, "GCBM_config.json")
                 gcbm_provider = os.path.join(gcbm_config_dir, "GCBM_config_provider.json")
                 gcbm_cli_path = pathRegistry.GetPath("GCBM_EXE")
-                os.chdir(os.path.dirname(gcbm_config))
-                gcbm_command = [gcbm_cli_path, "--config", gcbm_config, "--config_provider", gcbm_provider]
+                wd = os.path.dirname(gcbm_config)
+                shutil.copy(pathRegistry.GetPath("GCBM_Logging_Conf"), wd)
+                os.chdir(wd)
+                gcbm_command = [gcbm_cli_path, 
+                                "--config", gcbm_config,
+                                "--config_provider", gcbm_provider]
+
                 logging.info("issuing command: {0}".format(gcbm_command))
                 cmnd_output = subprocess.check_output(gcbm_command) #, 
                                                     #stderr=subprocess.STDOUT,

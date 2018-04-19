@@ -28,7 +28,7 @@
       "Harvest_Activity_Percent": 50,
       "CBM_Disturbance_Type_Map": {
         "fire": "Wild Fires",
-        "harvest": "BASE CC",
+        "harvest": "Base CC",
         "slashburn": "SlashBurning"
       }
     },

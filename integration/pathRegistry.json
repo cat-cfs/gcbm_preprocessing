@@ -21,6 +21,7 @@
     "Local_Recliner2GCBM-x86_Dir": [ "${Local_Tools_Dir}", "Recliner2GCBM-x86" ],
     "Local_GCBM_Dir": [ "${Local_Tools_Dir}", "GCBMBuilds", "2017_12_13" ],
     "GCBM_EXE": [ "${Local_GCBM_Dir}", "moja.cli.exe" ],
+    "GCBM_Logging_Conf": [ "${Local_GCBM_Dir}", "logging.conf" ],
     "Local_lostgis_dir": [ "${Local_Tools_Dir}", "lostgis" ],
     "ST_Safe_Intersection": [ "${Local_lostgis_dir}", "sql", "functions", "ST_Safe_Intersection.sql" ],
     "ST_Safe_Repair": [ "${Local_lostgis_dir}", "sql", "functions", "ST_Safe_Repair.sql" ],
