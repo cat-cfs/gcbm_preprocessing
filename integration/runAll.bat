@@ -4,5 +4,5 @@ python ..\regiongridder.py --pathRegistry .\pathRegistry.json --preprocessorConf
 python ..\rollback.py --pathRegistry .\pathRegistry.json --preprocessorConfig .\preprocessorConfig.json --subRegionConfig .\subRegionConfig.json
 python ..\historicprocessor.py --pathRegistry .\pathRegistry.json --preprocessorConfig .\preprocessorConfig.json --subRegionConfig .\subRegionConfig.json
 python ..\futureprocessor.py --pathRegistry .\pathRegistry.json --futureConfig .\futureConfig.json --subRegionConfig .\subRegionConfig.json
-python ..\gcbminput.py --pathRegistry .\pathRegistry.json --futureConfig .\futureConfig.json --subRegionConfig .\subRegionConfig.json --tiler --recliner2gcbm --gcbmconfig
+python ..\gcbminput.py --pathRegistry  --preprocessorConfig .\preprocessorConfig.json .\pathRegistry.json --futureConfig .\futureConfig.json --subRegionConfig .\subRegionConfig.json --tiler --recliner2gcbm --gcbmconfig
 python ..\rungcbm.py --pathRegistry .\pathRegistry.json --futureConfig .\futureConfig.json --subRegionConfig .\subRegionConfig.json
