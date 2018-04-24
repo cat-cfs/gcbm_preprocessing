@@ -6,7 +6,7 @@ import os, argparse, sys, subprocess, shutil, multiprocessing
 from loghelper import *
 
 def gcbm_worker(task):
-    os.chdir(os.path.dirname(gcbm_config))
+    os.chdir(os.path.dirname(task["gcbm_config"]))
     gcbm_command = [task["gcbm_cli_path"], 
                     "--config", task["gcbm_config"],
                     "--config_provider", task["gcbm_provider"]]
