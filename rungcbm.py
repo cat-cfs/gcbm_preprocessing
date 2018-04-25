@@ -54,7 +54,7 @@ def main():
                     "gcbm_cli_path": pathRegistry.GetPath("GCBM_EXE")
                 })
         try:
-            p = multiprocessing.Pool(min(len(tasks), 35))
+            p = multiprocessing.Pool(min(len(tasks), multiprocessing.cpu_count()))
             p.map(gcbm_worker, tasks)
         finally:
             p.close()
