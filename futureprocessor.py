@@ -53,7 +53,7 @@ class Future(object):
         baseRasterDir = self.pathRegistry.GetPath(
             "Future_Dist_Input_Dir", 
             region_path=region_name,
-            sha_future_scenario=scenario["SHAScenarioNanme"])
+            sha_future_scenario=scenario["SHAScenarioNane"])
         
         future_range = list(range(self.config.GetStartYear(),
                        self.config.GetEndYear()))

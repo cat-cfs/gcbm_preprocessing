@@ -18,7 +18,7 @@
   "Scenarios": [
     {
       "Name": "SCEN_Base",
-      "SHAScenarioNanme": "Base",
+      "SHAScenarioName": "Base",
       "Activity_Start_Year": -1,
       "Slashburn_Percent": 50,
       "Slashburn_Activity_Percent": 50,
@@ -31,7 +31,7 @@
     },
     {
       "Name": "SCEN_A",
-      "SHAScenarioNanme": "More",
+      "SHAScenarioName": "More",
       "Activity_Start_Year": -1,
       "Slashburn_Percent": 51,
       "Slashburn_Activity_Percent": 50,
