@@ -5,7 +5,8 @@
         "path": "$input_db"
     },
     "RasterTiled": {
-      "type": "RasterTiled",
+      "type": "RasterTiledZipper",
+      "library": "moja.modules.zipper",
       "tileLatSize": 1.0,
       "tileLonSize": 1.0,
       "blockLatSize": 0.1,
