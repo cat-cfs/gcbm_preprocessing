@@ -1,298 +1,853 @@
 [
     {
-        "FutureScenarioZip": "tsa01_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa01"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa01"
+                ]
+            }
+        ], 
+        "Name": "Arrow", 
         "InventoryName": "tsa1", 
         "Region_Number": "1", 
         "PathName": "TSA_1_Arrow", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'", 
-        "Name": "Arrow"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrow TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa02_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa02"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa02"
+                ]
+            }
+        ], 
+        "Name": "Boundary", 
         "InventoryName": "tsa2", 
         "Region_Number": "2", 
         "PathName": "TSA_2_Boundary", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'", 
-        "Name": "Boundary"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Boundary TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa03_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa03"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa03"
+                ]
+            }
+        ], 
+        "Name": "Bulkley", 
         "InventoryName": "tsa3", 
         "Region_Number": "3", 
         "PathName": "TSA_3_Bulkley", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Bulkley TSA'", 
-        "Name": "Bulkley"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Bulkley TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa04_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa04"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa04"
+                ]
+            }
+        ], 
+        "Name": "Cassiar", 
         "InventoryName": "tsa4", 
         "Region_Number": "4", 
         "PathName": "TSA_4_Cassiar", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Cassiar TSA'", 
-        "Name": "Cassiar"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Cassiar TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa05_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa05"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa05"
+                ]
+            }
+        ], 
+        "Name": "Cranbrook", 
         "InventoryName": "tsa5", 
         "Region_Number": "5", 
         "PathName": "TSA_5_Cranbrook", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Cranbrook TSA'", 
-        "Name": "Cranbrook"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Cranbrook TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa07_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa07"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa07"
+                ]
+            }
+        ], 
+        "Name": "Golden", 
         "InventoryName": "tsa7", 
         "Region_Number": "7", 
         "PathName": "TSA_7_Golden", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Golden TSA'", 
-        "Name": "Golden"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Golden TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa08_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa08"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa08"
+                ]
+            }
+        ], 
+        "Name": "Fort_Nelson", 
         "InventoryName": "tsa8", 
         "Region_Number": "8", 
         "PathName": "TSA_8_Fort_Nelson", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fort Nelson TSA'", 
-        "Name": "Fort_Nelson"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fort Nelson TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa09_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa09"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa09"
+                ]
+            }
+        ], 
+        "Name": "Invermere", 
         "InventoryName": "tsa9", 
         "Region_Number": "9", 
         "PathName": "TSA_9_Invermere", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Invermere TSA'", 
-        "Name": "Invermere"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Invermere TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa10_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa10"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa10"
+                ]
+            }
+        ], 
+        "Name": "Kalum", 
         "InventoryName": "tsa10", 
         "Region_Number": "10", 
         "PathName": "TSA_10_Kalum", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kalum TSA'", 
-        "Name": "Kalum"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kalum TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa11_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa11"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa11"
+                ]
+            }
+        ], 
+        "Name": "Kamloops", 
         "InventoryName": "tsa11", 
         "Region_Number": "11", 
         "PathName": "TSA_11_Kamloops", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kamloops TSA'", 
-        "Name": "Kamloops"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kamloops TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa12_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa12"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa12"
+                ]
+            }
+        ], 
+        "Name": "Kispiox", 
         "InventoryName": "tsa12", 
         "Region_Number": "12", 
         "PathName": "TSA_12_Kispiox", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kispiox TSA'", 
-        "Name": "Kispiox"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kispiox TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa13_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa13"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa13"
+                ]
+            }
+        ], 
+        "Name": "Kootenay_Lake", 
         "InventoryName": "tsa13", 
         "Region_Number": "13", 
         "PathName": "TSA_13_Kootenay_Lake", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kootenay Lake TSA'", 
-        "Name": "Kootenay_Lake"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kootenay Lake TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa14_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa14"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa14"
+                ]
+            }
+        ], 
+        "Name": "Lakes", 
         "InventoryName": "tsa14", 
         "Region_Number": "14", 
         "PathName": "TSA_14_Lakes", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Lakes TSA'", 
-        "Name": "Lakes"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Lakes TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa15_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa15"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa15"
+                ]
+            }
+        ], 
+        "Name": "Lillooet", 
         "InventoryName": "tsa15", 
         "Region_Number": "15", 
         "PathName": "TSA_15_Lillooet", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Lillooet TSA'", 
-        "Name": "Lillooet"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Lillooet TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa16_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa16"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa16"
+                ]
+            }
+        ], 
+        "Name": "MacKenzie", 
         "InventoryName": "tsa16", 
         "Region_Number": "16", 
         "PathName": "TSA_16_MacKenzie", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'MacKenzie TSA'", 
-        "Name": "MacKenzie"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'MacKenzie TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa17_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa17"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa17"
+                ]
+            }
+        ], 
+        "Name": "Robson_Valley", 
         "InventoryName": "tsa17", 
         "Region_Number": "17", 
         "PathName": "TSA_17_Robson_Valley", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Robson Valley TSA'", 
-        "Name": "Robson_Valley"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Robson Valley TSA'"
     }, 
     {
-        "FutureScenarioZip": "../base_tsa18_distout_April_17th_2018.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa18"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa18"
+                ]
+            }
+        ], 
+        "Name": "Merritt", 
         "InventoryName": "tsa18", 
         "Region_Number": "18", 
         "PathName": "TSA_18_Merritt", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Merritt TSA'", 
-        "Name": "Merritt"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Merritt TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa19_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa19"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa19"
+                ]
+            }
+        ], 
+        "Name": "Mid_Coast", 
         "InventoryName": "tsa19", 
         "Region_Number": "19", 
         "PathName": "TSA_19_Mid_Coast", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Mid Coast TSA'", 
-        "Name": "Mid_Coast"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Mid Coast TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa20_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa20"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa20"
+                ]
+            }
+        ], 
+        "Name": "Morice", 
         "InventoryName": "tsa20", 
         "Region_Number": "20", 
         "PathName": "TSA_20_Morice", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Morice TSA'", 
-        "Name": "Morice"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Morice TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa21_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa21"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa21"
+                ]
+            }
+        ], 
+        "Name": "North_Coast", 
         "InventoryName": "tsa21", 
         "Region_Number": "21", 
         "PathName": "TSA_21_North_Coast", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'North Coast TSA'", 
-        "Name": "North_Coast"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'North Coast TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa22_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa22"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa22"
+                ]
+            }
+        ], 
+        "Name": "Okanagan", 
         "InventoryName": "tsa22", 
         "Region_Number": "22", 
         "PathName": "TSA_22_Okanagan", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Okanagan TSA'", 
-        "Name": "Okanagan"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Okanagan TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa24_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa24"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa24"
+                ]
+            }
+        ], 
+        "Name": "Prince_George", 
         "InventoryName": "tsa24", 
         "Region_Number": "24", 
         "PathName": "TSA_24_Prince_George", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Prince George TSA'", 
-        "Name": "Prince_George"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Prince George TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa25_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa25"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa25"
+                ]
+            }
+        ], 
+        "Name": "Queen_Charlotte", 
         "InventoryName": "tsa25", 
         "Region_Number": "25", 
         "PathName": "TSA_25_Queen_Charlotte", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Queen Charlotte TSA'", 
-        "Name": "Queen_Charlotte"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Queen Charlotte TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa26_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa26"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa26"
+                ]
+            }
+        ], 
+        "Name": "Quesnel", 
         "InventoryName": "tsa26", 
         "Region_Number": "26", 
         "PathName": "TSA_26_Quesnel", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Quesnel TSA'", 
-        "Name": "Quesnel"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Quesnel TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa27_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa27"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa27"
+                ]
+            }
+        ], 
+        "Name": "Revelstoke", 
         "InventoryName": "tsa27", 
         "Region_Number": "27", 
         "PathName": "TSA_27_Revelstoke", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Revelstoke TSA'", 
-        "Name": "Revelstoke"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Revelstoke TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa29_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa29"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa29"
+                ]
+            }
+        ], 
+        "Name": "Williams_Lake", 
         "InventoryName": "tsa29", 
         "Region_Number": "29", 
         "PathName": "TSA_29_Williams_Lake", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Williams Lake TSA'", 
-        "Name": "Williams_Lake"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Williams Lake TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa30_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa30"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa30"
+                ]
+            }
+        ], 
+        "Name": "Fraser", 
         "InventoryName": "tsa30", 
         "Region_Number": "30", 
         "PathName": "TSA_30_Fraser", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fraser TSA'", 
-        "Name": "Fraser"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fraser TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa31_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa31"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa31"
+                ]
+            }
+        ], 
+        "Name": "Soo", 
         "InventoryName": "tsa31", 
         "Region_Number": "31", 
         "PathName": "TSA_31_Soo", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Soo TSA'", 
-        "Name": "Soo"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Soo TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa33_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa33"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa33"
+                ]
+            }
+        ], 
+        "Name": "Kingcome", 
         "InventoryName": "tsa33", 
         "Region_Number": "33", 
         "PathName": "TSA_33_Kingcome", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kingcome TSA'", 
-        "Name": "Kingcome"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Kingcome TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa37_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa37"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa37"
+                ]
+            }
+        ], 
+        "Name": "Strathcona", 
         "InventoryName": "tsa37", 
         "Region_Number": "37", 
         "PathName": "TSA_37_Strathcona", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Strathcona TSA'", 
-        "Name": "Strathcona"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Strathcona TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa38_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa38"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa38"
+                ]
+            }
+        ], 
+        "Name": "Arrowsmith", 
         "InventoryName": "tsa38", 
         "Region_Number": "38", 
         "PathName": "TSA_38_Arrowsmith", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrowsmith TSA'", 
-        "Name": "Arrowsmith"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Arrowsmith TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa39_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa39"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa39"
+                ]
+            }
+        ], 
+        "Name": "Sunshine_Coast", 
         "InventoryName": "tsa39", 
         "Region_Number": "39", 
         "PathName": "TSA_39_Sunshine_Coast", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Sunshine Coast TSA'", 
-        "Name": "Sunshine_Coast"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Sunshine Coast TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa40_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa40"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa40"
+                ]
+            }
+        ], 
+        "Name": "Fort_St_John", 
         "InventoryName": "tsa40", 
         "Region_Number": "40", 
         "PathName": "TSA_40_Fort_St_John", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fort St. John TSA'", 
-        "Name": "Fort_St_John"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Fort St. John TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa41_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa41"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa41"
+                ]
+            }
+        ], 
+        "Name": "Dawson_Creek", 
         "InventoryName": "tsa41", 
         "Region_Number": "41", 
         "PathName": "TSA_41_Dawson_Creek", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Dawson Creek TSA'", 
-        "Name": "Dawson_Creek"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Dawson Creek TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa43_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa43"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa43"
+                ]
+            }
+        ], 
+        "Name": "Nass", 
         "InventoryName": "tsa43", 
         "Region_Number": "43", 
         "PathName": "TSA_43_Nass", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Nass TSA'", 
-        "Name": "Nass"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Nass TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa44_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa44"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa44"
+                ]
+            }
+        ], 
+        "Name": "Pacific", 
         "InventoryName": "tsa44", 
         "Region_Number": "44", 
         "PathName": "TSA_44_Pacific", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Pacific TSA'", 
-        "Name": "Pacific"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Pacific TSA'"
     }, 
     {
-        "FutureScenarioZip": "tsa45_distout.zip", 
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa45"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa45"
+                ]
+            }
+        ], 
+        "Name": "Cascadia", 
         "InventoryName": "tsa45", 
         "Region_Number": "45", 
         "PathName": "TSA_45_Cascadia", 
-        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Cascadia TSA'", 
-        "Name": "Cascadia"
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Cascadia TSA'"
     }
 ]
