@@ -1,10 +1,10 @@
 {
 
-  "Path_Variables": [ "region_path", "future_scenario_zip", "scenario_name" ],
+  "Path_Variables": [ "region_path", "sha_future_scenario", "scenario_name" ],
   "Paths": {
     "Source_Dir": [ "M:/", "Spatially_explicit", "01_Projects", "17_BC_ON_1ha", "05_working_BC" ],
     "Source_External_Data_Dir": [ "${Source_Dir}", "00_external_data" ],
-    "Source_External_Future_Dir": [ "${Source_Dir}", "SHA", "Scenarios", "Base", "Zip_Files_BASE", "${future_scenario_zip}" ],
+    "Source_External_Future_Dir": [ "${Source_Dir}", "SHA", "Scenarios", "Base", "Zip_Files_BASE", "${sha_future_scenario}" ],
     "Source_External_Spatial_Dir": [ "${Source_External_Data_Dir}", "01_spatial" ],
     "Source_External_Aspatial_Dir": [ "${Source_External_Data_Dir}", "02_aspatial" ],
     "Source_Tools_Dir": [ "M:/", "Spatially_explicit", "03_Tools" ],
@@ -51,7 +51,7 @@
     "Clipped_Historic_Fire_Path": [ "${Clipped_Historic_Disturbance_Path}", "01_fire", "shapefiles" ],
     "Clipped_Historic_Harvest_Path": [ "${Clipped_Historic_Disturbance_Path}", "02_harvest" ],
     "Clipped_Historic_Insect_Path": [ "${Clipped_Historic_Disturbance_Path}", "03_insect_filtered" ],
-    "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs", "base" ],
+    "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs", "${sha_future_scenario}" ],
     "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs" ],
     "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
     "MeanAnnualTempPath": [ "${Copied_Environment_Dir}", "NAmerica_MAT_1971_2000.tif" ],

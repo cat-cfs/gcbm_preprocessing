@@ -93,26 +93,18 @@ def main():
 
         if args.future:
             for region in subRegionConfig.GetRegions():
-                src = pathRegistry.GetPath("Source_External_Future_Dir",
-                                           future_scenario_zip=region["FutureScenarioZip"])
-                dest = pathRegistry.GetPath("Future_Dist_Input_Dir",
-                                            region_path=region["PathName"])
+                for sha_scenario in region["SHAScenarios"]:
+                    subdir = os.path.join(sha_scenario["SubDir"])
+                    src = pathRegistry.GetPath("Source_External_Future_Dir",
+                                           sha_future_scenario=subdir)
+                    dst = pathRegistry.GetPath("Future_Dist_Input_Dir",
+                                            region_path=region["PathName"],
+                                            sha_future_scenario=subdir)
+                    logging.info("copying sha scenario from {} to {}".format(src,dst))
+                    logging.info("source: {}".format(src))
+                    logging.info("destination: {}".format(dst))
+                    shutil.copytree(src=src, dst=dst)
 
-                with zipfile.ZipFile(src, 'r') as z:
-                    if not os.path.exists(dest):
-                        os.makedirs(dest)
-                    logging.info("unzipping future project files to local working directory")
-                    logging.info("source: {} ".format(src))
-                    logging.info("destination dir: {}".format(dest))
-                    # see: https://stackoverflow.com/questions/4917284/extract-files-from-zip-without-keeping-the-structure-using-python-zipfile
-                    for f in z.namelist():
-                        filename = os.path.basename(f)
-                        if not filename:
-                            continue
-                        srcFile = z.open(f)
-                        destFile = file(os.path.join(dest, filename), 'wb')
-                        with srcFile, destFile:
-                            shutil.copyfileobj(srcFile, destFile)
 
         if args.spatial:
             src = pathRegistry.GetPath("Source_External_Spatial_Dir")
