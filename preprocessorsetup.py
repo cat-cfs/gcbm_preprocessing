@@ -94,7 +94,7 @@ def main():
         if args.future:
             for region in subRegionConfig.GetRegions():
                 for sha_scenario in region["SHAScenarios"]:
-                    subdir = os.path.join(sha_scenario["SubDir"])
+                    subdir = os.path.join(*sha_scenario["SubDir"])
                     src = pathRegistry.GetPath("Source_External_Future_Dir",
                                            sha_future_scenario=subdir)
                     dst = pathRegistry.GetPath("Future_Dist_Input_Dir",
