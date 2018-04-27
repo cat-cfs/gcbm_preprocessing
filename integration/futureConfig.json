@@ -1,8 +1,4 @@
 {
-  "External_Raster_Dir": "${Source_External_Future_Dir}",
-  "Base_Raster_Dir": "${Future_Dist_Input_Dir}",
-  "Raster_Output_Dir": "${Future_Dist_Output_Dir}",
-  "BaseTilerConfigPath": "${HistoricTilerConfigPath}",
   "Start_Year": 2015,
   "End_Year": 2070,
   "Disturbance_Types": [
@@ -22,6 +18,7 @@
   "Scenarios": [
     {
       "Name": "SCEN_Base",
+      "SHAScenarioNanme": "Base",
       "Activity_Start_Year": -1,
       "Slashburn_Percent": 50,
       "Slashburn_Activity_Percent": 50,
@@ -34,6 +31,7 @@
     },
     {
       "Name": "SCEN_A",
+      "SHAScenarioNanme": "More",
       "Activity_Start_Year": -1,
       "Slashburn_Percent": 51,
       "Slashburn_Activity_Percent": 50,

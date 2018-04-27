@@ -52,7 +52,7 @@
     "Clipped_Historic_Harvest_Path": [ "${Clipped_Historic_Disturbance_Path}", "02_harvest" ],
     "Clipped_Historic_Insect_Path": [ "${Clipped_Historic_Disturbance_Path}", "03_insect_filtered" ],
     "Future_Dist_Input_Dir": [ "${Pretiled_Disturbances}", "02_future", "inputs", "${sha_future_scenario}" ],
-    "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs" ],
+    "Future_Dist_Output_Dir": [ "${Pretiled_Disturbances}", "02_future", "outputs", "${scenario_name}" ],
     "RollbackDisturbancesOutput": [ "${Pretiled_Disturbances}", "03_rollback", "rollbackDist.shp" ],
     "MeanAnnualTempPath": [ "${Copied_Environment_Dir}", "NAmerica_MAT_1971_2000.tif" ],
     "TiledLayersDir": [ "${SubRegionDir}", "01b_tiled_layers", "${scenario_name}" ],

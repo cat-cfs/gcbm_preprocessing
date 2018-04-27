@@ -11,13 +11,16 @@ from loghelper import *
 import argparse, logging
 
 class Future(object):
-    def __init__(self, config):
+    def __init__(self, config, pathRegistry):
         self.config = config
+        self.pathRegistry = pathRegistry
 
     def CreateTilerConfig(self, processedRasterResult, scenario, region_name):
 
-        baseTilerConfigPath = self.config.GetBaseTilerConfigPath(
-            region_name)
+        baseTilerConfigPath = self.pathRegistry.GetPath(
+            "HistoricTilerConfigPath",
+            region_path=region_name)
+
         tilerConfig = TilerConfig(baseTilerConfigPath)
 
         for item in processedRasterResult:
@@ -47,14 +50,18 @@ class Future(object):
         logging.info("processing future scenario '{0}' for region '{1}'"
                      .format(scenario["Name"],region_name))
 
-        baseRasterDir = self.config.GetBaseRasterDir(region_name)
+        baseRasterDir = self.pathRegistry.GetPath(
+            "Future_Dist_Input_Dir", 
+            region_path=region_name,
+            sha_future_scenario=scenario["SHAScenarioNanme"])
         
         future_range = list(range(self.config.GetStartYear(),
                        self.config.GetEndYear()))
 
-        output_dir = os.path.join(
-           self.config.GetRasterOutputDir(region_name),
-           scenario["Name"])
+        output_dir = self.pathRegistry.GetPath(
+               "Future_Dist_Output_Dir",
+                region_path=region_name,
+                scenario_name=scenario["Name"])
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
@@ -107,8 +114,8 @@ def main():
         subRegionConfig = SubRegionConfig(
             os.path.abspath(args.subRegionConfig),
             args.subRegionNames.split(",") if args.subRegionNames else None)
-        futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
-        future = Future(futureConfig)
+        futureConfig = FutureConfig(os.path.abspath(args.futureConfig))
+        future = Future(futureConfig, pathRegistry)
 
         for region in subRegionConfig.GetRegions():
             for scenario in futureConfig.GetScenarios():
