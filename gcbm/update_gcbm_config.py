@@ -13,7 +13,7 @@ from glob import glob
 
 def scan_for_layers(layer_root):
     provider_layers = []
-    layers = glob(os.path.join(layer_root, "*_moja.zip"))
+    layers = glob(os.path.join(layer_root, "*_moja"))
     for layer in layers:
         logging.debug("Found layer: {}".format(layer))
         layer_prefix, _ = os.path.splitext(os.path.basename(layer))

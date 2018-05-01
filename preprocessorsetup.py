@@ -99,7 +99,7 @@ def main():
                                            sha_future_scenario=subdir)
                     dst = pathRegistry.GetPath("Future_Dist_Input_Dir",
                                             region_path=region["PathName"],
-                                            sha_future_scenario=subdir)
+                                            sha_future_scenario=sha_scenario["Name"])
                     logging.info("copying sha scenario from {} to {}".format(src,dst))
                     logging.info("source: {}".format(src))
                     logging.info("destination: {}".format(dst))

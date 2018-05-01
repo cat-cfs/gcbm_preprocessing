@@ -38,7 +38,7 @@ def main():
         subRegionConfig = SubRegionConfig(
             os.path.abspath(args.subRegionConfig),
             args.subRegionNames.split(",") if args.subRegionNames else None)
-        futureConfig = FutureConfig(os.path.abspath(args.futureConfig), pathRegistry)
+        futureConfig = FutureConfig(os.path.abspath(args.futureConfig))
 
         tasks = []
         for region in subRegionConfig.GetRegions():
