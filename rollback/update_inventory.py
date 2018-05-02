@@ -237,11 +237,11 @@ def export_inventory(db_url, gdal_con, config, region_path):
     # initialize raster meta, recording info about each raster that gets dumped
     raster_meta = []
 
-    # rasterize age, it comes from the 'inventory_disturbed' table
+    # rasterize age, it comes from the 'inventory_rollback' table
     sql = """
         SELECT i.rollback_age as age, g.geom
         FROM preprocessing.grid g
-        INNER JOIN preprocessing.inventory_disturbed i
+        INNER JOIN preprocessing.inventory_rollback i
         ON g.grid_id = i.grid_id
     """
     vrtpath = _create_pg_vrt(gdal_con, sql, 'age')
