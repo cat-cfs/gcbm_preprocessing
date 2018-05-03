@@ -254,7 +254,7 @@ class Tiler(object):
             self.layers.append(DisturbanceLayer(
                     self.rule_manager,
                     RasterLayer(item["Path"],
-                                attributes="event",
+                                attributes=["event"],
                                 attribute_table={1: [1]}),
                     year=item["Year"],
                     disturbance_type=projected_dist_lookup[item["DisturbanceName"]]))
