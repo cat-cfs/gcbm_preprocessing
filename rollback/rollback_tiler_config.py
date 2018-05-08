@@ -27,7 +27,7 @@ class RollbackTilerConfig(object):
                                          layer=inventoryLayers[0],
                                          pixel_size=resolution)
         t.Initialize(
-            t.CreateConfigItem(typeName="CompressingTiler2D",
+            t.CreateConfigItem(typeName="Tiler2D",
                              bounding_box=boundingbox,
                              use_bounding_box_resolution=True))
 

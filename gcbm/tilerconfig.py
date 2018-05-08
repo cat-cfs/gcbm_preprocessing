@@ -8,6 +8,7 @@ class TilerConfig(object):
         self.typeRegistry = {
             "BoundingBox": "mojadata.boundingbox",
             "CompressingTiler2D": "mojadata.compressingtiler2d",
+            "Tiler2D": "mojadata.tiler2d",
             "VectorLayer": "mojadata.layer.vectorlayer",
             "RasterLayer": "mojadata.layer.rasterlayer",
             "DisturbanceLayer": "mojadata.layer.gcbm.disturbancelayer",
