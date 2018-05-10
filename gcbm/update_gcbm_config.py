@@ -108,7 +108,7 @@ def update_gcbm_config(gcbm_config_path, study_area,
     output_db_path = os.path.relpath(output_db_path, os.path.dirname(gcbm_config_path)) \
         if output_relpaths else output_db_path
     CBMAggregatorSQLiteWriter_config = gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]
-    CBMAggregatorSQLiteWriter_config["settings"]["databasename"] = relative_db_path
+    CBMAggregatorSQLiteWriter_config["settings"]["databasename"] = output_db_path
 
     variable_grid_output_dir = os.path.relpath(variable_grid_output_dir, os.path.dirname(gcbm_config_path)) \
         if output_relpaths else variable_grid_output_dir
