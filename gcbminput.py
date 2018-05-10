@@ -66,17 +66,17 @@ def gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig, 
     
             gcbm_provider_template = pathRegistry.GetPath("GCBM_config_provider_template")
             gcbm_config_template = pathRegistry.GetPath("GCBM_config_template")
-            outputDir = pathRegistry.GetPath("GCBM_Run_Dir",
+            configDir = pathRegistry.GetPath("GCBM_Config_Dir",
                                              region_path=region["PathName"],
                                              scenario_name=scenario["Name"])
             gcbm_input_db_path= pathRegistry.GetPath("GCBMInputDBPath",
                                              region_path=region["PathName"],
                                              scenario_name=scenario["Name"])
-            if not os.path.exists(outputDir):
-                os.makedirs(outputDir)
+            if not os.path.exists(configDir):
+                os.makedirs(configDir)
     
-            gcbm_config = os.path.join(outputDir, "GCBM_config.json")
-            gcbm_provider = os.path.join(outputDir, "GCBM_config_provider.json")
+            gcbm_config = os.path.join(configDir, "GCBM_config.json")
+            gcbm_provider = os.path.join(configDir, "GCBM_config_provider.json")
             shutil.copy(gcbm_config_template, gcbm_config)
             shutil.copy(gcbm_provider_template, gcbm_provider)
     
