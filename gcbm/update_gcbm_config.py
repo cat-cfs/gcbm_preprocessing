@@ -71,7 +71,7 @@ def update_provider_config(provider_config_path, study_area, layer_root,
 def update_gcbm_config(gcbm_config_path, study_area,
                        start_year, end_year, classifiers,
                        reporting_classifiers, output_db_path,
-                       variable_grid_output_dir):
+                       variable_grid_output_dir, output_relpaths=True):
     logging.info("Updating {}".format(gcbm_config_path))
     
     with open(gcbm_config_path, "r") as gcbm_config_file:
@@ -100,13 +100,16 @@ def update_gcbm_config(gcbm_config_path, study_area,
     disturbance_listener_config["settings"]["vars"] = []
     disturbance_layers = disturbance_listener_config["settings"]["vars"]
 
-    relative_db_path = os.path.relpath(output_db_path, os.path.dirname(gcbm_config_path))
+    output_db_path = os.path.relpath(output_db_path, os.path.dirname(gcbm_config_path)) \
+        if output_relpaths else output_db_path
     CBMAggregatorSQLiteWriter_config = gcbm_config["Modules"]["CBMAggregatorSQLiteWriter"]
     CBMAggregatorSQLiteWriter_config["settings"]["databasename"] = relative_db_path
 
-    relative_grid_output_path = os.path.relpath(variable_grid_output_dir, os.path.dirname(gcbm_config_path))
+    variable_grid_output_dir = os.path.relpath(variable_grid_output_dir, os.path.dirname(gcbm_config_path)) \
+        if output_relpaths else variable_grid_output_dir
+
     WriteVariableGrid_config = gcbm_config["Modules"]["WriteVariableGrid"]
-    WriteVariableGrid_config["settings"]["output_path"] = relative_grid_output_path
+    WriteVariableGrid_config["settings"]["output_path"] = variable_grid_output_dir
 
     variable_config = gcbm_config["Variables"]
     variable_names = [var_name.lower() for var_name in variable_config]
