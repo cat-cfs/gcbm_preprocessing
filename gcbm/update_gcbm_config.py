@@ -29,7 +29,7 @@ def scan_for_layers(layer_root):
     return provider_layers
 
 def update_provider_config(provider_config_path, study_area, layer_root,
-                          dbpath):
+                          dbpath, use_relpaths=True):
     logging.info("Updating {} with layers in {}".format(provider_config_path, layer_root))
 
     with open(provider_config_path, "r") as provider_config_file:
@@ -50,7 +50,8 @@ def update_provider_config(provider_config_path, study_area, layer_root,
     spatial_provider_config["cellLonSize"]  = study_area["pixel_size"]
             
     provider_layers = []
-    relative_layer_root = os.path.relpath(layer_root, os.path.dirname(provider_config_path))
+    relative_layer_root = os.path.relpath(layer_root, os.path.dirname(provider_config_path)) \
+        if use_relpaths else layer_root
     for layer in study_area["layers"]:
         logging.debug("Added {} to provider configuration".format(layer))
   
@@ -61,7 +62,8 @@ def update_provider_config(provider_config_path, study_area, layer_root,
         })
         
     layer_config = spatial_provider_config["layers"] = provider_layers
-    relative_db_path = os.path.relpath(os.path.dirname(dbpath), os.path.dirname(provider_config_path))
+    relative_db_path = os.path.relpath(os.path.dirname(dbpath), os.path.dirname(provider_config_path)) \
+        if use_relpaths else dbpath
     provider_section["SQLite"]["path"] = os.path.join(relative_db_path, os.path.basename(dbpath))
     with open(provider_config_path, "w") as provider_config_file:
         provider_config_file.write(json.dumps(provider_config, indent=4, ensure_ascii=False))
@@ -167,15 +169,3 @@ def get_study_area(layer_root):
    
     return study_area
 
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-    parser = ArgumentParser(description="Update GCBM spatial provider configuration.")
-    parser.add_argument("--layer_root", help="path to the spatial output root directory", required=True)
-    parser.add_argument("--gcbm_config", help="path to the main GCBM config file", required=True)
-    parser.add_argument("--provider_config", help="path to the GCBM provider config file", required=True)
-    args = parser.parse_args()
-    
-    study_area = get_study_area(args.layer_root)
-    update_gcbm_config(args.gcbm_config, study_area)
-    update_provider_config(args.provider_config, study_area, args.layer_root)

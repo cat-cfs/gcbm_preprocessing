@@ -56,7 +56,7 @@ def recliner2gcbm(futureConfig, pathRegistry, subRegionConfig):
                               transitionRulesPath)
             r.run()
 
-def gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig):
+def gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig, use_relpaths):
     for region in subRegionConfig.GetRegions():
         for scenario in futureConfig.GetScenarios():
             logging.info("gcbm config: {0},{1}".format(region["Name"], scenario["Name"]))
@@ -102,10 +102,12 @@ def gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig):
                                classifiers = preprocessorConfig.GetInventoryClassifiers().keys(),
                                reporting_classifiers = reporting_classifiers,
                                output_db_path = gcbm_output_db_path,
-                               variable_grid_output_dir = gcbm_output_variable_grid_dir)
+                               variable_grid_output_dir = gcbm_output_variable_grid_dir,
+                               output_relpaths = use_relpaths)
     
             update_provider_config(gcbm_provider, study_area,
-                                   tiledLayersDir, gcbm_input_db_path)
+                                   tiledLayersDir, gcbm_input_db_path,
+                                   use_relpaths)
 
 def main():
 
@@ -123,7 +125,11 @@ def main():
         parser.add_argument("--tiler", action="store_true", dest="tiler", help="if specified, run the tiler")
         parser.add_argument("--recliner2gcbm", action="store_true", dest="recliner2gcbm", help="if specified, run recliner2gcbm")
         parser.add_argument("--gcbmconfig", action="store_true", dest="gcbmconfig", help="if specified, run gcbmconfig")
-        parser.set_defaults(tiler=False, recliner2gcbm=False, gcbmconfig=False)
+        parser.add_argument("--gcbmconfig_abspaths", action="store_true", dest="gcbmconfig_abspaths", help=
+                            "if specified all gcbm related paths are interpreted and stored as absolute paths "
+                            "in gcbm configurations, otherwise if unspecified, all paths are assumed to be "
+                            "relative to gcbm configuration directory")
+        parser.set_defaults(tiler=False, recliner2gcbm=False, gcbmconfig=False, gcbmconfig_abspaths=False)
         args = parser.parse_args()
 
         pathRegistry = PathRegistry(os.path.abspath(args.pathRegistry))
@@ -143,7 +149,7 @@ def main():
         if args.recliner2gcbm:
             recliner2gcbm(futureConfig, pathRegistry, subRegionConfig)
         if args.gcbmconfig:
-            gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig)
+            gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig, not(gcbmconfig_abspaths))
 
     except Exception as ex:
         logging.exception("error")
