@@ -62,9 +62,12 @@ def update_provider_config(provider_config_path, study_area, layer_root,
         })
         
     layer_config = spatial_provider_config["layers"] = provider_layers
-    relative_db_path = os.path.relpath(os.path.dirname(dbpath), os.path.dirname(provider_config_path)) \
-        if use_relpaths else dbpath
-    provider_section["SQLite"]["path"] = os.path.join(relative_db_path, os.path.basename(dbpath))
+    if use_relpaths:
+        relative_db_path = os.path.relpath(os.path.dirname(dbpath), os.path.dirname(provider_config_path))
+        provider_section["SQLite"]["path"] = os.path.join(relative_db_path, os.path.basename(dbpath))
+    else:
+        provider_section["SQLite"]["path"] = dbpath
+    
     with open(provider_config_path, "w") as provider_config_file:
         provider_config_file.write(json.dumps(provider_config, indent=4, ensure_ascii=False))
         
