@@ -69,7 +69,7 @@ def gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig, 
             outputDir = pathRegistry.GetPath("GCBM_Run_Dir",
                                              region_path=region["PathName"],
                                              scenario_name=scenario["Name"])
-            gcbm_input_db_path= pathRegistry.GetPath("Recliner2GCBMOutpath",
+            gcbm_input_db_path= pathRegistry.GetPath("GCBMInputDBPath",
                                              region_path=region["PathName"],
                                              scenario_name=scenario["Name"])
             if not os.path.exists(outputDir):
