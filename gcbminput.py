@@ -149,7 +149,7 @@ def main():
         if args.recliner2gcbm:
             recliner2gcbm(futureConfig, pathRegistry, subRegionConfig)
         if args.gcbmconfig:
-            gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig, not(gcbmconfig_abspaths))
+            gcbmconfig(preprocessorConfig, futureConfig, pathRegistry, subRegionConfig, not(args.gcbmconfig_abspaths))
 
     except Exception as ex:
         logging.exception("error")
