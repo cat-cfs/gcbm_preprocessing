@@ -33,7 +33,7 @@ class Future(object):
                     "RasterLayer",
                     path=tilerConfig.CreateRelativePath(
                         baseTilerConfigPath, item["Path"]),
-                    attributes="event",
+                    attributes=["event"],
                     attribute_table={1: [1]}),
                 year=item["Year"],
                 disturbance_type=cbm_type)
