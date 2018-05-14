@@ -63,8 +63,9 @@
     "GCBM_config_provider_template": [ "${External_Aspatial_Dir}", "04_configuration_templates", "GCBM_config_provider_template.json" ],
     "GCBM_config_template": [ "${External_Aspatial_Dir}", "04_configuration_templates", "GCBM_config_template.json" ],
     "Recliner2GCBMOutpath": [ "${SubRegionDir}", "02b_recliner2GCBM_output", "${scenario_name}", "GCBMinput.db" ],
-    "GCBM_Run_Dir": [ "${SubRegionDir}", "04_Run_GCBM", "${scenario_name}" ],
-    "GCBM_OutputDB_Path": [ "${SubRegionDir}", "04_Run_GCBM", "${scenario_name}", "output", "results.db" ],
-    "GCBM_Variable_Grid_Output_Dir": [ "${SubRegionDir}", "04_Run_GCBM", "${scenario_name}", "output", "grid" ]
+    "GCBM_Config_Dir": ["${SubRegionDir}", "04_Run_GCBM", "00_configs", "${scenario_name}"],
+	"GCBMInputDBPath": [ "${SubRegionDir}", "04_Run_GCBM", "01_run", "inputs", "GCBMinput.db"],
+    "GCBM_OutputDB_Path": [ "${SubRegionDir}", "04_Run_GCBM", "01_run", "outputs", "${scenario_name}", "GCBMoutput.db" ],
+    "GCBM_Variable_Grid_Output_Dir": [ "${SubRegionDir}", "04_Run_GCBM", "01_run", "outputs", "${scenario_name}" ]
   }
 }
