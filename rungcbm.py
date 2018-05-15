@@ -44,7 +44,7 @@ def main():
         for region in subRegionConfig.GetRegions():
             for scenario in futureConfig.GetScenarios():
                 logging.info("run gcbm: {0},{1}".format(region["Name"], scenario["Name"]))
-                gcbm_config_dir = pathRegistry.GetPath("GCBM_Run_Dir",
+                gcbm_config_dir = pathRegistry.GetPath("GCBM_Config_Dir",
                                              region_path=region["PathName"],
                                              scenario_name=scenario["Name"])
                 shutil.copy(pathRegistry.GetPath("GCBM_Logging_Conf"), gcbm_config_dir)
