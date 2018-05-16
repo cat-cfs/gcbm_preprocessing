@@ -1,1 +1,0 @@
-python ..\regionclipper.py --pathRegistry .\pathRegistry.json --regionClipperConfig .\regionClipperConfig.json --subRegionConfig .\subRegionConfig.json --subRegionNames "Boundary"

@@ -1,1 +1,0 @@
-python ..\rollback.py --pathRegistry .\pathRegistry.json --preprocessorConfig .\preprocessorConfig.json --subRegionConfig .\subRegionConfig.json --subRegionNames "Boundary"
