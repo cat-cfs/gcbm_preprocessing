@@ -107,7 +107,7 @@ def arc_license(product_or_extension):
         return
     
     wait_time = 60
-    max_retries = 60**2 * 12 / wait_time # Retry for up to 12 hours
+    max_retries = 60**2 * 24 / wait_time # Retry for up to 24 hours
     
     tunnel_conf_file = os.path.join(os.path.dirname(__file__), "arc_license_tunnel.conf")
     tunneled_license = os.path.exists(tunnel_conf_file)
