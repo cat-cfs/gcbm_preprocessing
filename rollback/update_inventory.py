@@ -253,7 +253,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
         xRes=config.GetResolution(),
         yRes=config.GetResolution(),
         attribute='age',
-        allTouched=True,
+        allTouched=False,
         noData=-1,
         # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
         creationOptions=["COMPRESS=DEFLATE"],
