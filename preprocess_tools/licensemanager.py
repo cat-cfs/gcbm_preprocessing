@@ -88,11 +88,16 @@ def start_tunnel(tunnel_conf):
         local_bind_addresses=[
             ("localhost", 27000),
             ("localhost", int(tunnel_conf["license_port"]))],
-        set_keepalive=60)
+        set_keepalive=60,
+        mute_exceptions=True)
     tunnel.start()
     while True:
-        time.sleep(60)
-        if not tunnel.check_tunnels():
+        time.sleep(30)
+        tunnel.check_tunnels()
+        all_tunnels_up = all(tunnel.tunnel_is_up)
+        logging.debug("Tunnels up?: {}".format(all_tunnels_up))
+        if not all_tunnels_up:
+            logging.debug("Attempting to restart tunnels")
             tunnel.restart()
 
 @contextmanager
@@ -107,7 +112,7 @@ def arc_license(product_or_extension):
         return
     
     wait_time = 60
-    max_retries = 60**2 * 24 / wait_time # Retry for up to 24 hours
+    max_retries = 60**2 * 48 / wait_time # Retry for up to 24 hours
     
     tunnel_conf_file = os.path.join(os.path.dirname(__file__), "arc_license_tunnel.conf")
     tunneled_license = os.path.exists(tunnel_conf_file)
