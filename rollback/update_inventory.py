@@ -334,7 +334,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
             xRes=config.GetResolution(),
             yRes=config.GetResolution(),
             attribute='val',
-            allTouched=True,
+            allTouched=False,
             # noData=255,  # nodata shown as 255 in line 69 of 03_tiler/tiler.py
             creationOptions=["COMPRESS=DEFLATE"],
             outputBounds=bounds
