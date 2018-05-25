@@ -94,7 +94,7 @@ def start_tunnel(tunnel_conf):
     while True:
         time.sleep(30)
         tunnel.check_tunnels()
-        all_tunnels_up = all(tunnel.tunnel_is_up)
+        all_tunnels_up = all(tunnel.tunnel_is_up.values())
         logging.debug("Tunnels up?: {}".format(all_tunnels_up))
         if not all_tunnels_up:
             logging.debug("Attempting to restart tunnels")
