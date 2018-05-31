@@ -32,7 +32,7 @@ class GridInventory(object):
         self.gridded_inventory = "inventory_gridded"
 
     def gridInventory(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput = True
             arcpy.Delete_management("in_memory")
@@ -57,7 +57,7 @@ class GridInventory(object):
 
     def spatialJoin(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             target_features = arcpy.GetParameterAsText(0)
             join_features = arcpy.GetParameterAsText(1)
             out_fc = arcpy.GetParameterAsText(2)
@@ -69,13 +69,13 @@ class GridInventory(object):
 
     def makeFeatureLayer(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(os.path.join(self.inventory.getWorkspace(), self.inventory.getLayerName()), self.inventory_layer)
         pp.finish()
 
     def selectGreaterThanZeroAgeStands(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             invAge_whereClause = '{} > {}'.format(arcpy.AddFieldDelimiters(os.path.join(self.inventory.getWorkspace(), self.inventory.getLayerName()), self.invAge_fieldName), 0)
             arcpy.Select_analysis(self.inventory_layer, self.inventory_layer2, invAge_whereClause)
             arcpy.RepairGeometry_management(self.inventory_layer2, "DELETE_NULL")
@@ -88,7 +88,7 @@ class GridInventory(object):
             return
             
         pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             # Calculate intersection between Target Feature and Join Features
             intersect = arcpy.analysis.Intersect([target_features, join_features], "intersect", "ONLY_FID", "", "INPUT")
             # Find which Join Feature has the largest overlap with each Target Feature
@@ -143,7 +143,7 @@ class GridInventory(object):
 
     def spatialJoinCentroid(self, grid, inv, out):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             if arcpy.Exists("inv_gridded_temp"):
                 arcpy.Delete_management("inv_gridded_temp")
             arcpy.SpatialJoin_analysis(grid, inv, "inv_gridded_temp", "JOIN_ONE_TO_ONE", "KEEP_ALL", "", "HAVE_THEIR_CENTER_IN", "", "")
@@ -157,7 +157,7 @@ class GridInventory(object):
     def exportGriddedInvDBF(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         self.inventory.setLayerName(self.gridded_inventory)
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput = True
 
@@ -199,7 +199,7 @@ class GridInventory(object):
     def exportInventory(self, inventory_raster_out, resolution, reportingIndicators):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         print "\tExporting inventory to raster..."
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.overwriteOutput = True
             reporting_indicators = reportingIndicators.getIndicators()
             classifier_names = self.inventory.getClassifiers()

@@ -41,7 +41,7 @@ class DisturbanceParser(object):
 
     def listAll(self):
         if self.type=="gdb":
-            with arc_license(Products.ARC) as arcpy:
+            with arc_license(Products.ARCINFO) as arcpy:
                 return arcpy.ListFeatureClasses()
         elif self.type=="shp":
             return os.listdir(self.path)
@@ -50,7 +50,7 @@ class DisturbanceParser(object):
         print "Creating disturbance collection"
         distColl = DisturbanceCollection(gdb_path, [], self.dist_type, self.standReplacing, lookup_attr, lookup)
         selectLayer = SelectLayer(self.path, gdb_path, self.filter_attribute, self.filter_code)
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.overwriteOutput = True
 
             if self.type=="gdb":
@@ -129,7 +129,7 @@ class SelectLayer(object):
             self.filter_string = "1=1"
 
     def multipleShp(self, name, layer):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = os.path.dirname(self.path)
             arcpy.env.overwriteOutput = True
             arcpy.MakeFeatureLayer_management(os.path.join(self.path, layer), name)
@@ -139,7 +139,7 @@ class SelectLayer(object):
             arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
     def singleShp(self, name, year_attr, year_code):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = os.path.dirname(self.path)
             arcpy.env.overwriteOutput = True
             filter_year = '"{0}" = {2}{1}{2}'.format(year_attr, year_code,
@@ -152,7 +152,7 @@ class SelectLayer(object):
             arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
     def multipleGdb(self, name):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.path
             arcpy.env.overwriteOutput = True
             arcpy.MakeFeatureLayer_management(os.path.join(self.path, layer), name)
@@ -162,7 +162,7 @@ class SelectLayer(object):
             arcpy.FeatureClassToGeodatabase_conversion(name, self.gdb_path)
 
     def singleGdb(self, name, year_attr, year_code):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = os.path.dirname(self.path)
             arcpy.env.overwriteOutput = True
             filter_year = '"{0}" = {2}{1}{2}'.format(year_attr, year_code,
@@ -186,7 +186,7 @@ class DisturbanceCollection(object):
         dir, name = os.path.split(path)
         if os.path.exists(dir):
             if not os.path.exists(path):
-                with arc_license(Products.ARC) as arcpy:
+                with arc_license(Products.ARCINFO) as arcpy:
                     arcpy.CreateFileGDB_management(dir, name)
         else:
             logging.error("Directory {} not found".format(dir))

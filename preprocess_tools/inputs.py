@@ -24,7 +24,7 @@ class SpatialInputs(object):
         if new_workspace==self.getWorkspace() and name==None:
             logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
             raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.overwriteOutput = True
             transform_method = "WGS_1984_(ITRF00)_To_NAD_1983"
             output_proj = "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]"
@@ -53,7 +53,7 @@ class SpatialInputs(object):
             logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
             raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
         print "[{}] Clipping {}...".format(time.strftime('%a %H:%M:%S'),self.getFilter()),
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = workspace
             arcpy.env.overwriteOutput = True
             arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
@@ -81,7 +81,7 @@ class SpatialInputs(object):
             logging.error('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
             raise Exception('Error: Cannot overwrite. Specify a new workspace or a new layer name.')
         print "[{}] Clipping {}{}...".format(time.strftime('%a %H:%M:%S'),self.getFilter(), ' to {}'.format(name) if name else ''),
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = workspace
             arcpy.env.overwriteOutput = True
             arcpy.MakeFeatureLayer_management(clip_feature, 'clip_to', clip_feature_filter)
@@ -109,7 +109,7 @@ class SpatialInputs(object):
         for layer in self.scan_for_layers():
             logging.info('Copying {}, saving to {}'.format(os.path.basename(layer),os.path.join(new_workspace, os.path.basename(layer))))
             if '.gdb' in self.getWorkspace():
-                with arc_license(Products.ARC) as arcpy:
+                with arc_license(Products.ARCINFO) as arcpy:
                     arcpy.env.workspace = self.getWorkspace()
                     arcpy.FeatureClassToFeatureClass_conversion(os.path.basename(layer), new_workspace, os.path.basename(layer))
             else:
@@ -120,7 +120,7 @@ class SpatialInputs(object):
 
     def createWorkspace(self, new_workspace):
         if '.gdb' in os.path.basename(new_workspace):
-            with arc_license(Products.ARC) as arcpy:
+            with arc_license(Products.ARCINFO) as arcpy:
                 if os.path.exists(os.path.dirname(new_workspace)):
                     arcpy.CreateFileGDB_management(os.path.dirname(new_workspace), os.path.basename(new_workspace).split('.')[0])
                 else:
@@ -131,7 +131,7 @@ class SpatialInputs(object):
 
     def scan_for_layers(self):
         if '.gdb' in self.getWorkspace():
-            with arc_license(Products.ARC) as arcpy:
+            with arc_license(Products.ARCINFO) as arcpy:
                 arcpy.env.workspace = self.getWorkspace()
                 all = arcpy.ListFeatureClasses()
                 return [os.path.join(self.getWorkspace(), layer) for layer in all if layer==self.getFilter()]
@@ -176,14 +176,14 @@ class Inventory(SpatialInputs):
         self.refreshBoundingBox()
 
     def getBoundingBox(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self._workspace
             desc = arcpy.Describe(self._filter)
             e = desc.extent
             return [e.XMin, e.YMin, e.XMax, e.YMax]
 
     def refreshBoundingBox(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self._workspace
             desc = arcpy.Describe(self._filter)
             e = desc.extent

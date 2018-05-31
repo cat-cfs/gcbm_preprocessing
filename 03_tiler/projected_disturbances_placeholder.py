@@ -31,7 +31,7 @@ class ProjectedDisturbancesPlaceholder(object):
             ext = file.split('.')[-1]
             shutil.copyfile(file, os.path.join(output_directory,'{}.{}'.format(name,ext)))
         projectedDistDBF = os.path.join(output_directory,'{}.dbf'.format(name))
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.AddField_management(projectedDistDBF, 'dist_year')
             arcpy.CalculateField_management(projectedDistDBF, 'dist_year', '!{}!+26'.format(self.inventory.getFieldNames()['new_disturbance_yr'][:10]),"PYTHON_9.3", "")
             projectedDistShp = os.path.join(output_directory,'{}.shp'.format(name))
@@ -44,7 +44,7 @@ class ProjectedDisturbancesPlaceholder(object):
     def generateProjectedDisturbances(self, scenario, slashburn_percent, actv_slashburn_percent, actv_harvest_percent):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         self.outLocation = os.path.abspath(r'{}\..\01a_pretiled_layers\03_disturbances\02_future\outputs\projectedDist.gdb'.format(os.getcwd()))
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             if not os.path.exists(self.outLocation):
                 arcpy.CreateFileGDB_management(os.path.dirname(self.outLocation), os.path.basename(self.outLocation))
             arcpy.env.workspace = self.outLocation
@@ -103,7 +103,7 @@ class ProjectedDisturbancesPlaceholder(object):
         rollback_dist = self.rollbackDisturbances.getPath()
 
         # add the layer to the working gdb
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             if arcpy.Exists(os.path.join(self.outLocation, "rollbackDist")):
                 arcpy.Delete_management("rollbackDist")
             arcpy.FeatureClassToFeatureClass_conversion(rollback_dist,self.outLocation,"rollbackDist")
@@ -152,7 +152,7 @@ class ProjectedDisturbancesPlaceholder(object):
         fire_areaValue = round(fire_areaValue)
         fire_proj_dist_temp = "fire_proj_dist_temp"
         fire_proj_dist_temp1 = "fire_proj_dist_temp1"
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.CreateFeatureclass_management(self.outLocation, fire_proj_dist_temp, "", "inventory_gridded_1990","","","inventory_gridded_1990")
             arcpy.MakeFeatureLayer_management("inventory_gridded_1990", "inventory_gridded_1990_layer")
             for year in self.year_range:
@@ -186,7 +186,7 @@ class ProjectedDisturbancesPlaceholder(object):
         pp1 = self.ProgressPrinter.newProcess("generateHarvest", len(self.year_range), 2).start()
         logging.info("Start of projected harvest processing...")
         logging.info("Generating projected harvest with a {}% reduction after the activity start year of {}".format((100-actv_harvest_percent),self.activity_start_year))
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             harvest_proj_dist_temp = "harvest_proj_dist_temp"
             harvest_proj_dist_temp1 = "harvest_proj_dist_temp1"
             arcpy.CreateFeatureclass_management(self.outLocation, harvest_proj_dist_temp, "", "inventory_gridded_1990","","","inventory_gridded_1990")
@@ -231,7 +231,7 @@ class ProjectedDisturbancesPlaceholder(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(self.year_range), 2).start()
         logging.info('Start of projected slashburn processing...')
         logging.info("Generating projected slashburn with a {}% reduction after the activity start year of {}".format((slashburn_percent-actv_slashburn_percent)*100/(slashburn_percent),self.activity_start_year))
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             harvest_proj_dist_temp = "harvest_proj_dist_temp"
             slasburn_proj_dist_temp = "slasburn_proj_dist_temp"
             arcpy.MakeFeatureLayer_management(projected_disturbances, harvest_proj_dist_temp)

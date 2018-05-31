@@ -43,7 +43,7 @@ class MergeDisturbances(object):
 
     def spatialJoin(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             target_features = arcpy.GetParameterAsText(0)
             join_features = arcpy.GetParameterAsText(1)
             out_fc = arcpy.GetParameterAsText(2)
@@ -55,7 +55,7 @@ class MergeDisturbances(object):
 
     def prepFieldMap(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             fm_year = arcpy.FieldMap()
             self.fms = arcpy.FieldMappings()
             self.vTab = arcpy.ValueTable()
@@ -91,7 +91,7 @@ class MergeDisturbances(object):
 
     def mergeLayers(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.workspace
             arcpy.Merge_management(self.vTab, self.output, self.fms)
             self.SpatialJoinLargestOverlap(self.grid, self.output, self.gridded_output, False, "largest_overlap")
@@ -105,7 +105,7 @@ class MergeDisturbances(object):
             return
             
         pp1 = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 2).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             # Calculate intersection between Target Feature and Join Features
             intersect = arcpy.analysis.Intersect([target_features, join_features], "in_memory/intersect", "ONLY_FID")
             # Find which Join Feature has the largest overlap with each Target Feature

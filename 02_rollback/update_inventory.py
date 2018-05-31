@@ -19,7 +19,7 @@ class CalculateDistDEdifference(object):
         self.disturbedInventory_layer = "disturbedInventory_layer"
 
     def calculateDistDEdifference(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput = True
             #local variables
@@ -41,13 +41,13 @@ class CalculateDistDEdifference(object):
 
     def makeLayers(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(self.disturbedInventory, self.disturbedInventory_layer)
         pp.finish()
 
     def calculateFields(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             #Calculate date of establishment and difference between date of establishment (inventory) and date of stand-replacing disturbance
             logging.info('Calculating date of establishment and difference between date of establishment (inventory) and date of disturbance')
             cur = arcpy.UpdateCursor(self.disturbedInventory_layer)
@@ -79,7 +79,7 @@ class CalculateNewDistYr(object):
         self.disturbedInventory_layer = "disturbedInventory_layer"
 
     def calculateNewDistYr(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput = True
             #local variables
@@ -108,14 +108,14 @@ class CalculateNewDistYr(object):
 
     def makeLayers(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(self.DisturbedInventory, self.disturbedInventory_layer)
         # print(arcpy.GetMessages())
         pp.finish()
 
     def calculateDistType(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             cur = arcpy.UpdateCursor(self.disturbedInventory_layer)
             for row in cur:
                 dist_year = row.getValue(self.disturbance_yr)
@@ -129,7 +129,7 @@ class CalculateNewDistYr(object):
 
     def calculateRegenDelay(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             cur = arcpy.UpdateCursor(self.disturbedInventory_layer)
             for row in cur:
                 age_diff = row.getValue(self.inv_dist_date_diff_field)
@@ -166,7 +166,7 @@ class CalculateNewDistYr(object):
         for dist_type, age_props in dist_age_props.iteritems():
             age_distributors[dist_type] = RollbackDistributor(**age_props)
 
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             cur = arcpy.UpdateCursor(self.disturbedInventory_layer)
             for row in cur:
                 dist_type = int(row.getValue(self.dist_type_field))
@@ -184,7 +184,7 @@ class CalculateNewDistYr(object):
 
     def calculateRolledBackInvAge(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             cur = arcpy.UpdateCursor(self.disturbedInventory_layer)
             for row in cur:
                 pre_DistAge = row.getValue(self.preDistAge)
@@ -241,7 +241,7 @@ class updateInvRollback(object):
         self.disturbedInventory_layer = "disturbedInventory_layer"
 
     def updateInvRollback(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput = True
             #local variables
@@ -270,14 +270,14 @@ class updateInvRollback(object):
 
     def makeLayers1(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(self.gridded_inventory, self.gridded_inventory_layer)
             arcpy.MakeFeatureLayer_management(self.disturbedInventory, self.disturbedInventory_layer)
         pp.finish()
 
     def remergeDistPolyInv(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.Update_analysis(self.gridded_inventory_layer, self.disturbedInventory_layer,
                 self.RolledBackInventory, "BORDERS", "0.25 Meters")
         self.inventory.setLayerName(self.RolledBackInventory)
@@ -285,14 +285,14 @@ class updateInvRollback(object):
 
     def makeLayers2(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(self.RolledBackInventory, self.RolledBackInventory_layer)
         pp.finish()
 
     def rollbackAgeNonDistStands(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         logging.info('Rolling back ages for age{}'.format(self.rollback_start))
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             cur = arcpy.UpdateCursor(self.RolledBackInventory_layer)
             for row in cur:
                 rolledBackAge = row.getValue(self.rollback_vintage_field)
@@ -309,7 +309,7 @@ class updateInvRollback(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(year_range), 1).start()
         # print "Start of slashburn processing..."
         PercSBofCC = self.sb_percent
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(self.RolledBackInventory_layer, "temp_rollback")
             expression1 = '{} = {}'.format(arcpy.AddFieldDelimiters("temp_rollback", self.dist_type_field), 2)
             logging.info('Making slashburn for the range {}-{}'.format(self.rollback_range[0],self.rollback_range[1]))
@@ -344,7 +344,7 @@ class updateInvRollback(object):
         dissolveFields = [self.dist_type_field, self.new_disturbance_field,self.regen_delay_field, self.CELL_ID]
         selectClause =  "{} IS NOT NULL".format(self.new_disturbance_field)
 
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.SelectLayerByAttribute_management(self.RolledBackInventory_layer, "NEW_SELECTION", selectClause)
             arcpy.Dissolve_management(self.RolledBackInventory_layer, self.rollbackDisturbanceOutput.getPath(),dissolveFields,
                 "","SINGLE_PART","DISSOLVE_LINES")
@@ -355,7 +355,7 @@ class updateInvRollback(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
         print "\tExporting rolled back inventory to rasters..."
         logging.info('Exporting rolled back inventory rasters to {}'.format(self.rasterOutput))
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.overwriteOutput = True
             classifier_names = self.inventory.getClassifiers()
             fields = {

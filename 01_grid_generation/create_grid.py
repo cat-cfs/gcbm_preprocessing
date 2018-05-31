@@ -15,7 +15,7 @@ class Fishnet(object):
         self.XYgrid_temp = "XYgrid_temp"
 
     def createFishnet(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.env.workspace = self.inventory.getWorkspace()
             arcpy.env.overwriteOutput=True
             self.inventory.refreshBoundingBox()
@@ -65,7 +65,7 @@ class Fishnet(object):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_name_types), 1)
         pp.start()
 
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             for field_name in field_name_types:
                 field_type = field_name_types[field_name]
                 field_length = "10" if field_type.upper()=="TEXT" else ""
@@ -75,7 +75,7 @@ class Fishnet(object):
         pp.finish()
 
     def _calculateFields(self):
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             functions = [
                 lambda:arcpy.MakeFeatureLayer_management(self.XYgrid_temp, 'XYgrid_intersect'),
                 # Only calculates grid cells that are intersecting with inventory

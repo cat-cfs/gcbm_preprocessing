@@ -78,7 +78,7 @@ class IntersectDisturbancesInventory(object):
             self.new_disturbance_field
         ]
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], len(field_names), 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             for field_name in field_names:
                 arcpy.AddField_management(self.gridded_inventory, field_name, "LONG", "", "", "", "", "NULLABLE", "NON_REQUIRED", "")
                 pp.updateProgressP()
@@ -86,7 +86,7 @@ class IntersectDisturbancesInventory(object):
 
     def selectInventoryRecords(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             inv_whereClause = '{} < {}'.format(arcpy.AddFieldDelimiters(self.inv_workspace, self.invAge_fieldName), self.rolledback_years)
             logging.info('Selecting inventory records where {}'.format(inv_whereClause))
             arcpy.Select_analysis(self.gridded_inventory, self.inventory_layer3, inv_whereClause)
@@ -94,7 +94,7 @@ class IntersectDisturbancesInventory(object):
 
     def clipMergedDisturbances(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             StudyArea_whereClause = '{} {} {}'.format(arcpy.AddFieldDelimiters(self.spatial_boundaries, self.studyArea_fieldName),
                 self.studyAreaOperator, self.StudyArea)
             # Selecting Study area..."
@@ -105,13 +105,13 @@ class IntersectDisturbancesInventory(object):
 
     def makeFeatureLayer(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             arcpy.MakeFeatureLayer_management(self.disturbances, self.disturbances_layer)
         pp.finish()
 
     def selectDisturbanceRecords(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             #Select disturbance records that occur before inventory vintage
             dist_whereClause = '{} < {}'.format(arcpy.AddFieldDelimiters(self.disturbances, self.disturbance_fieldName), self.invVintage)
             logging.info('Selecting disturbance records that occur before inventory vintage: {}'.format(dist_whereClause))
@@ -120,7 +120,7 @@ class IntersectDisturbancesInventory(object):
 
     def intersectLayers(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             # Intersecting disturbance and Inventory layers...
             logging.info('Intersecting disturbance and inventory layers')
             arcpy.Union_analysis([self.inventory_layer3,self.disturbances_layer2], self.temp_overlay, "ALL")
@@ -128,7 +128,7 @@ class IntersectDisturbancesInventory(object):
 
     def removeNonConcurring(self):
         pp = self.ProgressPrinter.newProcess(inspect.stack()[0][3], 1, 1).start()
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             nonConcurrence_whereClause = "{} > 0".format(arcpy.AddFieldDelimiters(self.output, "CELL_ID"))
             # Removing disturbance polygons where inventory doesnt spatially concur that a disturbance took place...
             logging.info("Removing stand-replacing disturbance polygons with {} where inventory doesn't spatially concur that a disturbance took place".format(nonConcurrence_whereClause))

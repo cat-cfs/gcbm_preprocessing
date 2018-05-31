@@ -16,7 +16,7 @@ class GenerateSlashburn(object):
 
         logging.info('Prepping temporary workspace')
         temp_gdb = os.path.join(os.path.dirname(harvest_poly_shp),"slashburn_temp.gdb")
-        with arc_license(Products.ARC) as arcpy:
+        with arc_license(Products.ARCINFO) as arcpy:
             if os.path.exists(temp_gdb):
                 arcpy.Delete_management(temp_gdb)
             arcpy.CreateFileGDB_management(os.path.dirname(harvest_poly_shp), "slashburn_temp.gdb")
