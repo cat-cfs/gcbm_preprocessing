@@ -13,7 +13,7 @@ SELECT DISTINCT
    c.geom
 FROM cells c
 INNER JOIN preprocessing.inventory i
-ON ST_Intersects(c.geom, i.geom)
+ON ST_Area(ST_Transform(ST_Intersection(c.geom, i.geom), 102001)) > 100
 INNER JOIN preprocessing.blocks b
 -- * note *
 -- Because ST_Fishnet produces cells outside of the block (along the edges),
