@@ -2,6 +2,10 @@ import logging
 import time
 import os
 from contextlib import contextmanager
+from sshtunnel import SSHTunnelForwarder
+from multiprocessing import Process
+
+active_tunnel = False
 
 # Fixes interaction between time and multiprocessing modules.
 os.environ["FOR_DISABLE_CONSOLE_CTRL_HANDLER"] = "1"
@@ -72,7 +76,29 @@ class Products(object):
             del arcpy
         except:
             pass
-            
+
+def start_tunnel(tunnel_conf):
+    tunnel = SSHTunnelForwarder(
+        (tunnel_conf["tunnel_host"], 22),
+        ssh_username=tunnel_conf["tunnel_username"],
+        ssh_password=tunnel_conf["tunnel_password"],
+        remote_bind_addresses=[
+            (tunnel_conf["license_host"], 27000),
+            (tunnel_conf["license_host"], int(tunnel_conf["license_port"]))],
+        local_bind_addresses=[
+            ("localhost", 27000),
+            ("localhost", int(tunnel_conf["license_port"]))],
+        set_keepalive=60,
+        mute_exceptions=True)
+    tunnel.start()
+    while True:
+        time.sleep(30)
+        tunnel.check_tunnels()
+        all_tunnels_up = all(tunnel.tunnel_is_up.values())
+        logging.debug("Tunnels up?: {}".format(all_tunnels_up))
+        if not all_tunnels_up:
+            logging.debug("Attempting to restart tunnels")
+            tunnel.restart()
 
 @contextmanager
 def arc_license(product_or_extension):
@@ -86,7 +112,17 @@ def arc_license(product_or_extension):
         return
     
     wait_time = 60
-    max_retries = 60**2 * 12 / wait_time # Retry for up to 12 hours
+    max_retries = 60**2 * 48 / wait_time # Retry for up to 24 hours
+    
+    tunnel_conf_file = os.path.join(os.path.dirname(__file__), "arc_license_tunnel.conf")
+    tunneled_license = os.path.exists(tunnel_conf_file)
+    global active_tunnel
+    if tunneled_license and not active_tunnel:
+        active_tunnel = True
+        tunnel_conf = dict((line.split() for line in open(tunnel_conf_file, "r")))
+        tunnel_process = Process(target=start_tunnel, args=(tunnel_conf,))
+        tunnel_process.daemon = True
+        tunnel_process.start()
     
     attempt = 1
     try:
