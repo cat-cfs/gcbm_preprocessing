@@ -90,7 +90,11 @@ def start_tunnel(tunnel_conf):
             ("localhost", int(tunnel_conf["license_port"]))],
         set_keepalive=60)
     
-    tunnel.start()
+    try:
+        tunnel.start()
+    except:
+        pass
+    
     hard_restart_attempts = 0
     while hard_restart_attempts < 20:
         time.sleep(30)
@@ -102,6 +106,7 @@ def start_tunnel(tunnel_conf):
                 logging.debug("Attempting to restart tunnels")
                 tunnel.restart()
         except:
+            hard_restart_attempts += 1
             tunnel.start()
     
 @contextmanager
@@ -127,6 +132,7 @@ def arc_license(product_or_extension):
         tunnel_process = Process(target=start_tunnel, args=(tunnel_conf,))
         tunnel_process.daemon = True
         tunnel_process.start()
+        time.sleep(15)
     
     attempt = 1
     try:
