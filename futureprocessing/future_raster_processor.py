@@ -61,6 +61,10 @@ class FutureRasterProcessor(object):
             if year >= activityStartYear:
                 percent = activityPercent
 
+            logging.info("exporting subset of SHA harvest raster as gcbm slashburn input: {input}, output: {output}, percent: {percent}"
+                .format(input = harvest_raster_scenario_path,
+                       output = slashburn_path,
+                       percent = percent))
             random_subset.RandomSubset(input = harvest_raster_scenario_path,
                                        output = slashburn_path,
                                        percent = percent)
@@ -84,12 +88,21 @@ class FutureRasterProcessor(object):
             harvest_raster_base_path = self.base_paths["harvest"][year]
             harvest_raster_scenario_path = os.path.join(self.output_dir, 
                                                         self.harvest_format.format(year))
+                                                        
+            
             if year >= activityStartYear:
+                logging.info("exporting subset of SHA harvest raster as harvest input: {input}, output: {output}, percent: {percent}"
+                .format(input = harvest_raster_base_path,
+                       output = harvest_raster_scenario_path,
+                       percent = activityPercent))
                 random_subset.RandomSubset(
                     input = harvest_raster_base_path,
                     output = harvest_raster_scenario_path,
                     percent = activityPercent)
             else:
+                logging.info("copying SHA harvest raster into gcbm harvest input: {input}, output: {output}"
+                .format(input = harvest_raster_base_path,
+                       output = harvest_raster_scenario_path))
                 shutil.copy(harvest_raster_base_path,
                             harvest_raster_scenario_path)
             result.append(
@@ -108,6 +121,10 @@ class FutureRasterProcessor(object):
             fire_raster_base_path = self.base_paths["fire"][year]
             fire_raster_scenario_path = os.path.join(self.output_dir, 
                                                      self.fire_format.format(year))
+                                                     
+            logging.info("copying SHA fire raster into gcbm fire input: {input}, output: {output}"
+                .format(input = fire_raster_base_path,
+                        output = fire_raster_scenario_path))
             shutil.copy(fire_raster_base_path,
                         fire_raster_scenario_path)
             result.append(
