@@ -107,7 +107,10 @@ def start_tunnel(tunnel_conf):
                 tunnel.restart()
         except:
             hard_restart_attempts += 1
-            tunnel.start()
+            try:
+                tunnel.start()
+            except:
+                pass
     
 @contextmanager
 def arc_license(product_or_extension):
