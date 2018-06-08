@@ -88,18 +88,22 @@ def start_tunnel(tunnel_conf):
         local_bind_addresses=[
             ("localhost", 27000),
             ("localhost", int(tunnel_conf["license_port"]))],
-        set_keepalive=60,
-        mute_exceptions=True)
+        set_keepalive=60)
+    
     tunnel.start()
-    while True:
+    hard_restart_attempts = 0
+    while hard_restart_attempts < 20:
         time.sleep(30)
-        tunnel.check_tunnels()
-        all_tunnels_up = all(tunnel.tunnel_is_up.values())
-        logging.debug("Tunnels up?: {}".format(all_tunnels_up))
-        if not all_tunnels_up:
-            logging.debug("Attempting to restart tunnels")
-            tunnel.restart()
-
+        try:
+            tunnel.check_tunnels()
+            all_tunnels_up = all(tunnel.tunnel_is_up.values())
+            logging.debug("Tunnels up?: {}".format(all_tunnels_up))
+            if not all_tunnels_up:
+                logging.debug("Attempting to restart tunnels")
+                tunnel.restart()
+        except:
+            tunnel.start()
+    
 @contextmanager
 def arc_license(product_or_extension):
     mgr = None
