@@ -58,7 +58,10 @@ SELECT
   END AS dist_date_diff,
   -- disturbance type
   -- Taken directly from the input disturbance type in the gridded disturbances
-  d.dist_type,
+  CASE 
+    WHEN d.dist_type IS NULL THEN 2
+    ELSE d.dist_type
+  END AS dist_type,
   -- regen delay
   -- set to dist_date_diff (establishment date minus disturbance year) if dist_date_diff
   -- is positive, otherwise zero
