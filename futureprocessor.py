@@ -57,7 +57,7 @@ class Future(object):
 
         logging.info("using sha rasters from '{}'".format(baseRasterDir))
         future_range = list(range(self.config.GetStartYear(),
-                       self.config.GetEndYear()))
+                       self.config.GetEndYear() + 1)) #inclusive end year
 
         output_dir = self.pathRegistry.GetPath(
                "Future_Dist_Output_Dir",
