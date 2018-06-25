@@ -25,7 +25,7 @@ def scan_for_layers(layer_root):
             "path"  : layer_path,
             "prefix": layer_prefix
         })
-        
+
     return provider_layers
 
 def update_provider_config(provider_config_path, study_area, layer_root,
@@ -34,7 +34,7 @@ def update_provider_config(provider_config_path, study_area, layer_root,
 
     with open(provider_config_path, "r") as provider_config_file:
         provider_config = json.load(provider_config_file)
-    
+
     provider_section = provider_config["Providers"]
     layer_config = None
     for provider, config in viewitems(provider_section):
@@ -48,29 +48,29 @@ def update_provider_config(provider_config_path, study_area, layer_root,
     spatial_provider_config["blockLonSize"] = study_area["block_size"]
     spatial_provider_config["cellLatSize"]  = study_area["pixel_size"]
     spatial_provider_config["cellLonSize"]  = study_area["pixel_size"]
-            
+
     provider_layers = []
     relative_layer_root = os.path.relpath(layer_root, os.path.dirname(provider_config_path)) \
         if use_relpaths else layer_root
     for layer in study_area["layers"]:
         logging.debug("Added {} to provider configuration".format(layer))
-  
+
         provider_layers.append({
             "name"        : layer["name"],
             "layer_path"  : os.path.join(relative_layer_root, os.path.basename(layer["path"])),
             "layer_prefix": layer["prefix"]
         })
-        
+
     layer_config = spatial_provider_config["layers"] = provider_layers
     if use_relpaths:
         relative_db_path = os.path.relpath(os.path.dirname(dbpath), os.path.dirname(provider_config_path))
         provider_section["SQLite"]["path"] = os.path.join(relative_db_path, os.path.basename(dbpath))
     else:
         provider_section["SQLite"]["path"] = dbpath
-    
+
     with open(provider_config_path, "w") as provider_config_file:
         provider_config_file.write(json.dumps(provider_config, indent=4, ensure_ascii=False))
-        
+
     logging.info("Provider configuration updated")
 
 def update_gcbm_config(gcbm_config_path, study_area,
@@ -78,17 +78,17 @@ def update_gcbm_config(gcbm_config_path, study_area,
                        reporting_classifiers, output_db_path,
                        variable_grid_output_dir, output_relpaths=True):
     logging.info("Updating {}".format(gcbm_config_path))
-    
+
     with open(gcbm_config_path, "r") as gcbm_config_file:
         gcbm_config = json.load(gcbm_config_file)
-    
+
     tile_size    = study_area["tile_size"]
     pixel_size   = study_area["pixel_size"]
     tile_size_px = int(tile_size / pixel_size)
-    
+
     localdomain_config = gcbm_config["LocalDomain"]
     localdomain_config["start_date"] = "{}/01/01".format(start_year)
-    localdomain_config["end_date"] = "{}/01/01".format(end_year)
+    localdomain_config["end_date"] = "{}/01/01".format(end_year + 1) #inclusive end year
 
 
     landscape_config = gcbm_config["LocalDomain"]["landscape"]
@@ -97,7 +97,7 @@ def update_gcbm_config(gcbm_config_path, study_area,
     landscape_config["x_pixels"]    = tile_size_px
     landscape_config["y_pixels"]    = tile_size_px
     landscape_config["tiles"]       = study_area["tiles"]
-    
+
     disturbance_listener_config = gcbm_config["Modules"]["CBMDisturbanceListener"]
     if not "settings" in disturbance_listener_config:
         disturbance_listener_config["settings"] = {}
@@ -122,11 +122,11 @@ def update_gcbm_config(gcbm_config_path, study_area,
         layer_name = layer["name"]
         if layer.get("type") == "DisturbanceLayer":
             disturbance_layers.append(layer_name)
-            
+
         if layer_name.lower() in variable_names:
             logging.debug("Variable {} already present in config - skipping update".format(layer_name))
             continue
-        
+
         variable_config[layer_name] = {
             "transform": {
                 "library" : "internal.flint",
@@ -141,9 +141,9 @@ def update_gcbm_config(gcbm_config_path, study_area,
 
     with open(gcbm_config_path, "w") as gcbm_config_file:
         gcbm_config_file.write(json.dumps(gcbm_config, indent=4, ensure_ascii=False))
-    
+
     logging.info("GCBM configuration updated")
-    
+
 def get_study_area(layer_root):
     study_area = {
         "tile_size" : 1.0,
@@ -152,7 +152,7 @@ def get_study_area(layer_root):
         "tiles"     : [],
         "layers"    : []
     }
-    
+
     study_area_path = os.path.join(layer_root, "study_area.json")
     if os.path.exists(study_area_path):
         with open(study_area_path, "r") as study_area_file:
@@ -167,8 +167,8 @@ def get_study_area(layer_root):
             for layer_metadata \
             in filter(lambda l: l.get("name") == layer.get("name"), study_area_layers):
                 layer.update(layer_metadata)
-    
+
     study_area["layers"] = layers
-   
+
     return study_area
 
