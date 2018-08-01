@@ -88,7 +88,7 @@ def update_gcbm_config(gcbm_config_path, study_area,
     
     localdomain_config = gcbm_config["LocalDomain"]
     localdomain_config["start_date"] = "{}/01/01".format(start_year)
-    localdomain_config["end_date"] = "{}/01/01".format(end_year)
+    localdomain_config["end_date"] = "{}/01/01".format(end_year + 1)  # inclusive end year
 
 
     landscape_config = gcbm_config["LocalDomain"]["landscape"]

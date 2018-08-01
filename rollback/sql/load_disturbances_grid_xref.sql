@@ -33,7 +33,8 @@ WITH intersections AS
   g.grid_id,
   g.geom as geom_f,
   d.disturbance_id,
-  d.geom as geom_d
+  d.geom as geom_d,
+  d.year as year
 FROM preprocessing.grid g
 INNER JOIN preprocessing.disturbances d
 ON ST_Intersects(g.geom, d.geom)
@@ -51,13 +52,14 @@ ORDER BY grid_id),
 largest_overlap AS
 (SELECT DISTINCT ON (grid_id)
   i.grid_id,
+  i.year,
   i.disturbance_id,
   ST_Area(ST_Safe_Intersection(i.geom_f, i.geom_d)) as area
   --ST_Area(ST_Transform(ST_Intersection(i.geom_f, i.geom_i), 3005)) as area
 FROM intersections i
 INNER JOIN count_intersections c ON i.grid_id = c.grid_id
 WHERE c.n_intersections > 1
-ORDER BY grid_id asc, area desc)
+ORDER BY grid_id asc, area desc, year desc)
 
 SELECT grid_id, disturbance_id
 FROM largest_overlap

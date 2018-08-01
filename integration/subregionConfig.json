@@ -481,6 +481,29 @@
         "Region_Number": "22", 
         "PathName": "TSA_22_Okanagan", 
         "ClipFeatureFilter": "\"TSA_NUMBER\" = 'Okanagan TSA'"
+    },
+    {
+        "SHAScenarios": [
+            {
+                "Name": "Base", 
+                "SubDir": [
+                    "BASE", 
+                    "tsa23"
+                ]
+            }, 
+            {
+                "Name": "More", 
+                "SubDir": [
+                    "More", 
+                    "tsa23"
+                ]
+            }
+        ], 
+        "Name": "100_Mile_House", 
+        "InventoryName": "tsa23", 
+        "Region_Number": "23", 
+        "PathName": "TSA_23_100_Mile_House", 
+        "ClipFeatureFilter": "\"TSA_NUMBER\" = '100 Mile House TSA'"
     }, 
     {
         "SHAScenarios": [
