@@ -23,9 +23,14 @@
       "Slashburn_Percent": 50,
       "Slashburn_Activity_Percent": 50,
       "Harvest_Activity_Percent": 50,
-      "CBM_Disturbance_Type_Map": {
+      "Base_CBM_Disturbance_Type_Map": {
         "fire": "Wild Fires",
-        "harvest": "Base CC",
+        "harvest": "CBM_A CC",
+        "slashburn": "SlashBurning"
+      }
+      "Activity_CBM_Disturbance_Type_Map": {
+        "fire": "Wild Fires",
+        "harvest": "CBM_A CC",
         "slashburn": "SlashBurning"
       }
     },
@@ -36,7 +41,12 @@
       "Slashburn_Percent": 51,
       "Slashburn_Activity_Percent": 50,
       "Harvest_Activity_Percent": 50,
-      "CBM_Disturbance_Type_Map": {
+      "Base_CBM_Disturbance_Type_Map": {
+        "fire": "Wild Fires",
+        "harvest": "CBM_A CC",
+        "slashburn": "SlashBurning"
+      }
+      "Activity_CBM_Disturbance_Type_Map": {
         "fire": "Wild Fires",
         "harvest": "CBM_A CC",
         "slashburn": "SlashBurning"

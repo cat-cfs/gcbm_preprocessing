@@ -25,7 +25,11 @@ class Future(object):
 
         for item in processedRasterResult:
             disturbanceType = item["DisturbanceName"]
-            cbm_type = scenario["CBM_Disturbance_Type_Map"][disturbanceType]
+            cbm_type = None
+            if item["Year"] < scenario["Activity_Start_Year"]:
+                cbm_type = scenario["Base_CBM_Disturbance_Type_Map"][disturbanceType]
+            else:
+                cbm_type = scenario["Activity_CBM_Disturbance_Type_Map"][disturbanceType]
 
             layer = tilerConfig.CreateConfigItem(
                 "DisturbanceLayer",
