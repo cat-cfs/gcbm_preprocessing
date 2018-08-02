@@ -98,7 +98,7 @@ class Future(object):
         elif "Pre_Activity_Slashburn_Scenario_Copy" in scenario: #otherwise copy the slashburn rasters from another scenario
             previous_scenario_name = scenario["Pre_Activity_Slashburn_Scenario_Copy"]
             logging.info("using previous scenario (scenario_name='{name}') pre-activity slashburn rasters"
-                         .format(previous_scenario_name))
+                         .format(name=previous_scenario_name))
 
             previous_scenario_output_dir = self.pathRegistry.GetPath(
                    "Future_Dist_Output_Dir",

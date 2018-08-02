@@ -38,7 +38,7 @@
       "Name": "SCEN_A",
       "SHAScenarioName": "More",
       "Activity_Start_Year": -1,
-      "Slashburn_Percent": 51,
+      "Pre_Activity_Slashburn_Scenario_Copy": "SCEN_Base",
       "Slashburn_Activity_Percent": 50,
       "Harvest_Activity_Percent": 50,
       "Base_CBM_Disturbance_Type_Map": {
