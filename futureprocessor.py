@@ -6,7 +6,7 @@ from configuration.futureconfig import FutureConfig
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 
-import sys, shutil
+import sys, shutil, numbers
 from loghelper import *
 import argparse, logging
 
@@ -90,11 +90,29 @@ class Future(object):
             scenario["Harvest_Activity_Percent"],
             RandomRasterSubset()))
 
+        #if the slashburn percent is numeric use it as the slashburn percent
+        slashburn_percent = None
+        previous_scenario_output_dir = None
+        if "Slashburn_Percent" in scenario:
+            slashburn_percent = scenario["Slashburn_Percent"]
+        elif "Pre_Activity_Slashburn_Scenario_Copy" in scenario: #otherwise copy the slashburn rasters from another scenario
+            previous_scenario_name = scenario["Pre_Activity_Slashburn_Scenario_Copy"]
+            logging.info("using previous scenario (scenario_name='{name}') pre-activity slashburn rasters"
+                         .format(previous_scenario_name))
+
+            previous_scenario_output_dir = self.pathRegistry.GetPath(
+                   "Future_Dist_Output_Dir",
+                    region_path=region_name,
+                    scenario_name=scenario["Name"])
+        else:
+            raise ValueError("either Slashburn_Percent or Pre_Activity_Slashburn_Scenario_Copy must appear in Future scenarios")
+            
         result.extend(f.processSlashburn(
-            scenario["Slashburn_Percent"],
+            slashburn_percent,
             scenario["Activity_Start_Year"],
             scenario["Slashburn_Activity_Percent"],
-            RandomRasterSubset()))
+            RandomRasterSubset(),
+            previous_scenario_output_dir))
 
         return result
 

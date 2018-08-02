@@ -42,7 +42,7 @@ class FutureRasterProcessor(object):
         return path
 
 
-    def processSlashburn(self, percent, activityStartYear, activityPercent, random_subset):
+    def processSlashburn(self, percent, activityStartYear, activityPercent, random_subset, pre_activity_sb_path = None):
         """
         param percent the percentage of harvest for slashburn prior to the activity start year
         param activityStartYear the year at which activity_percent is used to override percent
@@ -58,16 +58,33 @@ class FutureRasterProcessor(object):
             if not os.path.exists(harvest_raster_scenario_path):
                 raise ValueError("harvest scenarios must be processed before slashburn")
             slashburn_path = os.path.join(self.output_dir, self.slashburn_format.format(year))
-            if year >= activityStartYear:
-                percent = activityPercent
 
-            logging.info("exporting subset of SHA harvest raster as gcbm slashburn input: {input}, output: {output}, percent: {percent}"
-                .format(input = harvest_raster_scenario_path,
-                       output = slashburn_path,
-                       percent = percent))
-            random_subset.RandomSubset(input = harvest_raster_scenario_path,
-                                       output = slashburn_path,
-                                       percent = percent)
+            if year >= activityStartYear:
+                logging.info("exporting subset of SHA harvest raster as gcbm slashburn input: {input}, output: {output}, percent: {percent}"
+                    .format(input = harvest_raster_scenario_path,
+                           output = slashburn_path,
+                           percent = activityPercent))
+                random_subset.RandomSubset(input = harvest_raster_scenario_path,
+                                           output = slashburn_path,
+                                           percent = activityPercent)
+            elif not pre_activity_sb_path is None:
+                logging.info("exporting subset of SHA harvest raster as gcbm slashburn input: {input}, output: {output}, percent: {percent}"
+                    .format(input = harvest_raster_scenario_path,
+                           output = slashburn_path,
+                           percent = percent))
+                random_subset.RandomSubset(input = harvest_raster_scenario_path,
+                            output = slashburn_path,
+                            percent = percent)
+
+            else: #copy the rasters pointed to by the pre_activity_sb_path value (which should be the path to another scenario's projected slashburn rasters)
+                sb_raster_base_path = os.path.join(pre_activity_sb_path, 
+                                    self.slashburn_format.format(year))
+                logging.info("copying previous scenario slashburn rasters into gcbm slashburn input: {input}, output: {output}"
+                    .format(input = sb_raster_base_path,
+                           output = slashburn_path))
+                shutil.copy(sb_raster_base_path,
+                            slashburn_path)
+
             result.append(
                 self.createProcessedRasterResult(
                     year = year,
