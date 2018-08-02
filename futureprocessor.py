@@ -97,13 +97,27 @@ class Future(object):
             slashburn_percent = scenario["Slashburn_Percent"]
         elif "Pre_Activity_Slashburn_Scenario_Copy" in scenario: #otherwise copy the slashburn rasters from another scenario
             previous_scenario_name = scenario["Pre_Activity_Slashburn_Scenario_Copy"]
+            previous_scenario = self.config.GetScenario(previous_scenario_name)
+            if previous_scenario["Activity_Start_Year"]<scenario["Activity_Start_Year"]:
+                #if the previous scenario has less pre-activity years, it's probably a bad idea to copy that data into this scenario
+                raise AssertionError(
+                    ("attempted to copy pre-activity slashburn into this scenario " +
+                    "'{this_scenario}' from a scenario '{previous_scenario}' " +
+                    "with less pre-activity timesteps " +
+                    "({previous_scenario_activity_start} "+
+                    "< {this_scenario_activity_start})")
+                    .format(this_scenario=scenario["Name"],
+                            previous_scenario=previous_scenario_name,
+                            previous_scenario_activity_start = previous_scenario["Activity_Start_Year"],
+                            this_scenario_activity_start = scenario["Activity_Start_Year"]))
+
             logging.info("using previous scenario (scenario_name='{name}') pre-activity slashburn rasters"
                          .format(name=previous_scenario_name))
-
+            
             previous_scenario_output_dir = self.pathRegistry.GetPath(
                    "Future_Dist_Output_Dir",
                     region_path=region_name,
-                    scenario_name=scenario["Name"])
+                    scenario_name=previous_scenario_name)
         else:
             raise ValueError("either Slashburn_Percent or Pre_Activity_Slashburn_Scenario_Copy must appear in Future scenarios")
             

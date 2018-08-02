@@ -42,7 +42,7 @@ class FutureRasterProcessor(object):
         return path
 
 
-    def processSlashburn(self, percent, activityStartYear, activityPercent, random_subset, pre_activity_sb_path = None):
+    def processSlashburn(self, percent, activityStartYear, activityPercent, random_subset, pre_activity_sb_path):
         """
         param percent the percentage of harvest for slashburn prior to the activity start year
         param activityStartYear the year at which activity_percent is used to override percent
@@ -67,7 +67,7 @@ class FutureRasterProcessor(object):
                 random_subset.RandomSubset(input = harvest_raster_scenario_path,
                                            output = slashburn_path,
                                            percent = activityPercent)
-            elif not pre_activity_sb_path is None:
+            elif not percent is None:
                 logging.info("exporting subset of SHA harvest raster as gcbm slashburn input: {input}, output: {output}, percent: {percent}"
                     .format(input = harvest_raster_scenario_path,
                            output = slashburn_path,
