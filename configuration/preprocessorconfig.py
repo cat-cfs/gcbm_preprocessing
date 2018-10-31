@@ -101,7 +101,11 @@ class PreprocessorConfig(object):
         return self.config["RollbackOutputDisturbanceTypes"]
 
     def GetInsectDisturbances(self, region_path):
+        
         item = self.config["InsectDisturbances"]
+        if item is None or item == "":
+            return None
+
         return {
             "Name": item["Name"],
             "Workspace": self.pathRegistry.UnpackPath(item["Workspace"], region_path=region_path),

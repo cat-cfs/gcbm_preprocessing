@@ -156,9 +156,11 @@ def main():
 
         for region in subRegionConfig.GetRegions():
             for scenario in futureConfig.GetScenarios():
-                result = future.Process(
-                    region["PathName"],
-                    scenario)
+                result = []
+                if not futureConfig.IsHistoric(scenario["Name"]):
+                    result = future.Process(
+                        region["PathName"],
+                        scenario)
 
                 tilerConfig = future.CreateTilerConfig(
                     result,

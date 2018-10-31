@@ -3,6 +3,12 @@ import json
 class FutureConfig(object):
     def __init__(self, configPath):
         self.config = self.loadJson(configPath)
+        
+        self.Historic = {x["Name"]: "Type" in x 
+            and x["Type"] == "Historic" 
+            for x in self.config["Scenarios"]
+            }
+            
         self.disturbances = {
             x["Name"]: x for x in
             self.config["Disturbance_Types"]
@@ -17,6 +23,9 @@ class FutureConfig(object):
         if len(self.scenariosbyName) != len(self.config["Scenarios"]):
             raise ValueError("duplicate scenario name detected")
 
+    def IsHistoric(self, scenarioName):
+        return self.Historic[scenarioName]
+        
     def loadJson(self, path):
         with open(path) as json_data:
             return json.load(json_data)

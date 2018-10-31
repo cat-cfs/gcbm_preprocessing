@@ -41,11 +41,13 @@ class Historic(object):
             last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"],
             classifiers=classifiers)
 
-        tilerConfig.AddHistoricInsectLayers(
-           layerData = self.preprocessorConfig.GetInsectDisturbances(region_path),
-           first_year = self.preprocessorConfig.GetHistoricRange()["StartYear"],
-           last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1,
-           classifiers=classifiers)
+        insectDisturbances = self.preprocessorConfig.GetInsectDisturbances(region_path)
+        if insectDisturbances is not None:
+            tilerConfig.AddHistoricInsectLayers(
+                layerData = insectDisturbances,
+                first_year = self.preprocessorConfig.GetHistoricRange()["StartYear"],
+                last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1,
+                classifiers=classifiers)
 
         slashburn_year_range = range(self.preprocessorConfig.GetRollbackRange()["EndYear"] + 1,
                                      self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1)
