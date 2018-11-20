@@ -44,6 +44,7 @@ def main():
         # in the postgres db are equivalent for each region.
         for r in subRegionConfig.GetRegions():
             region_path = r["PathName"]
+            region_inventory_workspace_filter = r["Inventory_Workspace_Filter"] if "Inventory_Workspace_Filter" in r else None
             logging.info(region_path)
             root_postgis_var_path = pathRegistry.GetPath(
                 "PostGIS_Connection_Vars")
@@ -65,7 +66,8 @@ def main():
                 region_postgis_var_path)
 
             workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
-            workspaceFilter = preprocessorConfig.GetInventoryFilter()
+            workspaceFilter = preprocessorConfig.GetInventoryFilter(
+                inventory_filter=region_inventory_workspace_filter)
             gridInventory = GridInventory(preprocessorConfig, db_url)
             gridInventory.load_to_postgres(
                 gdal_con,

@@ -35,15 +35,16 @@ class RegionClipper(object):
                           new_workspace=new_workspace)
 
 
-    def ProcessSubRegion(self, region_path, clipConfig, clipFeature, clipFeatureFilter):
+    def ProcessSubRegion(self, sub_region, clipConfig, clipFeature, clipFeatureFilter):
         '''
         process the tasks specified in tasks for the specified subregion
-        @param region_path the region directory name
+        @param sub_region the sub region object
         @param clipConfig RegionClipperConfig instance
         @param clipFeature path to feature for clipping operations
         @param clipFeatureFilter name of feature in clipFeature
         '''
-        for t in clipConfig.GetTasks(region_path):
+
+        for t in clipConfig.GetTasks(sub_region):
             if t.task == "clipCutPolys":
                 self.clipCutPolys(
                     workspace=t.workspace,
@@ -80,7 +81,7 @@ class RegionClipper(object):
             clipConfig = RegionClipperConfig(
                 self.configPath,
                 self.path_registry)
-            self.ProcessSubRegion(r["PathName"],
+            self.ProcessSubRegion(r,
                                  clipConfig, 
                                  clipFeature,
                                  clipFeatureFilter)
