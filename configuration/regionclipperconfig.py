@@ -25,13 +25,14 @@ class RegionClipperConfig(object):
         region_path = sub_region["PathName"]
         for t in self.data:
             has_region_workspace_filter = self.pathRegistry.is_dependent_token(t["workspace_filter"])
-            region_workspace_filter = None
+            workspacefilterKwargs = None
             if has_region_workspace_filter:
                 key = self.pathRegistry.strip_dependent_token(t["workspace_filter"])
-                region_workspace_filter = sub_region[key]
+                workspacefilterKwargs = {key.lower(): sub_region[key]}
+
             yield RegionClipperTask(
                 task = self._validate_task(t["task"]),
                 workspace = self.pathRegistry.UnpackPath(t["workspace"], region_path=region_path),
-                workspace_filter = self.pathRegistry.UnpackPath(t["workspace_filter"], workspace_filter=region_workspace_filter),
+                workspace_filter = self.pathRegistry.UnpackPath(t["workspace_filter"], **workspacefilterKwargs),
                 new_workspace = self.pathRegistry.UnpackPath(t["new_workspace"], region_path=region_path)
             )

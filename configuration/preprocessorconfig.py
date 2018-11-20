@@ -32,7 +32,7 @@ class PreprocessorConfig(object):
 
     def GetInventoryFilter(self, inventory_workspace_filter):
          return self.pathRegistry.UnpackPath(
-            self.config["Inventory_Filter"], Inventory_Workspace_Filter = inventory_workspace_filter)
+            self.config["Inventory_Filter"], inventory_workspace_filter = inventory_workspace_filter)
 
     def GetInventoryField(self, field):
         return self.config["Inventory_Field_Names"][field]
