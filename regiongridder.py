@@ -67,7 +67,7 @@ def main():
 
             workspace = preprocessorConfig.GetInventoryWorkspace(region_path)
             workspaceFilter = preprocessorConfig.GetInventoryFilter(
-                inventory_filter=region_inventory_workspace_filter)
+                inventory_workspace_filter=region_inventory_workspace_filter)
             gridInventory = GridInventory(preprocessorConfig, db_url)
             gridInventory.load_to_postgres(
                 gdal_con,
