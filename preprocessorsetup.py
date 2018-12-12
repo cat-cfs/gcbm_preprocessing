@@ -86,12 +86,13 @@ def main():
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
             dst = pathRegistry.GetPath("External_Aspatial_Dir")
-            logging.info("copying external aspatial data to local working directory")
-            logging.info("source: {}".format(src))
-            logging.info("destination: {}".format(dst))
+
             if args.cleanup and os.path.exists(dst):
                 logging.info("removing dir {}".format(dst))
                 shutil.rmtree(dst)
+            logging.info("copying external aspatial data to local working directory")
+            logging.info("source: {}".format(src))
+            logging.info("destination: {}".format(dst))
             shutil.copytree(src=src, dst=dst)
 
         if args.tools:
@@ -102,12 +103,13 @@ def main():
             for pair in toolPathPairs:
                 src = pathRegistry.GetPath(pair[0])
                 dst = pathRegistry.GetPath(pair[1])
-                logging.info("copying external tool from {} to {}".format(pair[0],pair[1]))
-                logging.info("source: {}".format(src))
-                logging.info("destination: {}".format(dst))
+
                 if args.cleanup and os.path.exists(dst):
                     logging.info("removing dir {}".format(dst))
                     shutil.rmtree(dst)
+                logging.info("copying external tool from {} to {}".format(pair[0],pair[1]))
+                logging.info("source: {}".format(src))
+                logging.info("destination: {}".format(dst))
                 shutil.copytree(src=src,dst=dst)
 
         if args.future:
@@ -119,24 +121,27 @@ def main():
                     dst = pathRegistry.GetPath("Future_Dist_Input_Dir",
                                             region_path=region["PathName"],
                                             sha_future_scenario=sha_scenario["Name"])
-                    logging.info("copying sha scenario from {} to {}".format(src,dst))
-                    logging.info("source: {}".format(src))
-                    logging.info("destination: {}".format(dst))
+
                     if args.cleanup and os.path.exists(dst):
                         logging.info("removing dir {}".format(dst))
                         shutil.rmtree(dst)
+                    logging.info("copying sha scenario from {} to {}".format(src,dst))
+                    logging.info("source: {}".format(src))
+                    logging.info("destination: {}".format(dst))
                     shutil.copytree(src=src, dst=dst)
 
 
         if args.spatial:
             src = pathRegistry.GetPath("Source_External_Spatial_Dir")
             dst = pathRegistry.GetPath("External_Spatial_Dir")
-            logging.info("copying external spatial data to local working directory")
-            logging.info("source: {}".format(src))
-            logging.info("destination: {}".format(dst))
+
             if args.cleanup and os.path.exists(dst):
                 logging.info("removing dir {}".format(dst))
                 shutil.rmtree(dst)
+
+            logging.info("copying external spatial data to local working directory")
+            logging.info("source: {}".format(src))
+            logging.info("destination: {}".format(dst))
             shutil.copytree(src=src, dst=dst)
 
 
