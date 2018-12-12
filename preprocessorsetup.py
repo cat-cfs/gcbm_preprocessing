@@ -20,6 +20,7 @@ def main():
         parser.add_argument("--aspatial", action="store_true", dest="aspatial", help="copy aspatial files to the working dir")
         parser.add_argument("--tools", action="store_true", dest="tools", help="copy tools to the working dir")
         parser.add_argument("--postgis", action="store_true", dest="postgis", help="set up postgis credentials/url")
+        parser.add_argument("--cleanup", action="store_true", dest="cleanup", help="clean up any existing files working dir, and databases first")
         parser.set_defaults(spatial=False)
         parser.set_defaults(future=False)
         parser.set_defaults(aspatial=False)
@@ -69,6 +70,17 @@ def main():
                         raise RuntimeError("database connection error")
                     logging.info("db connected sucessfully")
                     input("any key to continue")
+            if args.cleanup:
+                for r in subRegionConfig.GetRegions():
+                    logging.info("dropping working db for {}".format(r["Name"]))
+                    region_path = r["PathName"]
+                    region_postgis_var_path = pathRegistry.GetPath(
+                        "PostGIS_Region_Connection_Vars",
+                        region_path=region_path)
+
+                    postgis_manage.drop_working_db(
+                            pathRegistry.GetPath("PostGIS_Connection_Vars"),
+                            region_postgis_var_path)
 
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
@@ -76,6 +88,9 @@ def main():
             logging.info("copying external aspatial data to local working directory")
             logging.info("source: {}".format(src))
             logging.info("destination: {}".format(dst))
+            if args.cleanup:
+                logging.info("removing dir {}".format(dst))
+                shutil.rmtree(dst)
             shutil.copytree(src=src, dst=dst)
 
         if args.tools:
@@ -89,6 +104,9 @@ def main():
                 logging.info("copying external tool from {} to {}".format(pair[0],pair[1]))
                 logging.info("source: {}".format(src))
                 logging.info("destination: {}".format(dst))
+                if args.cleanup:
+                    logging.info("removing dir {}".format(dst))
+                    shutil.rmtree(dst)
                 shutil.copytree(src=src,dst=dst)
 
         if args.future:
@@ -103,6 +121,9 @@ def main():
                     logging.info("copying sha scenario from {} to {}".format(src,dst))
                     logging.info("source: {}".format(src))
                     logging.info("destination: {}".format(dst))
+                    if args.cleanup:
+                        logging.info("removing dir {}".format(dst))
+                        shutil.rmtree(dst)
                     shutil.copytree(src=src, dst=dst)
 
 
@@ -112,6 +133,9 @@ def main():
             logging.info("copying external spatial data to local working directory")
             logging.info("source: {}".format(src))
             logging.info("destination: {}".format(dst))
+            if args.cleanup:
+                logging.info("removing dir {}".format(dst))
+                shutil.rmtree(dst)
             shutil.copytree(src=src, dst=dst)
 
 
