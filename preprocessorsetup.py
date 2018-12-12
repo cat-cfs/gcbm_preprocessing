@@ -77,10 +77,10 @@ def main():
                     region_postgis_var_path = pathRegistry.GetPath(
                         "PostGIS_Region_Connection_Vars",
                         region_path=region_path)
-
-                    postgis_manage.drop_working_db(
-                            pathRegistry.GetPath("PostGIS_Connection_Vars"),
-                            region_postgis_var_path)
+                    if os.path.exists(region_postgis_var_path):
+                        postgis_manage.drop_working_db(
+                                pathRegistry.GetPath("PostGIS_Connection_Vars"),
+                                region_postgis_var_path)
 
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
@@ -88,7 +88,7 @@ def main():
             logging.info("copying external aspatial data to local working directory")
             logging.info("source: {}".format(src))
             logging.info("destination: {}".format(dst))
-            if args.cleanup:
+            if args.cleanup and os.path.exists(dst):
                 logging.info("removing dir {}".format(dst))
                 shutil.rmtree(dst)
             shutil.copytree(src=src, dst=dst)
@@ -104,7 +104,7 @@ def main():
                 logging.info("copying external tool from {} to {}".format(pair[0],pair[1]))
                 logging.info("source: {}".format(src))
                 logging.info("destination: {}".format(dst))
-                if args.cleanup:
+                if args.cleanup and os.path.exists(dst):
                     logging.info("removing dir {}".format(dst))
                     shutil.rmtree(dst)
                 shutil.copytree(src=src,dst=dst)
@@ -121,7 +121,7 @@ def main():
                     logging.info("copying sha scenario from {} to {}".format(src,dst))
                     logging.info("source: {}".format(src))
                     logging.info("destination: {}".format(dst))
-                    if args.cleanup:
+                    if args.cleanup and os.path.exists(dst):
                         logging.info("removing dir {}".format(dst))
                         shutil.rmtree(dst)
                     shutil.copytree(src=src, dst=dst)
@@ -133,7 +133,7 @@ def main():
             logging.info("copying external spatial data to local working directory")
             logging.info("source: {}".format(src))
             logging.info("destination: {}".format(dst))
-            if args.cleanup:
+            if args.cleanup and os.path.exists(dst):
                 logging.info("removing dir {}".format(dst))
                 shutil.rmtree(dst)
             shutil.copytree(src=src, dst=dst)
