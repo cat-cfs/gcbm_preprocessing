@@ -148,7 +148,8 @@ def main():
             for r in subRegionConfig.GetRegions():
                 subRegionDir = pathRegistry.GetPath("SubRegionDir", region_path=r["PathName"])
                 logging.info("dropping working dir {}".format(subRegionDir))
-                shutil.rmtree(subRegionDir)
+                if os.path.exists(subRegionDir):
+                    shutil.rmtree(subRegionDir)
                 
 
     except Exception as ex:
