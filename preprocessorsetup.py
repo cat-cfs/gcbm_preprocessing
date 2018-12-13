@@ -144,7 +144,12 @@ def main():
             logging.info("destination: {}".format(dst))
             shutil.copytree(src=src, dst=dst)
 
-
+        if args.cleanup:
+            for r in subRegionConfig.GetRegions():
+                subRegionDir = pathRegistry.GetPath("SubRegionDir", region_path=r["PathName"])
+                logging.info("dropping working dir {}".format(subRegionDir))
+                shutil.rmtree(subRegionDir)
+                
 
     except Exception as ex:
         logging.exception("error")
