@@ -81,7 +81,7 @@ def main():
                         postgis_manage.drop_working_db(
                                 pathRegistry.GetPath("PostGIS_Connection_Vars"),
                                 region_postgis_var_path)
-                        shutil.remove(region_postgis_var_path)
+                        os.remove(region_postgis_var_path)
 
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
