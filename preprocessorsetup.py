@@ -1,5 +1,5 @@
 from loghelper import *
-import os, sys, argparse, shutil, zipfile
+import os, sys, argparse, shutil, zipfile, stat
 from shutil import ignore_patterns
 from future.builtins import input
 from preprocess_tools import postgis_manage
