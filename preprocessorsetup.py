@@ -5,6 +5,12 @@ from future.builtins import input
 from preprocess_tools import postgis_manage
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
+
+def del_rw(action, name, exc):
+    os.chmod(name, stat.S_IWRITE)
+    os.remove(name)
+
+
 def main():
 
     create_script_log(sys.argv[0])
@@ -105,9 +111,12 @@ def main():
                 src = pathRegistry.GetPath(pair[0])
                 dst = pathRegistry.GetPath(pair[1])
 
+
                 if args.cleanup and os.path.exists(dst):
                     logging.info("removing dir {}".format(dst))
-                    shutil.rmtree(dst)
+                    #del_rw is called on errors to attempt to remove read only files 
+                    #(there are a few of them in recent GCBM builds)
+                    shutil.rmtree(dst, onerror=del_rw)
                 logging.info("copying external tool from {} to {}".format(pair[0],pair[1]))
                 logging.info("source: {}".format(src))
                 logging.info("destination: {}".format(dst))
