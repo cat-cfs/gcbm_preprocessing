@@ -1,5 +1,6 @@
 from loghelper import *
 import os, sys, argparse, shutil, zipfile
+from shutil import ignore_patterns
 from future.builtins import input
 from preprocess_tools import postgis_manage
 from configuration.pathregistry import PathRegistry
@@ -142,7 +143,8 @@ def main():
             logging.info("copying external spatial data to local working directory")
             logging.info("source: {}".format(src))
             logging.info("destination: {}".format(dst))
-            shutil.copytree(src=src, dst=dst)
+            shutil.copytree(src=src, dst=dst, 
+                            ignore = ignore_patterns("*.sr.lock")) #ignore annoying arc lock files
 
 
 
