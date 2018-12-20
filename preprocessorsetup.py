@@ -82,7 +82,7 @@ def main():
                         postgis_manage.drop_working_db(
                                 pathRegistry.GetPath("PostGIS_Connection_Vars"),
                                 region_postgis_var_path)
-                        shutil.remove(region_postgis_var_path)
+                        os.remove(region_postgis_var_path)
 
         if args.aspatial:
             src = pathRegistry.GetPath("Source_External_Aspatial_Dir")
@@ -146,7 +146,13 @@ def main():
             shutil.copytree(src=src, dst=dst, 
                             ignore = ignore_patterns("*.sr.lock")) #ignore annoying arc lock files
 
-
+        if args.cleanup:
+            for r in subRegionConfig.GetRegions():
+                subRegionDir = pathRegistry.GetPath("SubRegionDir", region_path=r["PathName"])
+                logging.info("dropping working dir {}".format(subRegionDir))
+                if os.path.exists(subRegionDir):
+                    shutil.rmtree(subRegionDir)
+                
 
     except Exception as ex:
         logging.exception("error")
