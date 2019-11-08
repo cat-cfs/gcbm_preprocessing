@@ -54,7 +54,6 @@ def main():
             merge_disturbances.intersect_disturbances_inventory(db_url, config)
             update_inventory.rollback_age_disturbed(db_url, config)
             update_inventory.rollback_age_non_disturbed(db_url, config)
-            update_inventory.generate_slashburn(db_url, config)
             update_inventory.export_rollback_disturbances(gdal_con, config, region_path)
             raster_metadata = update_inventory.export_inventory(db_url, gdal_con, config, region_path)
 
