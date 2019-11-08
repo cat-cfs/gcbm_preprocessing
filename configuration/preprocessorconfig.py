@@ -43,6 +43,9 @@ class PreprocessorConfig(object):
     def GetInventoryClassifiers(self):
         return self.config["Inventory_Classifiers"]
 
+    def GetReportingClassifiers(self):
+        return self.config["Reporting_Classifiers"]
+
     def GetRollbackRange(self):
         return self.config["Rollback_Range"]
 
