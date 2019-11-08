@@ -43,17 +43,11 @@ class PreprocessorConfig(object):
     def GetInventoryClassifiers(self):
         return self.config["Inventory_Classifiers"]
 
-    def GetReportingClassifiers(self):
-        return self.config["Reporting_Classifiers"]
-
     def GetRollbackRange(self):
         return self.config["Rollback_Range"]
 
     def GetHistoricRange(self):
         return self.config["Historic_Range"]
-
-    def GetHistoricHarvestYearField(self):
-        return self.config["HistoricHarvestYearField"]
 
     def GetInventoryRasterOutputDir(self, region_path):
         x = self.config["InventoryRasterOutputDir"]
@@ -74,9 +68,6 @@ class PreprocessorConfig(object):
                 "DisturbanceTypeCode": dist["DisturbanceTypeCode"]
             })
         return result
-
-    def GetHistoricMergedDisturbanceLayers(self):
-        return self.config["HistoricMergedDisturbanceLayers"]
 
     def GetRollbackOutputDisturbanceTypes(self):
         return self.config["RollbackOutputDisturbanceTypes"]
