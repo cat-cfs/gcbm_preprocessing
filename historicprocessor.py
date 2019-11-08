@@ -5,7 +5,6 @@ from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
 from configuration.preprocessorconfig import PreprocessorConfig
 from historic.historic_tiler_config import HistoricTilerConfig
-from historic.generate_historic_slashburn import generate_slashburn
 from preprocess_tools import postgis_manage
 
 class Historic(object):
@@ -26,57 +25,18 @@ class Historic(object):
 
         classifiers = list(self.preprocessorConfig.GetInventoryClassifiers().keys())
 
-        defaultSpatialBoundaries = self.preprocessorConfig.GetDefaultSpatialBoundaries(region_path)
-        tilerConfig.AddAdminEcoLayers(
-            spatial_boundaries_path= defaultSpatialBoundaries["Path"],
-            attributes = defaultSpatialBoundaries["Attributes"])
+        tilerConfig.AddSplitDisturbanceLayers(
+           layerData = self.preprocessorConfig.GetHistoricFireDisturbances(region_path),
+           first_year = self.preprocessorConfig.GetHistoricRange()["StartYear"],
+           last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"],
+           classifiers=classifiers)
 
-        mat = climateLayerPath=self.preprocessorConfig.GetMeanAnnualTemp(region_path)
-        tilerConfig.AddClimateLayer(mat["Path"], mat["Nodata_Value"])
+        tilerConfig.AddSplitDisturbanceLayers(
+           layerData = self.preprocessorConfig.GetHistoricHarvestDisturbances(region_path),
+           first_year = self.preprocessorConfig.GetHistoricRange()["StartYear"],
+           last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"],
+           classifiers=classifiers)
 
-        tilerConfig.AddMergedDisturbanceLayers(
-            layerData = self.preprocessorConfig.GetHistoricMergedDisturbanceLayers(),
-            inventory_workspace = self.preprocessorConfig.GetInventoryWorkspace(region_path),
-            first_year = self.preprocessorConfig.GetRollbackRange()["EndYear"] + 1,
-            last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"],
-            classifiers=classifiers)
-
-        insectDisturbances = self.preprocessorConfig.GetInsectDisturbances(region_path)
-        if insectDisturbances is not None:
-            tilerConfig.AddHistoricInsectLayers(
-                layerData = insectDisturbances,
-                first_year = self.preprocessorConfig.GetHistoricRange()["StartYear"],
-                last_year = self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1,
-                classifiers=classifiers)
-
-        slashburn_year_range = range(self.preprocessorConfig.GetRollbackRange()["EndYear"] + 1,
-                                     self.preprocessorConfig.GetHistoricRange()["EndYear"] + 1)
-
-        if(slashburn_year_range):
-            sbInput = self.preprocessorConfig.GetHistoricSlashburnInput(region_path)
-            harvestLayer = sbInput["HarvestLayer"]
-            harvest_shp = os.path.join(harvestLayer["Workspace"], harvestLayer["WorkspaceFilter"])
-            harvest_shp_year_field = harvestLayer["YearField"]
-            sb_percent = self.preprocessorConfig.GetSlashBurnPercent()
-
-            slashburn_path = generate_slashburn(db_url, gdal_con,
-                inventory_workspace=self.preprocessorConfig.GetInventoryWorkspace(
-                    region_path),
-                inventory_disturbance_year_fieldname=self.preprocessorConfig.GetInventoryField("disturbance_yr"),
-                harvest_shp=harvest_shp,
-                harvest_shp_year_field=harvest_shp_year_field,
-                year_range=slashburn_year_range,
-                sb_percent=sb_percent)
-
-            for year in slashburn_year_range:
-                tilerConfig.AddSlashburn(
-                    year = year,
-                    path = slashburn_path,
-                    yearField = harvest_shp_year_field,
-                    name = sbInput["Name"],
-                    cbmDisturbanceTypeName = sbInput["CBM_Disturbance_Type"],
-                    layerMeta = "historic_{}".format(sbInput["Name"]),
-                    classifiers=classifiers)
         tilerConfig.Save()
         return output_path
 
@@ -117,9 +77,9 @@ def main():
             gdal_con = postgis_manage.get_gdal_conn_string(region_postgis_var_path)
             tilerConfigPath = historic.Process(region_path, db_url, gdal_con)
 
-            postgis_manage.drop_working_db(
-                    pathRegistry.GetPath("PostGIS_Connection_Vars"),
-                    region_postgis_var_path)
+            #postgis_manage.drop_working_db(
+            #        pathRegistry.GetPath("PostGIS_Connection_Vars"),
+            #        region_postgis_var_path)
 
     except Exception as ex:
         logging.exception("error")
