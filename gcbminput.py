@@ -7,7 +7,7 @@ from loghelper import *
 
 def runtiler(pathRegistry, subRegionConfig, tiler_config_type):
     for region in subRegionConfig.GetRegions():
-        logging.info("tiling {0},{1}".format(region["Name"]))
+        logging.info("tiling {0}".format(region["Name"]))
         t = RunTiler()
         outpath = pathRegistry.GetPath(
             "TiledLayersDir", 
