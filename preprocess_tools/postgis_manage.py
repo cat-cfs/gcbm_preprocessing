@@ -95,6 +95,8 @@ def drop_database(var_path, dbname):
     with connect(**vars) as conn:
         conn.autocommit = True
         with conn.cursor() as cur:
+            cur.execute("""UPDATE pg_database SET datallowconn = 'false' WHERE datname = '%s' """, (AsIs(dbname),))
+            cur.execute("""SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '%s' """, (AsIs(dbname),))
             cur.execute("""DROP DATABASE IF EXISTS "%s" """, (AsIs(dbname),))
 
 def drop_working_db(root_postgis_var_path, region_postgis_var_path):
