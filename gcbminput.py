@@ -2,7 +2,7 @@ from gcbm.runtiler import RunTiler
 
 from configuration.pathregistry import PathRegistry
 from configuration.subregionconfig import SubRegionConfig
-import os, argparse, shutil
+import os, argparse, shutil, sys
 from loghelper import *
 
 def runtiler(pathRegistry, subRegionConfig, tiler_config_type):
