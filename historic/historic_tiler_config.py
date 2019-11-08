@@ -28,7 +28,7 @@ class HistoricTilerConfig(object):
 
     def AddSplitDistLayer(self, name, path, year, yearField,
                                cbmDisturbanceTypeName,
-                               layerMeta, age_after, classifiers):
+                               layerMeta, classifiers):
         valueFilterConfig = self.tilerConfig.CreateConfigItem(
             "ValueFilter",
             target_val = year,
