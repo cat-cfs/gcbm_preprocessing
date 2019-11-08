@@ -201,6 +201,7 @@ def export_inventory(db_url, gdal_con, config, region_path):
     vrtpath = _create_pg_vrt(gdal_con, sql, 'age')
     src_age_col = config.GetInventoryFieldNames()["age"]
     file_path = os.path.join(raster_output, "age.tif")
+    logging.info('Exporting rollback age to {}'.format(file_path))
     gdal.Rasterize(
         file_path,
         vrtpath,
