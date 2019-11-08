@@ -118,35 +118,6 @@ def rollback_age_non_disturbed(db_url, config):
         (config.GetInventoryYear(), config.GetRollbackRange()["StartYear"]))
 
 
-def generate_slashburn(db_url, config):
-    """
-    Generate annual slashburn disturbances for the rollback period.
-
-    Note:
-    slashburn disturbances are written as grid cells to preprocessing.temp_slashburn
-    (this lets us use the same query to generate slashburn for rollback and historic)
-    """
-    rollback_start = config.GetRollbackRange()["StartYear"]
-    rollback_end = config.GetRollbackRange()["EndYear"]
-    slashburn_percent = config.GetSlashBurnPercent()
-    logging.info('Generating slashburn for {}-{} as {} of annual harvest area'.format(
-        rollback_start,
-        rollback_end,
-        slashburn_percent))
-    sql_path = os.path.join(os.path.dirname(inspect.stack()[0][1]), 'sql')
-    db = pgdata.connect(db_url, sql_path=sql_path)
-    db['preprocessing.temp_slashburn'].drop()
-    db.execute("""
-        CREATE TABLE preprocessing.temp_slashburn
-        (slashburn_id serial primary key,
-         grid_id integer,
-         dist_type integer,
-         year integer)
-    """)
-    for year in range(rollback_start, rollback_end + 1):
-        db.execute(db.queries['create_slashburn'], (year, slashburn_percent))
-
-
 def export_rollback_disturbances(gdal_con, config, region_path):
     """ Export rolled back disturbances to shapefile
     """
@@ -178,23 +149,6 @@ def export_rollback_disturbances(gdal_con, config, region_path):
           i.dist_type,
           i.new_disturbance_yr,
           i.regen_delay
-        UNION ALL
-        SELECT
-          i.grid_id AS cell_id,
-          i.dist_type AS {dist_type},
-          i.year AS {dist_yr},
-          0 AS {regen},
-          ST_Union(g.geom) as geom
-        FROM preprocessing.temp_slashburn i
-        INNER JOIN preprocessing.inventory_grid_xref x
-        ON i.grid_id = x.grid_id
-        INNER JOIN preprocessing.grid g
-        ON x.grid_id = g.grid_id
-        WHERE i.year IS NOT NULL
-        GROUP BY
-          i.grid_id,
-          i.dist_type,
-          i.year
     """.format(dist_type=config.GetInventoryField('dist_type'),
                dist_yr=config.GetInventoryField('new_disturbance_yr'),
                regen=config.GetInventoryField('regen_delay'))
